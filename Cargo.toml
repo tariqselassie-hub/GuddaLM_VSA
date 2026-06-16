@@ -1,0 +1,24 @@
+[package]
+name = "guddalm_vsa"
+version = "0.1.0"
+edition = "2021"
+description = "Core VSA/HDC engine and algebraic primitives"
+license = "AGPL-3.0-only"
+license-file = "LICENSE"
+documentation = "https://docs.rs/guddalm_vsa"
+repository = "https://github.com/guddalm/guddalm_vsa"
+readme = "README.md"
+
+[dependencies]
+rand = "0.8"
+rand_distr = "0.4"
+rayon = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1.3"
+candle-core = { version = "0.10", optional = true }
+ndarray = { version = "0.16", features = ["serde"] }
+
+[features]
+default = []
+candle = ["dep:candle-core"]
