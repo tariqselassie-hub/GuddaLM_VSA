@@ -1,0 +1,23 @@
+GuddaLM_VSA
+============
+
+This project is for the community.
+Any contributions are contributed to the community, not to an individual maintainer.
+The primary maintainer builds a separate personal version.
+That personal work does not interfere with or substitute for this main system.
+
+Attribution
+-----------
+Copyright holder / code signatory: Terrence A. Jones Sr.
+Contact: Zoddjr@gmail.com
+C/O Mr Terrence A. Jones Sr.
+Applies only to the GuddaLM_VSA project and codebase.
+
+License
+-------
+AGPL-3.0-only
+
+Third-party contents
+--------------------
+Third-party contents are originals from Cargo.lock.
+See `scripts/generated/THIRD_PARTY_NOTICES.md` for details.
