@@ -1,0 +1,1465 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "GuddaLM_VSA",
+  "documentNamespace": "https://spdx.guddalm_vsa/GuddaLM_VSA-2026-06-16",
+  "creationInfo": {
+    "created": "2026-06-16T16:28:02.590237+00:00",
+    "creators": [
+      "Tool: guddalm_vsa-release-scripts"
+    ]
+  },
+  "packages": [
+    {
+      "name": "ahash",
+      "SPDXID": "SPDXRef-Package-ahash",
+      "versionInfo": "0.8.12",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ahash",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "aho-corasick",
+      "SPDXID": "SPDXRef-Package-aho-corasick",
+      "versionInfo": "1.1.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/aho-corasick",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "allocator-api2",
+      "SPDXID": "SPDXRef-Package-allocator-api2",
+      "versionInfo": "0.2.21",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/allocator-api2",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "autocfg",
+      "SPDXID": "SPDXRef-Package-autocfg",
+      "versionInfo": "1.5.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/autocfg",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "base64",
+      "SPDXID": "SPDXRef-Package-base64",
+      "versionInfo": "0.13.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/base64",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "bincode",
+      "SPDXID": "SPDXRef-Package-bincode",
+      "versionInfo": "1.3.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/bincode",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "bitflags",
+      "SPDXID": "SPDXRef-Package-bitflags",
+      "versionInfo": "2.13.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/bitflags",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "bytemuck",
+      "SPDXID": "SPDXRef-Package-bytemuck",
+      "versionInfo": "1.25.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/bytemuck",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "bytemuck_derive",
+      "SPDXID": "SPDXRef-Package-bytemuck_derive",
+      "versionInfo": "1.10.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/bytemuck_derive",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "byteorder",
+      "SPDXID": "SPDXRef-Package-byteorder",
+      "versionInfo": "1.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/byteorder",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "candle-core",
+      "SPDXID": "SPDXRef-Package-candle-core",
+      "versionInfo": "0.10.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/candle-core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "castaway",
+      "SPDXID": "SPDXRef-Package-castaway",
+      "versionInfo": "0.2.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/castaway",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "cc",
+      "SPDXID": "SPDXRef-Package-cc",
+      "versionInfo": "1.2.64",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/cc",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "cfg-if",
+      "SPDXID": "SPDXRef-Package-cfg-if",
+      "versionInfo": "1.0.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/cfg-if",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "compact_str",
+      "SPDXID": "SPDXRef-Package-compact_str",
+      "versionInfo": "0.9.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/compact_str",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "crc32fast",
+      "SPDXID": "SPDXRef-Package-crc32fast",
+      "versionInfo": "1.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/crc32fast",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "crossbeam-deque",
+      "SPDXID": "SPDXRef-Package-crossbeam-deque",
+      "versionInfo": "0.8.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/crossbeam-deque",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "crossbeam-epoch",
+      "SPDXID": "SPDXRef-Package-crossbeam-epoch",
+      "versionInfo": "0.9.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/crossbeam-epoch",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "crossbeam-utils",
+      "SPDXID": "SPDXRef-Package-crossbeam-utils",
+      "versionInfo": "0.8.21",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/crossbeam-utils",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "crunchy",
+      "SPDXID": "SPDXRef-Package-crunchy",
+      "versionInfo": "0.2.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/crunchy",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "darling",
+      "SPDXID": "SPDXRef-Package-darling",
+      "versionInfo": "0.20.11",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/darling",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "darling_core",
+      "SPDXID": "SPDXRef-Package-darling_core",
+      "versionInfo": "0.20.11",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/darling_core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "darling_macro",
+      "SPDXID": "SPDXRef-Package-darling_macro",
+      "versionInfo": "0.20.11",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/darling_macro",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "dary_heap",
+      "SPDXID": "SPDXRef-Package-dary_heap",
+      "versionInfo": "0.3.9",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/dary_heap",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "derive_builder",
+      "SPDXID": "SPDXRef-Package-derive_builder",
+      "versionInfo": "0.20.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/derive_builder",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "derive_builder_core",
+      "SPDXID": "SPDXRef-Package-derive_builder_core",
+      "versionInfo": "0.20.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/derive_builder_core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "derive_builder_macro",
+      "SPDXID": "SPDXRef-Package-derive_builder_macro",
+      "versionInfo": "0.20.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/derive_builder_macro",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "dyn-stack",
+      "SPDXID": "SPDXRef-Package-dyn-stack",
+      "versionInfo": "0.13.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/dyn-stack",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "dyn-stack-macros",
+      "SPDXID": "SPDXRef-Package-dyn-stack-macros",
+      "versionInfo": "0.1.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/dyn-stack-macros",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "either",
+      "SPDXID": "SPDXRef-Package-either",
+      "versionInfo": "1.16.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/either",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "enum-as-inner",
+      "SPDXID": "SPDXRef-Package-enum-as-inner",
+      "versionInfo": "0.6.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/enum-as-inner",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "equivalent",
+      "SPDXID": "SPDXRef-Package-equivalent",
+      "versionInfo": "1.0.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/equivalent",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "esaxx-rs",
+      "SPDXID": "SPDXRef-Package-esaxx-rs",
+      "versionInfo": "0.1.10",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/esaxx-rs",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "find-msvc-tools",
+      "SPDXID": "SPDXRef-Package-find-msvc-tools",
+      "versionInfo": "0.1.9",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/find-msvc-tools",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "float8",
+      "SPDXID": "SPDXRef-Package-float8",
+      "versionInfo": "0.7.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/float8",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "fnv",
+      "SPDXID": "SPDXRef-Package-fnv",
+      "versionInfo": "1.0.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/fnv",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "foldhash",
+      "SPDXID": "SPDXRef-Package-foldhash",
+      "versionInfo": "0.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/foldhash",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm",
+      "SPDXID": "SPDXRef-Package-gemm",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-c32",
+      "SPDXID": "SPDXRef-Package-gemm-c32",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-c32",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-c64",
+      "SPDXID": "SPDXRef-Package-gemm-c64",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-c64",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-common",
+      "SPDXID": "SPDXRef-Package-gemm-common",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-common",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-f16",
+      "SPDXID": "SPDXRef-Package-gemm-f16",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-f16",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-f32",
+      "SPDXID": "SPDXRef-Package-gemm-f32",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-f32",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "gemm-f64",
+      "SPDXID": "SPDXRef-Package-gemm-f64",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/gemm-f64",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "getrandom",
+      "SPDXID": "SPDXRef-Package-getrandom",
+      "versionInfo": "0.2.17",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/getrandom",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "getrandom",
+      "SPDXID": "SPDXRef-Package-getrandom",
+      "versionInfo": "0.3.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/getrandom",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "half",
+      "SPDXID": "SPDXRef-Package-half",
+      "versionInfo": "2.7.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/half",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "hashbrown",
+      "SPDXID": "SPDXRef-Package-hashbrown",
+      "versionInfo": "0.16.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/hashbrown",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "hashbrown",
+      "SPDXID": "SPDXRef-Package-hashbrown",
+      "versionInfo": "0.17.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/hashbrown",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "heck",
+      "SPDXID": "SPDXRef-Package-heck",
+      "versionInfo": "0.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/heck",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "hermit-abi",
+      "SPDXID": "SPDXRef-Package-hermit-abi",
+      "versionInfo": "0.5.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/hermit-abi",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ident_case",
+      "SPDXID": "SPDXRef-Package-ident_case",
+      "versionInfo": "1.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ident_case",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "indexmap",
+      "SPDXID": "SPDXRef-Package-indexmap",
+      "versionInfo": "2.14.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/indexmap",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "itertools",
+      "SPDXID": "SPDXRef-Package-itertools",
+      "versionInfo": "0.14.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/itertools",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "itoa",
+      "SPDXID": "SPDXRef-Package-itoa",
+      "versionInfo": "1.0.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/itoa",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "libc",
+      "SPDXID": "SPDXRef-Package-libc",
+      "versionInfo": "0.2.186",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/libc",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "libm",
+      "SPDXID": "SPDXRef-Package-libm",
+      "versionInfo": "0.2.16",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/libm",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "log",
+      "SPDXID": "SPDXRef-Package-log",
+      "versionInfo": "0.4.32",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/log",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "macro_rules_attribute",
+      "SPDXID": "SPDXRef-Package-macro_rules_attribute",
+      "versionInfo": "0.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/macro_rules_attribute",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "macro_rules_attribute-proc_macro",
+      "SPDXID": "SPDXRef-Package-macro_rules_attribute-proc_macro",
+      "versionInfo": "0.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/macro_rules_attribute-proc_macro",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "matrixmultiply",
+      "SPDXID": "SPDXRef-Package-matrixmultiply",
+      "versionInfo": "0.3.10",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/matrixmultiply",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "memchr",
+      "SPDXID": "SPDXRef-Package-memchr",
+      "versionInfo": "2.8.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/memchr",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "memmap2",
+      "SPDXID": "SPDXRef-Package-memmap2",
+      "versionInfo": "0.9.10",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/memmap2",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "minimal-lexical",
+      "SPDXID": "SPDXRef-Package-minimal-lexical",
+      "versionInfo": "0.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/minimal-lexical",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "monostate",
+      "SPDXID": "SPDXRef-Package-monostate",
+      "versionInfo": "0.1.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/monostate",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "monostate-impl",
+      "SPDXID": "SPDXRef-Package-monostate-impl",
+      "versionInfo": "0.1.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/monostate-impl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ndarray",
+      "SPDXID": "SPDXRef-Package-ndarray",
+      "versionInfo": "0.16.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ndarray",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "nom",
+      "SPDXID": "SPDXRef-Package-nom",
+      "versionInfo": "7.1.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/nom",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "num-complex",
+      "SPDXID": "SPDXRef-Package-num-complex",
+      "versionInfo": "0.4.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/num-complex",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "num-integer",
+      "SPDXID": "SPDXRef-Package-num-integer",
+      "versionInfo": "0.1.46",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/num-integer",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "num-traits",
+      "SPDXID": "SPDXRef-Package-num-traits",
+      "versionInfo": "0.2.19",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/num-traits",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "num_cpus",
+      "SPDXID": "SPDXRef-Package-num_cpus",
+      "versionInfo": "1.17.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/num_cpus",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "once_cell",
+      "SPDXID": "SPDXRef-Package-once_cell",
+      "versionInfo": "1.21.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/once_cell",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "onig",
+      "SPDXID": "SPDXRef-Package-onig",
+      "versionInfo": "6.5.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/onig",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "onig_sys",
+      "SPDXID": "SPDXRef-Package-onig_sys",
+      "versionInfo": "69.9.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/onig_sys",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "paste",
+      "SPDXID": "SPDXRef-Package-paste",
+      "versionInfo": "1.0.15",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/paste",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "pkg-config",
+      "SPDXID": "SPDXRef-Package-pkg-config",
+      "versionInfo": "0.3.33",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/pkg-config",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "portable-atomic",
+      "SPDXID": "SPDXRef-Package-portable-atomic",
+      "versionInfo": "1.13.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/portable-atomic",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "portable-atomic-util",
+      "SPDXID": "SPDXRef-Package-portable-atomic-util",
+      "versionInfo": "0.2.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/portable-atomic-util",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ppv-lite86",
+      "SPDXID": "SPDXRef-Package-ppv-lite86",
+      "versionInfo": "0.2.21",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ppv-lite86",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "proc-macro2",
+      "SPDXID": "SPDXRef-Package-proc-macro2",
+      "versionInfo": "1.0.106",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/proc-macro2",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "pulp",
+      "SPDXID": "SPDXRef-Package-pulp",
+      "versionInfo": "0.22.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/pulp",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "pulp-wasm-simd-flag",
+      "SPDXID": "SPDXRef-Package-pulp-wasm-simd-flag",
+      "versionInfo": "0.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/pulp-wasm-simd-flag",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "quote",
+      "SPDXID": "SPDXRef-Package-quote",
+      "versionInfo": "1.0.45",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/quote",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "r-efi",
+      "SPDXID": "SPDXRef-Package-r-efi",
+      "versionInfo": "5.3.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/r-efi",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand",
+      "SPDXID": "SPDXRef-Package-rand",
+      "versionInfo": "0.8.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand",
+      "SPDXID": "SPDXRef-Package-rand",
+      "versionInfo": "0.9.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_chacha",
+      "SPDXID": "SPDXRef-Package-rand_chacha",
+      "versionInfo": "0.3.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_chacha",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_chacha",
+      "SPDXID": "SPDXRef-Package-rand_chacha",
+      "versionInfo": "0.9.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_chacha",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_core",
+      "SPDXID": "SPDXRef-Package-rand_core",
+      "versionInfo": "0.6.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_core",
+      "SPDXID": "SPDXRef-Package-rand_core",
+      "versionInfo": "0.9.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_distr",
+      "SPDXID": "SPDXRef-Package-rand_distr",
+      "versionInfo": "0.4.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_distr",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rand_distr",
+      "SPDXID": "SPDXRef-Package-rand_distr",
+      "versionInfo": "0.5.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rand_distr",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "raw-cpuid",
+      "SPDXID": "SPDXRef-Package-raw-cpuid",
+      "versionInfo": "11.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/raw-cpuid",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rawpointer",
+      "SPDXID": "SPDXRef-Package-rawpointer",
+      "versionInfo": "0.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rawpointer",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rayon",
+      "SPDXID": "SPDXRef-Package-rayon",
+      "versionInfo": "1.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rayon",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rayon-cond",
+      "SPDXID": "SPDXRef-Package-rayon-cond",
+      "versionInfo": "0.4.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rayon-cond",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rayon-core",
+      "SPDXID": "SPDXRef-Package-rayon-core",
+      "versionInfo": "1.13.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rayon-core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "reborrow",
+      "SPDXID": "SPDXRef-Package-reborrow",
+      "versionInfo": "0.5.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/reborrow",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "regex",
+      "SPDXID": "SPDXRef-Package-regex",
+      "versionInfo": "1.12.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/regex",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "regex-automata",
+      "SPDXID": "SPDXRef-Package-regex-automata",
+      "versionInfo": "0.4.14",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/regex-automata",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "regex-syntax",
+      "SPDXID": "SPDXRef-Package-regex-syntax",
+      "versionInfo": "0.8.11",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/regex-syntax",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "rustversion",
+      "SPDXID": "SPDXRef-Package-rustversion",
+      "versionInfo": "1.0.22",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/rustversion",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ryu",
+      "SPDXID": "SPDXRef-Package-ryu",
+      "versionInfo": "1.0.23",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ryu",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "safetensors",
+      "SPDXID": "SPDXRef-Package-safetensors",
+      "versionInfo": "0.7.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/safetensors",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "same-file",
+      "SPDXID": "SPDXRef-Package-same-file",
+      "versionInfo": "1.0.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/same-file",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "seq-macro",
+      "SPDXID": "SPDXRef-Package-seq-macro",
+      "versionInfo": "0.3.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/seq-macro",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "serde",
+      "SPDXID": "SPDXRef-Package-serde",
+      "versionInfo": "1.0.228",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/serde",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "serde_core",
+      "SPDXID": "SPDXRef-Package-serde_core",
+      "versionInfo": "1.0.228",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/serde_core",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "serde_derive",
+      "SPDXID": "SPDXRef-Package-serde_derive",
+      "versionInfo": "1.0.228",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/serde_derive",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "serde_json",
+      "SPDXID": "SPDXRef-Package-serde_json",
+      "versionInfo": "1.0.150",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/serde_json",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "shlex",
+      "SPDXID": "SPDXRef-Package-shlex",
+      "versionInfo": "2.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/shlex",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "smallvec",
+      "SPDXID": "SPDXRef-Package-smallvec",
+      "versionInfo": "1.15.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/smallvec",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "spm_precompiled",
+      "SPDXID": "SPDXRef-Package-spm_precompiled",
+      "versionInfo": "0.1.4",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/spm_precompiled",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "stable_deref_trait",
+      "SPDXID": "SPDXRef-Package-stable_deref_trait",
+      "versionInfo": "1.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/stable_deref_trait",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "static_assertions",
+      "SPDXID": "SPDXRef-Package-static_assertions",
+      "versionInfo": "1.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/static_assertions",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "strsim",
+      "SPDXID": "SPDXRef-Package-strsim",
+      "versionInfo": "0.11.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/strsim",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "syn",
+      "SPDXID": "SPDXRef-Package-syn",
+      "versionInfo": "2.0.117",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/syn",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "synstructure",
+      "SPDXID": "SPDXRef-Package-synstructure",
+      "versionInfo": "0.13.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/synstructure",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "sysctl",
+      "SPDXID": "SPDXRef-Package-sysctl",
+      "versionInfo": "0.6.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/sysctl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "thiserror",
+      "SPDXID": "SPDXRef-Package-thiserror",
+      "versionInfo": "1.0.69",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/thiserror",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "thiserror",
+      "SPDXID": "SPDXRef-Package-thiserror",
+      "versionInfo": "2.0.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/thiserror",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "thiserror-impl",
+      "SPDXID": "SPDXRef-Package-thiserror-impl",
+      "versionInfo": "1.0.69",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/thiserror-impl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "thiserror-impl",
+      "SPDXID": "SPDXRef-Package-thiserror-impl",
+      "versionInfo": "2.0.18",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/thiserror-impl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "tokenizers",
+      "SPDXID": "SPDXRef-Package-tokenizers",
+      "versionInfo": "0.22.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/tokenizers",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "typed-path",
+      "SPDXID": "SPDXRef-Package-typed-path",
+      "versionInfo": "0.12.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/typed-path",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "unicode-ident",
+      "SPDXID": "SPDXRef-Package-unicode-ident",
+      "versionInfo": "1.0.24",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/unicode-ident",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "unicode-normalization-alignments",
+      "SPDXID": "SPDXRef-Package-unicode-normalization-alignments",
+      "versionInfo": "0.1.12",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/unicode-normalization-alignments",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "unicode-segmentation",
+      "SPDXID": "SPDXRef-Package-unicode-segmentation",
+      "versionInfo": "1.13.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/unicode-segmentation",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "unicode_categories",
+      "SPDXID": "SPDXRef-Package-unicode_categories",
+      "versionInfo": "0.1.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/unicode_categories",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "version_check",
+      "SPDXID": "SPDXRef-Package-version_check",
+      "versionInfo": "0.9.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/version_check",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "walkdir",
+      "SPDXID": "SPDXRef-Package-walkdir",
+      "versionInfo": "2.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/walkdir",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "wasi",
+      "SPDXID": "SPDXRef-Package-wasi",
+      "versionInfo": "0.11.1+wasi-snapshot-preview1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/wasi",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "wasip2",
+      "SPDXID": "SPDXRef-Package-wasip2",
+      "versionInfo": "1.0.4+wasi-0.2.12",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/wasip2",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "winapi-util",
+      "SPDXID": "SPDXRef-Package-winapi-util",
+      "versionInfo": "0.1.11",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/winapi-util",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "windows-link",
+      "SPDXID": "SPDXRef-Package-windows-link",
+      "versionInfo": "0.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/windows-link",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "windows-sys",
+      "SPDXID": "SPDXRef-Package-windows-sys",
+      "versionInfo": "0.61.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/windows-sys",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "wit-bindgen",
+      "SPDXID": "SPDXRef-Package-wit-bindgen",
+      "versionInfo": "0.57.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/wit-bindgen",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "yoke",
+      "SPDXID": "SPDXRef-Package-yoke",
+      "versionInfo": "0.8.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/yoke",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "yoke-derive",
+      "SPDXID": "SPDXRef-Package-yoke-derive",
+      "versionInfo": "0.8.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/yoke-derive",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "zerocopy",
+      "SPDXID": "SPDXRef-Package-zerocopy",
+      "versionInfo": "0.8.52",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/zerocopy",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "zerocopy-derive",
+      "SPDXID": "SPDXRef-Package-zerocopy-derive",
+      "versionInfo": "0.8.52",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/zerocopy-derive",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "zerofrom",
+      "SPDXID": "SPDXRef-Package-zerofrom",
+      "versionInfo": "0.1.8",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/zerofrom",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "zerofrom-derive",
+      "SPDXID": "SPDXRef-Package-zerofrom-derive",
+      "versionInfo": "0.1.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/zerofrom-derive",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "zip",
+      "SPDXID": "SPDXRef-Package-zip",
+      "versionInfo": "7.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/zip",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    }
+  ]
+}
