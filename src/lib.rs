@@ -23,25 +23,17 @@ pub mod seed;
 pub mod serialize_vsa;
 pub mod setup;
 pub mod vsa;
-
-// ── Public surface ──────────────────────────────────────────────
-// Preferred modern entrypoints:
-//   guddalm_vsa::map::{MapSetup, HDVector}
-//   guddalm_vsa::bsc::{BscSetup, BinaryHDVector}
-//   guddalm_vsa::fhrr::{FhrrSetup, FHRRVector}
-//   guddalm_vsa::setup::{VsaSystem, VsaMode, SystemVector}
+pub mod vsa_persist;
 
 pub use hdc::vector::{HDVector, BinaryHDVector, Complex};
 pub use hdc::fhrr::FHRRVector;
 pub use hdc::ghrr::GHRRVector;
-
 pub use hdc::vector::{
     dot_product_slice, cosine_similarity_slice,
     convolve_slices, correlate_slices,
     par_convolve_batch, par_correlate_batch, par_cosine_similarity_slice,
     majority_from_sums,
 };
-
 pub use vsa::{Codebook, VsaEngine};
 pub use hdc::bundle::{weighted_bundle, selective_bundle};
 pub use hdc::sdm::{sdm_snr_threshold_bipolar, optimal_snr_hamming_radius, sdm_read_bipolar};
@@ -49,9 +41,7 @@ pub use hdc::quantize::{pack_bits, pack_bits_array64, PackedArray64};
 pub use hdc::rff::ContinuousSpaceEncoder;
 pub use hdc::cleanup::CleanupMemory;
 pub use hdc::stream::HDStreamBuffer;
-pub use hdc::resonator::{
-    resonator_search, resonator_search_auto, resonator_search_auto_acf, generate_rc_codebook, ResonatorResult,
-};
+pub use hdc::resonator::{resonator_search, resonator_search_auto, resonator_search_auto_acf, generate_rc_codebook, ResonatorResult};
 pub use hdc::attention::MultiHeadAttention;
 pub use hdc::sequence::SequenceLearner;
 pub use hdc::graph::{GraphEncoder, GhrrGraphEncoder};
@@ -63,31 +53,26 @@ pub use seed::{
     deterministic_fhrr_continuous,
     deterministic_ghrr_vector as deterministic_ghrr_vector_seed,
 };
-pub use serialize_vsa::{
-    save_codebook, load_codebook,
-    save_hdvector, load_hdvector,
-    save_vectors, load_vectors,
-    save_binary_vectors, load_binary_vectors,
-    write_vectors_stream, read_vectors_stream,
+pub use setup::{VsaSystem, VsaMode, VsaSystemOptions, SystemVector};
+pub use vsa_persist::{
+    default_store_dir,
+    load_bundle,
+    model_bin_path,
+    model_bin_path_env,
+    save_bundle,
+    VsaPersistenceError,
+    VsaPersistentBundle,
+    VsaPersistenceResult,
+    BIN_FILENAME,
+    BIN_DIRNAME,
 };
-pub use hdc::vsa_trait::{VsaVector, VsaVectorRaw, IndexVector};
+pub use hdc::vsa_trait::VsaVectorRaw;
 pub use error::{GuddaError, GuddaResult};
-pub use hdc::autograd::{
-    GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many,
-    diff_permute, similarity_loss, SGDOptimizer, soft_cleanup,
-};
+pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};
 #[cfg(feature = "candle")]
-pub use hdc::tensor::{
-    to_tensor, from_tensor, to_tensor_batch, from_tensor_batch,
-    tensor_bind, tensor_unbind, tensor_bundle, tensor_permute,
-    tensor_cosine_similarity, tensor_similarity_loss,
-    tensor_selective_bundle, tensor_fwht, tensor_ifwht,
-};
+pub use hdc::tensor::{to_tensor, from_tensor, to_tensor_batch, from_tensor_batch, tensor_bind, tensor_unbind, tensor_bundle, tensor_permute, tensor_cosine_similarity, tensor_similarity_loss, tensor_selective_bundle, tensor_fwht, tensor_ifwht};
 #[cfg(feature = "candle")]
 pub use hdc::transformer::DiffVSAEncoderLayer;
-
-// Module-level setup re-exports
-pub use setup::{VsaSystem, VsaMode, VsaSystemOptions, SystemVector};
 
 #[cfg(test)]
 mod tests {
@@ -104,8 +89,7 @@ mod tests {
         let sim = a.cosine_similarity(&unbind);
         assert!(
             sim > 0.65,
-            "MAP binding must be invertible via unbind (got sim={})",
-            sim
+            "MAP binding must be invertible via unbind (got sim={})", sim
         );
     }
 
@@ -116,8 +100,7 @@ mod tests {
         let sim = a.cosine_similarity(&bundle);
         assert!(
             sim > 0.99,
-            "bundle(a,a) must be nearly identical to a (got {})",
-            sim
+            "bundle(a,a) must be nearly identical to a (got {})", sim
         );
     }
 
@@ -128,8 +111,7 @@ mod tests {
         let sim = a.cosine_similarity(&shifted);
         assert!(
             sim.abs() < 0.1,
-            "permuted vectors should be nearly orthogonal (got {})",
-            sim
+            "permuted vectors should be nearly orthogonal (got {})", sim
         );
     }
 
@@ -191,8 +173,7 @@ mod tests {
         let diff = (sim_original - sim_packed).abs();
         assert!(
             diff < 0.01,
-            "packed similarity must approximate cosine similarity (diff = {})",
-            diff
+            "packed similarity must approximate cosine similarity (diff = {})", diff
         );
     }
 
@@ -207,8 +188,7 @@ mod tests {
         let sim_to_query = result.cosine_similarity(&query);
         assert!(
             sim_to_query > 0.3,
-            "weighted bundle must favor more similar inputs (sim = {})",
-            sim_to_query
+            "weighted bundle must favor more similar inputs (sim = {})", sim_to_query
         );
     }
 
@@ -223,9 +203,6 @@ mod tests {
         let result = selective_bundle(&query, &[k1, k2], &[v1.clone(), v2.clone()], 0.5);
         let sim_to_v1 = result.cosine_similarity(&v1);
         let sim_to_v2 = result.cosine_similarity(&v2);
-        assert!(
-            sim_to_v1 > sim_to_v2,
-            "selective bundle must favor value paired with similar key"
-        );
+        assert!(sim_to_v1 > sim_to_v2, "selective bundle must favor value paired with similar key");
     }
 }
