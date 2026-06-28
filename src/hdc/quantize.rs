@@ -84,9 +84,16 @@ pub fn pack_bits_array64(vector: &HDVector) -> PackedArray64 {
 /// Unpack bit-packed representation back to bipolar HDVector.
 pub fn unpack_bits(words: &[u64], dim: usize) -> HDVector {
     let mut data = Vec::with_capacity(dim);
-    for i in 0..dim {
-        let bit = (words[i / 64] >> (i % 64)) & 1;
+    let mut word_idx = 0;
+    let mut bit_idx = 0;
+    for _ in 0..dim {
+        let bit = (words[word_idx] >> bit_idx) & 1;
         data.push(if bit == 1 { 1.0 } else { -1.0 });
+        bit_idx += 1;
+        if bit_idx == 64 {
+            bit_idx = 0;
+            word_idx += 1;
+        }
     }
     HDVector::from_slice(&data)
 }
