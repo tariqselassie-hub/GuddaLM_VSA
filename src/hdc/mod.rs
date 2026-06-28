@@ -33,4 +33,5 @@ pub mod vsa_trait;
 #[cfg(feature = "candle")]
 pub mod tensor;
 #[cfg(feature = "candle")]
-pub mod transformer;pub mod phase_fhrr;
+pub mod transformer;
+pub mod phase_fhrr;

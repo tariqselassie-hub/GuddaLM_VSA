@@ -18,6 +18,11 @@ use guddalm_vsa::hdc::resonator::resonator_search;
 use guddalm_vsa::hdc::sdm::sdm_read_bipolar;
 use guddalm_vsa::hdc::stream::{BundleAccumulator, HDStreamBuffer};
 use guddalm_vsa::vsa::Codebook;
+use guddalm_vsa::{
+    bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence,
+    cartesian_to_phase, phase_to_cartesian, VsaVector,
+};
+use guddalm_vsa::hdc::phase_fhrr::{CartesianFhrrVector, PhaseFhrrVector};
 
 #[derive(Default)]
 struct Summary {
@@ -51,6 +56,8 @@ fn system_wide_gudda_check() {
     println!("=== VSA primitives ===");
     check!(s, test_vsa_primitives(), "VSA primitives invertible + identity");
     check!(s, test_binary_primitives(), "Binary self-inverse + identity");
+    check!(s, test_generic_primitives(), "Generic VSA primitives (sequence/set/positional)");
+    check!(s, test_fhrr_shim_conversions(), "FHRR Cartesian/Phase shim conversions");
     println!("=== Cache / chunked scaling ===");
     check!(s, test_chunked_cache_is_better_or_equal(), "chunked better-or-equal vs single");
     println!("=== Structural ===");
@@ -289,4 +296,77 @@ impl ChunkedCache {
                 state.unbind(q).binarize()
             })
     }
+}
+
+fn test_generic_primitives() -> Result<(), String> {
+    let dim = 1024;
+    let v1 = HDVector::random(dim);
+    let v2 = HDVector::random(dim);
+    let v3 = HDVector::random(dim);
+
+    // Test bind_sequence
+    let bound = bind_sequence(&[v1.clone(), v2.clone(), v3.clone()]);
+    let expected_bound = v1.bind(&v2).bind(&v3);
+    if bound.cosine_similarity(&expected_bound) < 0.99 {
+        return Err("bind_sequence failed".into());
+    }
+
+    // Test bundle_sequence
+    let bundled = bundle_sequence(&[v1.clone(), v2.clone(), v3.clone()]);
+    let expected_bundled = v1.bundle(&v2).bundle(&v3);
+    if bundled.cosine_similarity(&expected_bundled) < 0.99 {
+        return Err("bundle_sequence failed".into());
+    }
+
+    // Test encode_set / decode_set
+    let k1 = HDVector::random(dim);
+    let k2 = HDVector::random(dim);
+    let val1 = HDVector::random(dim);
+    let val2 = HDVector::random(dim);
+    let set = encode_set(&[(k1.clone(), val1.clone()), (k2.clone(), val2.clone())]);
+    
+    let decoded = decode_set(&set, &k1);
+    let sim1 = decoded.cosine_similarity(&val1);
+    let sim2 = decoded.cosine_similarity(&val2);
+    if sim1 <= sim2 {
+        return Err(format!("encode/decode set failed: sim_val1={:.4} sim_val2={:.4}", sim1, sim2));
+    }
+
+    // Test encode_positional_sequence
+    let seq = encode_positional_sequence(&[v1.clone(), v2.clone()]);
+    let query0 = seq.permute_left(0);
+    let query1 = seq.permute_left(1);
+    let sim_seq0 = query0.cosine_similarity(&v1);
+    let sim_seq1 = query1.cosine_similarity(&v2);
+    if sim_seq0 < 0.3 || sim_seq1 < 0.3 {
+        return Err(format!("encode_positional_sequence failed: sim0={:.4} sim1={:.4}", sim_seq0, sim_seq1));
+    }
+
+    Ok(())
+}
+
+fn test_fhrr_shim_conversions() -> Result<(), String> {
+    let dim = 128;
+    // Create random CartesianFhrrVector
+    let cart = CartesianFhrrVector::random_unit(dim, 42);
+    
+    // Convert to phase representation
+    let phase = cartesian_to_phase(&cart);
+    if phase.phases.len() != dim {
+        return Err("cartesian_to_phase dimension mismatch".into());
+    }
+    
+    // Convert back to cartesian representation
+    let cart_back = phase_to_cartesian(&phase);
+    if cart_back.dim() != dim {
+        return Err("phase_to_cartesian dimension mismatch".into());
+    }
+    
+    // Check similarity between original and roundtrip
+    let sim = cart.similarity(&cart_back);
+    if (sim - 1.0).abs() > 1e-5 {
+        return Err(format!("FHRR cartesian/phase roundtrip failed: sim={:.6}", sim));
+    }
+    
+    Ok(())
 }
