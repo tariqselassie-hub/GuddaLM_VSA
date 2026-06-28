@@ -24,6 +24,8 @@ pub mod serialize_vsa;
 pub mod setup;
 pub mod vsa;
 pub mod vsa_persist;
+pub mod primitives;
+pub mod primitives_shim;
 
 pub use hdc::vector::{HDVector, BinaryHDVector, Complex};
 pub use hdc::fhrr::FHRRVector;
@@ -66,8 +68,10 @@ pub use vsa_persist::{
     BIN_FILENAME,
     BIN_DIRNAME,
 };
-pub use hdc::vsa_trait::VsaVectorRaw;
+pub use hdc::vsa_trait::{VsaVectorRaw, VsaVector};
 pub use error::{GuddaError, GuddaResult};
+pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence};
+pub use primitives_shim::{cartesian_to_phase, phase_to_cartesian};
 pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};
 #[cfg(feature = "candle")]
 pub use hdc::tensor::{to_tensor, from_tensor, to_tensor_batch, from_tensor_batch, tensor_bind, tensor_unbind, tensor_bundle, tensor_permute, tensor_cosine_similarity, tensor_similarity_loss, tensor_selective_bundle, tensor_fwht, tensor_ifwht};

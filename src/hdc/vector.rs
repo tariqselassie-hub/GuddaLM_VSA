@@ -282,48 +282,10 @@ impl HDVector {
     #[inline(always)]
     pub fn bind(&self, other: &HDVector) -> HDVector {
         assert_eq!(self.dim, other.dim);
-        let dim = self.dim;
-        
-        let c = if dim.is_power_of_two() {
-            let mut a_complex: Vec<Complex> = self.data.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-            let mut b_complex: Vec<Complex> = other.data.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-            
-            fft(&mut a_complex, false);
-            fft(&mut b_complex, false);
-            
-            let mut c_complex = vec![Complex::zero(); dim];
-            for i in 0..dim {
-                c_complex[i] = a_complex[i].mul(b_complex[i]);
-            }
-            
-            fft(&mut c_complex, true);
-            c_complex.iter().map(|x| x.re).collect()
-        } else {
-            let mut c_direct = vec![0.0; dim];
-            let a = &self.data;
-            let b = &other.data;
-            for i in 0..dim {
-                let mut sum = 0.0;
-                for j in 0..dim {
-                    let k = if i >= j { i - j } else { dim + i - j };
-                    sum += a[j] * b[k];
-                }
-                c_direct[i] = sum;
-            }
-            c_direct
-        };
-        
-        let mut c_normalized = c;
-        let norm = c_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-        if norm > 0.0 {
-            for x in c_normalized.iter_mut() {
-                *x /= norm;
-            }
-        }
-        
+        let result = convolve_slices(&self.data, &other.data);
         HDVector {
-            dim,
-            data: Arc::new(c_normalized),
+            dim: self.dim,
+            data: Arc::new(result),
             is_binary: false,
         }
     }
@@ -331,48 +293,10 @@ impl HDVector {
     #[inline(always)]
     pub fn unbind(&self, other: &HDVector) -> HDVector {
         assert_eq!(self.dim, other.dim);
-        let dim = self.dim;
-        
-        let a = if dim.is_power_of_two() {
-            let mut context_complex: Vec<Complex> = self.data.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-            let mut b_complex: Vec<Complex> = other.data.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-            
-            fft(&mut context_complex, false);
-            fft(&mut b_complex, false);
-            
-            let mut d_complex = vec![Complex::zero(); dim];
-            for i in 0..dim {
-                d_complex[i] = context_complex[i].mul(b_complex[i].conj());
-            }
-            
-            fft(&mut d_complex, true);
-            d_complex.iter().map(|x| x.re).collect()
-        } else {
-            let mut a_direct = vec![0.0; dim];
-            let context = &self.data;
-            let b = &other.data;
-            for i in 0..dim {
-                let mut sum = 0.0;
-                for j in 0..dim {
-                    let k = if j >= i { j - i } else { dim + j - i };
-                    sum += context[j] * b[k];
-                }
-                a_direct[i] = sum;
-            }
-            a_direct
-        };
-        
-        let mut a_normalized = a;
-        let norm = a_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-        if norm > 0.0 {
-            for x in a_normalized.iter_mut() {
-                *x /= norm;
-            }
-        }
-        
+        let result = correlate_slices(&self.data, &other.data);
         HDVector {
-            dim,
-            data: Arc::new(a_normalized),
+            dim: self.dim,
+            data: Arc::new(result),
             is_binary: false,
         }
     }
@@ -700,15 +624,23 @@ impl BinaryHDVector {
     }
 
     pub fn from_bipolar(bipolar: &HDVector) -> Self {
-        let n_words = (bipolar.dim() + 63) / 64;
+        let dim = bipolar.dim();
+        let n_words = (dim + 63) / 64;
         let mut words = vec![0u64; n_words];
-        for (i, &val) in bipolar.data().iter().enumerate() {
+        let mut word_idx = 0;
+        let mut bit_idx = 0;
+        for &val in bipolar.data().iter() {
             if val > 0.0 {
-                words[i / 64] |= 1u64 << (i % 64);
+                words[word_idx] |= 1u64 << bit_idx;
+            }
+            bit_idx += 1;
+            if bit_idx == 64 {
+                bit_idx = 0;
+                word_idx += 1;
             }
         }
         let mut v = BinaryHDVector {
-            dim: bipolar.dim(),
+            dim,
             words,
         };
         v.clear_phantom_bits();
@@ -719,9 +651,16 @@ impl BinaryHDVector {
         let dim = bits.len();
         let n_words = (dim + 63) / 64;
         let mut words = vec![0u64; n_words];
-        for (i, &bit) in bits.iter().enumerate() {
+        let mut word_idx = 0;
+        let mut bit_idx = 0;
+        for &bit in bits.iter() {
             if bit != 0 {
-                words[i / 64] |= 1u64 << (i % 64);
+                words[word_idx] |= 1u64 << bit_idx;
+            }
+            bit_idx += 1;
+            if bit_idx == 64 {
+                bit_idx = 0;
+                word_idx += 1;
             }
         }
         let mut v = BinaryHDVector { dim, words };
@@ -753,8 +692,15 @@ impl BinaryHDVector {
 
     pub fn to_bits(&self) -> Vec<u8> {
         let mut bits = vec![0u8; self.dim];
+        let mut word_idx = 0;
+        let mut bit_idx = 0;
         for i in 0..self.dim {
-            bits[i] = ((self.words[i / 64] >> (i % 64)) & 1) as u8;
+            bits[i] = ((self.words[word_idx] >> bit_idx) & 1) as u8;
+            bit_idx += 1;
+            if bit_idx == 64 {
+                bit_idx = 0;
+                word_idx += 1;
+            }
         }
         bits
     }
@@ -844,29 +790,39 @@ impl BinaryHDVector {
         }
         let dim = vectors[0].dim;
         let n_words = vectors[0].words.len();
-
-        let mut bit_counts = vec![0i32; dim];
-        for v in vectors {
-            assert_eq!(v.dim, dim);
-            for i in 0..dim {
-                let bit = (v.words[i / 64] >> (i % 64)) & 1;
-                bit_counts[i] += if bit == 1 { 1 } else { -1 };
-            }
-        }
-
         let tie_breaker = &vectors[0];
         let mut words = vec![0u64; n_words];
-        for i in 0..dim {
-            let bit = if bit_counts[i] > 0 {
-                1u64
-            } else if bit_counts[i] < 0 {
-                0u64
-            } else {
-                // Deterministic tie-breaking: use the first input vector's bit
-                (tie_breaker.words[i / 64] >> (i % 64)) & 1
-            };
-            words[i / 64] |= bit << (i % 64);
+
+        for w_idx in 0..n_words {
+            let start_bit = w_idx * 64;
+            let end_bit = (start_bit + 64).min(dim);
+            
+            let mut counts = [0i32; 64];
+            for v in vectors {
+                assert_eq!(v.dim, dim);
+                let word = v.words[w_idx];
+                for bit_idx in 0..(end_bit - start_bit) {
+                    let bit = (word >> bit_idx) & 1;
+                    counts[bit_idx] += if bit == 1 { 1 } else { -1 };
+                }
+            }
+            
+            let tie_word = tie_breaker.words[w_idx];
+            let mut final_word = 0u64;
+            for bit_idx in 0..(end_bit - start_bit) {
+                let c = counts[bit_idx];
+                let bit = if c > 0 {
+                    1
+                } else if c < 0 {
+                    0
+                } else {
+                    (tie_word >> bit_idx) & 1
+                };
+                final_word |= bit << bit_idx;
+            }
+            words[w_idx] = final_word;
         }
+
         let mut result = BinaryHDVector { dim, words };
         result.clear_phantom_bits();
         result
@@ -883,12 +839,65 @@ impl BinaryHDVector {
         }
 
         let n_words = self.words.len();
-        let mut new_words = vec![0u64; n_words];
-        for i in 0..self.dim {
-            let src_bit = (self.words[i / 64] >> (i % 64)) & 1;
-            let dst = (i + bit_shift) % self.dim;
-            new_words[dst / 64] |= src_bit << (dst % 64);
+        
+        // Fast path for dimensions that are multiples of 64
+        if self.dim % 64 == 0 {
+            let word_shift = bit_shift / 64;
+            let intra_shift = bit_shift % 64;
+            let mut new_words = vec![0u64; n_words];
+            if intra_shift == 0 {
+                for i in 0..n_words {
+                    new_words[(i + word_shift) % n_words] = self.words[i];
+                }
+            } else {
+                for i in 0..n_words {
+                    let val = self.words[i];
+                    let target_1 = (i + word_shift) % n_words;
+                    let target_2 = (i + word_shift + 1) % n_words;
+                    new_words[target_1] |= val << intra_shift;
+                    new_words[target_2] |= val >> (64 - intra_shift);
+                }
+            }
+            let mut result = BinaryHDVector {
+                dim: self.dim,
+                words: new_words,
+            };
+            result.clear_phantom_bits();
+            return result;
         }
+
+        // Highly optimized fallback path with zero division/modulo inside the loop
+        let mut new_words = vec![0u64; n_words];
+        let mut src_word_idx = 0;
+        let mut src_bit_idx = 0;
+        let mut dst = bit_shift;
+        let mut dst_word_idx = dst / 64;
+        let mut dst_bit_idx = dst % 64;
+        
+        for _ in 0..self.dim {
+            let src_bit = (self.words[src_word_idx] >> src_bit_idx) & 1;
+            new_words[dst_word_idx] |= src_bit << dst_bit_idx;
+            
+            src_bit_idx += 1;
+            if src_bit_idx == 64 {
+                src_bit_idx = 0;
+                src_word_idx += 1;
+            }
+            
+            dst += 1;
+            if dst == self.dim {
+                dst = 0;
+                dst_word_idx = 0;
+                dst_bit_idx = 0;
+            } else {
+                dst_bit_idx += 1;
+                if dst_bit_idx == 64 {
+                    dst_bit_idx = 0;
+                    dst_word_idx += 1;
+                }
+            }
+        }
+
         let mut result = BinaryHDVector {
             dim: self.dim,
             words: new_words,
@@ -954,6 +963,8 @@ impl BinaryHDVector {
 pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
     let n_words = (dim + 63) / 64;
     let mut words = vec![0u64; n_words];
+    let mut word_idx = 0;
+    let mut bit_idx = 0;
     for i in 0..dim {
         let bit = if sums[i] > 0 {
             1u64
@@ -964,7 +975,12 @@ pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
             let h = (i as u64).wrapping_mul(0x9E3779B97F4A7C15);
             (h >> 63) & 1
         };
-        words[i / 64] |= bit << (i % 64);
+        words[word_idx] |= bit << bit_idx;
+        bit_idx += 1;
+        if bit_idx == 64 {
+            bit_idx = 0;
+            word_idx += 1;
+        }
     }
     BinaryHDVector { dim, words }
 }
