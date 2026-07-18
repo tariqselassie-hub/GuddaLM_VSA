@@ -97,6 +97,8 @@ pub enum VsaPersistenceError {
     Serialize(#[from] bincode::Error),
     #[error("invalid schema version: {0}")]
     SchemaVersion(u32),
+    #[error("bundle not found: {0}")]
+    NotFound(String),
 }
 
 pub type VsaPersistenceResult<T> = Result<T, VsaPersistenceError>;
@@ -125,7 +127,7 @@ pub fn save_bundle(
 pub fn load_bundle(path: impl AsRef<Path>) -> VsaPersistenceResult<VsaPersistentBundle> {
     let path = path.as_ref();
     if !path.exists() {
-        return Ok(VsaPersistentBundle::default());
+        return Err(VsaPersistenceError::NotFound(path.display().to_string()));
     }
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -142,4 +144,74 @@ pub fn model_bin_path() -> PathBuf {
 
 pub fn model_bin_path_env(env_key: &str) -> Option<PathBuf> {
     std::env::var_os(env_key).map(PathBuf::from)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::vsa::Codebook;
+    use std::io::Write;
+
+    #[test]
+    fn save_load_roundtrip_preserves_codebook() {
+        let dir = std::env::temp_dir().join(format!("guddalm_vsa_persist_{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("test_bundle.bin");
+
+        let codebook = Codebook::random(8, 256);
+        let bundle = VsaPersistentBundle::from_codebook(&codebook).attach_packed();
+        save_bundle(&path, &bundle).unwrap();
+
+        let loaded = load_bundle(&path).unwrap();
+        let restored = loaded.try_into_codebook();
+        assert_eq!(restored.dim, codebook.dim);
+        assert_eq!(restored.weights.len(), codebook.weights.len());
+        for (a, b) in restored.weights.iter().zip(codebook.weights.iter()) {
+            assert!(a.cosine_similarity(b) > 0.99);
+        }
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn load_missing_file_returns_not_found() {
+        let path = std::env::temp_dir().join(format!(
+            "guddalm_vsa_missing_{}_{}.bin",
+            std::process::id(),
+            rand_path_suffix()
+        ));
+        let err = load_bundle(&path).unwrap_err();
+        assert!(matches!(err, VsaPersistenceError::NotFound(_)));
+    }
+
+    #[test]
+    fn load_rejects_unsupported_schema_version() {
+        let dir = std::env::temp_dir().join(format!("guddalm_vsa_schema_{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("bad_schema.bin");
+
+        let bundle = VsaPersistentBundle {
+            schema_version: 99,
+            saved_at: "test".into(),
+            dim: 64,
+            engine: VsaEngine::new(64),
+            weights: vec![],
+            packed: vec![],
+            symbol_registry: Default::default(),
+        };
+        save_bundle(&path, &bundle).unwrap();
+
+        let err = load_bundle(&path).unwrap_err();
+        assert!(matches!(err, VsaPersistenceError::SchemaVersion(99)));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    fn rand_path_suffix() -> u64 {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos() as u64
+    }
 }

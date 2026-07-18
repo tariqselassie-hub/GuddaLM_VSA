@@ -49,6 +49,9 @@ impl DnvsEncoder {
         let mut accum = HDVector::zeros(self.config.dim);
 
         for (idx, &val) in signal.iter().enumerate() {
+            if idx >= self.config.dim {
+                break;
+            }
             // Apply mode filtering
             let include = match self.config.mode {
                 DnvsMode::Negative => val < self.config.threshold,
@@ -85,6 +88,9 @@ impl DnvsEncoder {
         let mut accum = vec![0.0_f64; self.config.dim];
 
         for (idx, &val) in signal.iter().enumerate() {
+            if idx >= self.config.dim {
+                break;
+            }
             let include = match self.config.mode {
                 DnvsMode::Negative => val < self.config.threshold,
                 DnvsMode::Positive => val >= self.config.threshold,
