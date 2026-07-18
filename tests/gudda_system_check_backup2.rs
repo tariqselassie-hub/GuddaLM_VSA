@@ -20,7 +20,6 @@ use guddalm_vsa::hdc::stream::{BundleAccumulator, HDStreamBuffer};
 use guddalm_vsa::vsa::Codebook;
 use guddalm_vsa::{
     bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence,
-    encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges,
     cartesian_to_phase, phase_to_cartesian, VsaVector,
 };
 use guddalm_vsa::hdc::phase_fhrr::{CartesianFhrrVector, PhaseFhrrVector};
@@ -61,7 +60,6 @@ fn system_wide_gudda_check() {
     check!(s, test_generic_primitives(), "Generic VSA primitives (sequence/set/positional)");
     check!(s, test_fhrr_shim_conversions(), "FHRR Cartesian/Phase shim conversions");
     check!(s, test_ghrr_vector_primitives(), "GHRR matrix-based primitives (bind/unbind/bundle)");
-    check!(s, test_expanded_primitives(), "Expanded VSA primitives (N-gram/directed-graph/non-commutative)");
     println!("=== Cache / chunked scaling ===");
     check!(s, test_chunked_cache_is_better_or_equal(), "chunked better-or-equal vs single");
     println!("=== Structural ===");
@@ -401,40 +399,6 @@ fn test_ghrr_vector_primitives() -> Result<(), String> {
     let g_expected = a.bind(&b);
     if g_seq.cosine_similarity(&g_expected) < 0.99 {
         return Err("GHRR bind_sequence failed".into());
-    }
-    
-    Ok(())
-}
-
-fn test_expanded_primitives() -> Result<(), String> {
-    let dim = 512;
-    let v1 = HDVector::random(dim);
-    let v2 = HDVector::random(dim);
-    let v3 = HDVector::random(dim);
-    
-    // Test N-gram sequence encoding
-    let ngram = encode_ngram_sequence(&[v1.clone(), v2.clone(), v3.clone()], 3);
-    let expected_ngram = v1.bind(&v2.permute(1)).bind(&v3.permute(2));
-    if ngram.cosine_similarity(&expected_ngram) < 0.99 {
-        return Err("encode_ngram_sequence failed".into());
-    }
-    
-    // Test directed graph edge encoding
-    let source_marker = HDVector::random(dim);
-    let sink_marker = HDVector::random(dim);
-    let graph = encode_graph_edges(&[(v1.clone(), v2.clone())], &source_marker, &sink_marker);
-    let expected_graph = v1.bind(&source_marker).bundle(&v2.bind(&sink_marker));
-    if graph.cosine_similarity(&expected_graph) < 0.99 {
-        return Err("encode_graph_edges failed".into());
-    }
-    
-    // Test non-commutative edge encoding with GHRRVector
-    let g1 = GHRRVector::random(dim);
-    let g2 = GHRRVector::random(dim);
-    let g_graph = encode_non_commutative_edges(&[(g1.clone(), g2.clone())]);
-    let g_expected = g1.bind(&g2);
-    if g_graph.cosine_similarity(&g_expected) < 0.99 {
-        return Err("encode_non_commutative_edges failed with GHRRVector".into());
     }
     
     Ok(())

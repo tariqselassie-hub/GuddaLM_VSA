@@ -39,6 +39,9 @@ pub enum GuddaError {
 
     /// Generic catch-all for errors that don't fit other categories.
     Other(String),
+
+    /// Codebook bundle persistence errors.
+    Persistence(String),
 }
 
 impl fmt::Display for GuddaError {
@@ -52,6 +55,7 @@ impl fmt::Display for GuddaError {
             GuddaError::Config(msg) => write!(f, "configuration error: {}", msg),
             GuddaError::Parse(msg) => write!(f, "parse error: {}", msg),
             GuddaError::Other(msg) => write!(f, "{}", msg),
+            GuddaError::Persistence(msg) => write!(f, "persistence error: {}", msg),
         }
     }
 }
@@ -94,6 +98,12 @@ impl From<String> for GuddaError {
 impl From<&str> for GuddaError {
     fn from(s: &str) -> Self {
         GuddaError::Other(s.to_string())
+    }
+}
+
+impl From<crate::vsa_persist::VsaPersistenceError> for GuddaError {
+    fn from(e: crate::vsa_persist::VsaPersistenceError) -> Self {
+        GuddaError::Persistence(e.to_string())
     }
 }
 

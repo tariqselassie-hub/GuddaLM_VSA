@@ -132,10 +132,3 @@ impl DnvsClassifier {
         self.retrainer.prototypes()
     }
 }
-
-impl DnvsConfig {
-    /// Number of classes for default MNIST (10)
-    pub fn n_classes(&self) -> usize {
-        10
-    }
-}

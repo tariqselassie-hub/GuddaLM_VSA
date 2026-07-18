@@ -39,6 +39,7 @@
 /// ```
 use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::hdc::fhrr::FHRRVector;
+use crate::hdc::ghrr::GHRRVector;
 
 /// Unified trait for all VSA vector representations.
 ///
@@ -214,6 +215,39 @@ impl VsaVector for FHRRVector {
     fn zero(dim: usize) -> Self { FHRRVector::zeros(dim) }
 
     fn random(dim: usize) -> Self { FHRRVector::random(dim) }
+}
+
+impl VsaVector for GHRRVector {
+    #[inline(always)]
+    fn dim(&self) -> usize { self.dim() }
+
+    #[inline(always)]
+    fn bind(&self, other: &Self) -> Self { GHRRVector::bind(self, other) }
+
+    #[inline(always)]
+    fn unbind(&self, other: &Self) -> Self { GHRRVector::unbind(self, other) }
+
+    #[inline(always)]
+    fn bundle(&self, other: &Self) -> Self { GHRRVector::bundle(self, other) }
+
+    #[inline(always)]
+    fn permute(&self, shift: usize) -> Self { GHRRVector::permute(self, shift) }
+
+    #[inline(always)]
+    fn cosine_similarity(&self, other: &Self) -> f64 { GHRRVector::cosine_similarity(self, other) }
+
+    fn binarize(&self) -> BinaryHDVector {
+        let bits: Vec<u8> = self
+            .data()
+            .chunks_exact(4)
+            .map(|block| if block[0].re > 0.0 { 1u8 } else { 0u8 })
+            .collect();
+        BinaryHDVector::from_bits(&bits)
+    }
+
+    fn zero(dim: usize) -> Self { GHRRVector::zeros(dim) }
+
+    fn random(dim: usize) -> Self { GHRRVector::random(dim) }
 }
 
 // ── IndexVector ───────────────────────────────────────────────
@@ -516,6 +550,7 @@ mod tests {
         test_vec(&BinaryHDVector::random(dim));
         test_vec(&FHRRVector::random(dim));
         test_vec(&IndexVector::random(dim));
+        test_vec(&GHRRVector::random(dim));
     }
 
     #[test]
@@ -535,6 +570,7 @@ mod tests {
             test_roundtrip::<HDVector>(dim);
             test_roundtrip::<BinaryHDVector>(dim);
             test_roundtrip::<FHRRVector>(dim);
+            test_roundtrip::<GHRRVector>(dim);
         }
     }
 

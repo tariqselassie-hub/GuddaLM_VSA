@@ -81,20 +81,14 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
     if vectors.is_empty() || n == 0 {
         return V::zero(0);
     }
+    let dim = vectors[0].dim();
     if vectors.len() < n {
         // Fallback to binding whatever we have
         return bind_sequence(vectors);
     }
     
-    // First window
-    let mut first_window = vectors[0].clone();
-    for j in 1..n {
-        let permuted = vectors[j].permute(j);
-        first_window = first_window.bind(&permuted);
-    }
-    
-    let mut result = first_window;
-    for i in 1..=(vectors.len() - n) {
+    let mut result = V::zero(dim);
+    for i in 0..=(vectors.len() - n) {
         let mut window_bound = vectors[i].clone();
         for j in 1..n {
             let permuted = vectors[i + j].permute(j);
@@ -115,8 +109,9 @@ pub fn encode_graph_edges<V: VsaVector>(
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0].0.bind(source_marker).bundle(&edges[0].1.bind(sink_marker));
-    for (u, v) in &edges[1..] {
+    let dim = edges[0].0.dim();
+    let mut result = V::zero(dim);
+    for (u, v) in edges {
         let edge = u.bind(source_marker).bundle(&v.bind(sink_marker));
         result = result.bundle(&edge);
     }
@@ -128,8 +123,9 @@ pub fn encode_non_commutative_edges<V: VsaVector>(edges: &[(V, V)]) -> V {
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0].0.bind(&edges[0].1);
-    for (u, v) in &edges[1..] {
+    let dim = edges[0].0.dim();
+    let mut result = V::zero(dim);
+    for (u, v) in edges {
         let edge = u.bind(v);
         result = result.bundle(&edge);
     }

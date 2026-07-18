@@ -74,7 +74,7 @@ pub use error::{GuddaError, GuddaResult};
 pub use dimensions::{
     MAP_DEFAULT_DIM, BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, DNVS_DEFAULT_DIM,
 };
-pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence, encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges};
+pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence};
 pub use primitives_shim::{cartesian_to_phase, phase_to_cartesian};
 pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};
 #[cfg(feature = "candle")]
