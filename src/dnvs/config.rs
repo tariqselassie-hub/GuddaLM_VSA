@@ -30,6 +30,8 @@ pub enum DnvsMode {
 pub struct DnvsConfig {
     /// Vector dimension
     pub dim: usize,
+    /// Number of classification prototypes / output classes
+    pub n_classes: usize,
     /// Number of intensity levels
     pub n_levels: usize,
     /// Encoding mode
@@ -49,7 +51,8 @@ pub struct DnvsConfig {
 impl Default for DnvsConfig {
     fn default() -> Self {
         Self {
-            dim: 10000,
+            dim: crate::dimensions::DNVS_DEFAULT_DIM,
+            n_classes: 10,
             n_levels: 32,
             mode: DnvsMode::Negative,
             threshold: 0.01,
@@ -62,19 +65,26 @@ impl Default for DnvsConfig {
 }
 
 impl DnvsConfig {
-    /// Create config for classic MNIST DNVS (negative encoding)
+    /// Return the configured number of output classes.
+    pub fn n_classes(&self) -> usize {
+        self.n_classes
+    }
+
+    /// Create config for classic MNIST DNVS (negative encoding, 10 classes).
     pub fn mnist_negative(dim: usize) -> Self {
         Self {
             dim,
+            n_classes: 10,
             mode: DnvsMode::Negative,
             ..Default::default()
         }
     }
 
-    /// Create config for positive encoding
+    /// Create config for positive encoding (default 10 classes).
     pub fn positive(dim: usize) -> Self {
         Self {
             dim,
+            n_classes: 10,
             mode: DnvsMode::Positive,
             ..Default::default()
         }

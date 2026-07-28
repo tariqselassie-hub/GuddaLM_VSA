@@ -35,9 +35,10 @@ impl DnvsEncoder {
     }
 
     /// Build encoder from a config using a closure to generate vectors
-    pub fn from_config<F>(config: DnvsConfig, mut gen_position: F, mut gen_level: F) -> Self
+    pub fn from_config<F1, F2>(config: DnvsConfig, mut gen_position: F1, mut gen_level: F2) -> Self
     where
-        F: FnMut() -> HDVector,
+        F1: FnMut() -> HDVector,
+        F2: FnMut() -> HDVector,
     {
         let position_vectors = (0..config.dim).map(|_| gen_position()).collect();
         let level_vectors = (0..config.n_levels).map(|_| gen_level()).collect();
@@ -49,6 +50,9 @@ impl DnvsEncoder {
         let mut accum = HDVector::zeros(self.config.dim);
 
         for (idx, &val) in signal.iter().enumerate() {
+            if idx >= self.config.dim {
+                break;
+            }
             // Apply mode filtering
             let include = match self.config.mode {
                 DnvsMode::Negative => val < self.config.threshold,
@@ -85,6 +89,9 @@ impl DnvsEncoder {
         let mut accum = vec![0.0_f64; self.config.dim];
 
         for (idx, &val) in signal.iter().enumerate() {
+            if idx >= self.config.dim {
+                break;
+            }
             let include = match self.config.mode {
                 DnvsMode::Negative => val < self.config.threshold,
                 DnvsMode::Positive => val >= self.config.threshold,

@@ -165,6 +165,32 @@ impl GHRRVector {
         trace_sum / (2.0 * self.dim as f64)
     }
 
+    /// Unbind: bind with the inverse of `other`.
+    pub fn unbind(&self, other: &GHRRVector) -> GHRRVector {
+        self.bind(&other.inverse())
+    }
+
+    /// Cyclic permutation of matrix blocks (position encoding).
+    pub fn permute(&self, shift: usize) -> GHRRVector {
+        if self.dim == 0 {
+            return self.clone();
+        }
+        let s = shift % self.dim;
+        let mut data = vec![Complex { re: 0.0, im: 0.0 }; self.dim * 4];
+        for j in 0..self.dim {
+            let src = (j + self.dim - s) % self.dim;
+            let src_off = src * 4;
+            let dst_off = j * 4;
+            data[dst_off..dst_off + 4].copy_from_slice(&self.data[src_off..src_off + 4]);
+        }
+        GHRRVector { dim: self.dim, data }
+    }
+
+    /// Neutral element for binding (identity blocks).
+    pub fn zeros(dim: usize) -> Self {
+        Self::identity(dim)
+    }
+
     /// Gram-Schmidt orthonormalization for a 2x2 matrix block
     fn orthonormalize_block(block: &[Complex]) -> [Complex; 4] {
         // Row 1: v1 = [block[0], block[1]]
@@ -282,4 +308,69 @@ pub fn deterministic_ghrr_vector(base_seed: u64, key: &str, dim: usize) -> GHRRV
     crate::seed::deterministic_ghrr_vector(base_seed, key, dim)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hdc::vector::BinaryHDVector;
+
+    #[test]
+    fn bind_unbind_recovers_factor() {
+        let dim = 64;
+        let a = GHRRVector::random(dim);
+        let b = GHRRVector::random(dim);
+        let bound = a.bind(&b);
+        let recovered = bound.unbind(&b);
+        let sim = a.cosine_similarity(&recovered);
+        assert!(sim > 0.85, "GHRR unbind should recover bind partner (sim={sim})");
+    }
+
+    #[test]
+    fn bind_is_not_commutative() {
+        let dim = 128;
+        let a = GHRRVector::random(dim);
+        let b = GHRRVector::random(dim);
+        let ab = a.bind(&b);
+        let ba = b.bind(&a);
+        let sim = ab.cosine_similarity(&ba);
+        assert!(sim.abs() < 0.5, "GHRR bind should break commutativity (sim={sim})");
+    }
+
+    #[test]
+    fn permute_is_cyclic_inverse() {
+        let dim = 32;
+        let v = GHRRVector::random(dim);
+        let shifted = v.permute(3);
+        let restored = shifted.permute(dim - 3);
+        let sim = v.cosine_similarity(&restored);
+        assert!(sim > 0.99, "GHRR permute should be invertible (sim={sim})");
+    }
+
+    #[test]
+    fn identity_is_bind_neutral() {
+        let dim = 16;
+        let id = GHRRVector::identity(dim);
+        let v = GHRRVector::random(dim);
+        let bound = id.bind(&v);
+        let sim = bound.cosine_similarity(&v);
+        assert!(sim > 0.99, "identity bind should preserve vector (sim={sim})");
+    }
+
+    #[test]
+    fn bundle_retains_similarity_to_components() {
+        let dim = 64;
+        let a = GHRRVector::random(dim);
+        let b = GHRRVector::random(dim);
+        let bundled = a.bundle(&b);
+        assert!(bundled.cosine_similarity(&a) > 0.2);
+        assert!(bundled.cosine_similarity(&b) > 0.2);
+    }
+
+    #[test]
+    fn binarize_via_vsa_trait_produces_valid_binary_vector() {
+        use crate::hdc::vsa_trait::VsaVector;
+        let v = GHRRVector::random(128);
+        let bin: BinaryHDVector = v.binarize();
+        assert_eq!(bin.dim(), 128);
+    }
+}
 

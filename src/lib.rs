@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod error;
+pub mod dimensions;
 pub mod hdc;
 pub mod map;
 pub mod bsc;
@@ -68,8 +69,11 @@ pub use vsa_persist::{
     BIN_FILENAME,
     BIN_DIRNAME,
 };
-pub use hdc::vsa_trait::{VsaVectorRaw, VsaVector};
+pub use hdc::vsa_trait::{VsaVectorRaw, VsaVector, IndexVector};
 pub use error::{GuddaError, GuddaResult};
+pub use dimensions::{
+    MAP_DEFAULT_DIM, BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, DNVS_DEFAULT_DIM,
+};
 pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence};
 pub use primitives_shim::{cartesian_to_phase, phase_to_cartesian};
 pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};

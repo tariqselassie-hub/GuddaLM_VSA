@@ -33,9 +33,10 @@ impl DnvsClassifier {
     }
 
     /// Create from config with vector generators
-    pub fn from_config<F>(config: DnvsConfig, mut gen_position: F, mut gen_level: F) -> Self
+    pub fn from_config<F1, F2>(config: DnvsConfig, mut gen_position: F1, mut gen_level: F2) -> Self
     where
-        F: FnMut() -> HDVector,
+        F1: FnMut() -> HDVector,
+        F2: FnMut() -> HDVector,
     {
         let encoder = DnvsEncoder::from_config(config.clone(), &mut gen_position, &mut gen_level);
         let prototypes = vec![HDVector::zeros(config.dim); config.n_classes()];
@@ -44,9 +45,7 @@ impl DnvsClassifier {
     }
 
     /// Train on labeled data
-    pub fn train<E>(&mut self, train_data: &[&[f32]], train_labels: &[usize])
-    where
-        E: Fn(&[f32]) -> HDVector,
+    pub fn train(&mut self, train_data: &[&[f32]], train_labels: &[usize])
     {
         // First pass: build initial prototypes
         let n_classes = self.config.n_classes();
@@ -130,12 +129,5 @@ impl DnvsClassifier {
     /// Get prototypes
     pub fn prototypes(&self) -> &[HDVector] {
         self.retrainer.prototypes()
-    }
-}
-
-impl DnvsConfig {
-    /// Number of classes for default MNIST (10)
-    pub fn n_classes(&self) -> usize {
-        10
     }
 }
