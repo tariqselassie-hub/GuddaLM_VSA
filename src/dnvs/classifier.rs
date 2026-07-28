@@ -47,26 +47,14 @@ impl DnvsClassifier {
     /// Train on labeled data
     pub fn train(&mut self, train_data: &[&[f32]], train_labels: &[usize])
     {
-        // First pass: build initial prototypes
-        let n_classes = self.config.n_classes();
-        let mut sums = vec![vec![0.0; self.config.dim]; n_classes];
-
-        for (signal, &label) in train_data.iter().zip(train_labels.iter()) {
-            let encoded = self.encoder.encode(signal);
-            let data = encoded.data();
-            for d in 0..self.config.dim {
-                sums[label][d] += data[d];
-            }
-        }
-
-        // Build initial prototypes
-        let prototypes: Vec<HDVector> = sums
-            .iter()
-            .map(|sum| HDVector::from_slice(sum).binarize())
-            .collect();
-
-        // Create retrainer with these prototypes
-        self.retrainer = DnvsRetrainer::new(self.config.clone(), prototypes);
+        // Replace retrainer with one initialized from encoded training evidence.
+        self.retrainer = DnvsRetrainer::from_encoder(
+            self.config.clone(),
+            &|signal| self.encoder.encode(signal),
+            train_data,
+            train_labels,
+            self.config.n_classes(),
+        );
 
         // Run retraining
         self.retrainer
