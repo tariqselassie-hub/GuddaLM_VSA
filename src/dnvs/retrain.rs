@@ -97,7 +97,7 @@ impl DnvsRetrainer {
 
             if best != true_label {
                 let diff = sims[best] - sims[true_label];
-                let margin = self.compute_margin(diff);
+                let margin = self.compute_margin(diff).min(0.25);
 
                 let hd = encoded.data();
                 for d in 0..self.config.dim {
