@@ -159,3 +159,24 @@ impl DnvsRetrainer {
         &mut self.prototypes
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dnvs::config::DnvsConfig;
+
+    #[test]
+    fn dynamic_margin_is_larger_for_near_boundary_errors() {
+        let config = DnvsConfig {
+            dim: 64,
+            n_classes: 2,
+            n_levels: 2,
+            retrain_weight: -2.0,
+            ..Default::default()
+        };
+        let retrainer = DnvsRetrainer::new(config, vec![HDVector::random(64), HDVector::random(64)]);
+        let margin_tight = retrainer.compute_margin(0.05);
+        let margin_loose = retrainer.compute_margin(0.95);
+        assert!(margin_tight >= margin_loose);
+    }
+}
