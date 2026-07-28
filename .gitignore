@@ -33,3 +33,5 @@ Thumbs.db
 /coverage/
 /.tmp.driveupload/
 
+
+target/.rustc_info.json
