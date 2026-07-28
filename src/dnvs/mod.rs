@@ -116,15 +116,10 @@ mod tests {
         let train = [&s0[..], &s1[..], &s2[..], &s0[..], &s1[..], &s2[..]];
         let labels = [0, 1, 2, 0, 1, 2];
 
+        let (pre_acc, _) = classifier.evaluate(&train, &labels);
         classifier.train(&train, &labels);
-
-        for (signal, &label) in train.iter().zip(labels.iter()) {
-            let (pred, _) = classifier.predict(signal);
-            assert_eq!(pred, label, "training sample should classify correctly");
-        }
-
-        let (acc, _) = classifier.evaluate(&train, &labels);
-        assert!(acc >= 1.0 - 1e-9);
+        let (post_acc, _) = classifier.evaluate(&train, &labels);
+        assert!(post_acc >= 1.0 - 1e-9, "toy training accuracy dropped after retrain: pre={pre_acc}, post={post_acc}");
         assert_eq!(classifier.prototypes().len(), 3);
     }
 }

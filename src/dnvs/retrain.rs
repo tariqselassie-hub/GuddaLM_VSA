@@ -39,16 +39,13 @@ impl DnvsRetrainer {
     }
 
     /// Create from encoder and initial training data
-    pub fn from_encoder<E>(
+    pub fn from_encoder(
         config: DnvsConfig,
-        encoder: &E,
+        encoder: &dyn Fn(&[f32]) -> HDVector,
         train_data: &[&[f32]],
         train_labels: &[usize],
         n_classes: usize,
-    ) -> Self
-    where
-        E: Fn(&[f32]) -> HDVector,
-    {
+    ) -> Self {
         let mut sums = vec![vec![0.0; config.dim]; n_classes];
 
         for (signal, &label) in train_data.iter().zip(train_labels.iter()) {
@@ -72,7 +69,7 @@ impl DnvsRetrainer {
     }
 
     /// Run one retraining round
-    pub fn retrain_round<E>(&mut self, train_data: &[&[f32]], train_labels: &[usize], encode_fn: E) -> usize
+    pub fn retrain_round<E>(&mut self, train_data: &[&[f32]], train_labels: &[usize], encode_fn: &E) -> usize
     where
         E: Fn(&[f32]) -> HDVector,
     {
@@ -108,7 +105,7 @@ impl DnvsRetrainer {
             }
         }
 
-        // Re-binarize prototypes
+        // Update live prototypes incrementally from updated sums
         for c in 0..self.prototypes.len() {
             self.prototypes[c] = HDVector::from_slice(&self.prototype_sums[c]).binarize();
         }
@@ -145,8 +142,20 @@ impl DnvsRetrainer {
                 self.config.retrain_rounds,
                 errors
             );
+            if errors == 0 {
+                break;
+            }
         }
         errors_per_round
+    }
+
+    /// Apply final binarization to prototypes from accumulator sums.
+    pub fn finalize_prototypes(&mut self) {
+        for c in 0..self.prototypes.len() {
+            if let Some(raw) = self.prototype_sums.get(c) {
+                self.prototypes[c] = HDVector::from_slice(raw).binarize();
+            }
+        }
     }
 
     /// Get current prototypes
