@@ -1,7 +1,10 @@
-# Build outputs
+# Rust build outputs
 /target/
-/target-ci/
-/target-test/
+target/
+target-*
+
+# Backup files
+**/*.rs.bk
 
 # Logs
 npm-debug.log*
@@ -29,9 +32,7 @@ Thumbs.db
 .env.*
 !*.env.example
 
-# Testing artifacts
+# Testing & Temporary artifacts
 /coverage/
 /.tmp.driveupload/
-
-
-target/.rustc_info.json
+*.tmp
