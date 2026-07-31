@@ -31,6 +31,7 @@
 /// binary, falling back to cosine similarity for real-valued vectors.
 use crate::hdc::quantize::{wordwise_xnor_similarity_array64, PackedArray64};
 use crate::hdc::vector::{BinaryHDVector, HDVector};
+use crate::hdc::fhrr::FHRRVector;
 use crate::vsa::Codebook;
 
 /// Result of a cleanup memory lookup.
@@ -88,7 +89,7 @@ impl CleanupMemory {
         } else {
             // General path: cosine similarity
             for (i, w) in self.codebook.weights.iter().enumerate() {
-                let sim = query.cosine_similarity(w);
+                let sim = HDVector::cosine_similarity(query, w);
                 if sim > best_sim {
                     best_sim = sim;
                     best_idx = i;
@@ -163,7 +164,7 @@ impl CleanupMemory {
     }
 }
 
-/// Binary cleanup memory for BinaryHDVector prototypes.
+/// Binary cleanup memory for `BinaryHDVector` prototypes.
 ///
 /// Uses XOR-popcount similarity exclusively. Efficient for large
 /// binary codebooks where bitwise operations dominate.
@@ -183,6 +184,49 @@ impl BinaryCleanupMemory {
 
         for (i, p) in self.prototypes.iter().enumerate() {
             let sim = query.hamming_similarity(p);
+            if sim > best_sim {
+                best_sim = sim;
+                best_idx = i;
+            }
+        }
+
+        (
+            best_idx,
+            best_sim,
+            self.prototypes[best_idx].clone(),
+        )
+    }
+
+    pub fn len(&self) -> usize {
+        self.prototypes.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.prototypes.is_empty()
+    }
+}
+
+/// Phase cleanup memory for `FHRRVector` prototypes.
+///
+/// Uses cosine similarity over phase angles to find the nearest
+/// prototype in FHRR space. Unlike `CleanupMemory`, this operates
+/// on phase vectors rather than real-valued bipolar vectors.
+pub struct FhrrCleanupMemory {
+    prototypes: Vec<FHRRVector>,
+}
+
+impl FhrrCleanupMemory {
+    pub fn new(prototypes: Vec<FHRRVector>) -> Self {
+        FhrrCleanupMemory { prototypes }
+    }
+
+    /// Find the closest phase prototype to `query`.
+    pub fn cleanup(&self, query: &FHRRVector) -> (usize, f64, FHRRVector) {
+        let mut best_idx = 0;
+        let mut best_sim = f64::NEG_INFINITY;
+
+        for (i, p) in self.prototypes.iter().enumerate() {
+            let sim = FHRRVector::cosine_similarity(query, p);
             if sim > best_sim {
                 best_sim = sim;
                 best_idx = i;
