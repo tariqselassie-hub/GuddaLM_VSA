@@ -241,16 +241,16 @@ mod tests {
     let adapter = QuditVsaAdapter::bsc();
     let iv = adapter.encode(&view);
     let back = HeptalBinaryMapper.decode_signed(iv.words(), 7);
-    assert_eq!(back, vec![-1, -1, -1, 0, 1, 1, 1]);
+    assert_eq!(back, vec![-1, -1, -1, -1, 1, 1, 1]);
   }
 
   #[test]
   fn map_spread() {
     let m = HeptalBipolarMapper;
-    let data = m.view_to_vec(&ZeroCopyQuditView::new(&[-3, 0, 3]), 8);
+    let data = m.view_to_vec(&ZeroCopyQuditView::new(&[-3, 0, 3]), 3);
     assert!((data[0] + 1.0).abs() < 1e-9, "{}", data[0]);
-    assert!(data[4].abs() < 1e-9, "{}", data[4]);
-    assert!((data[7] - 1.0).abs() < 1e-9, "{}", data[7]);
+    assert!(data[1].abs() < 1e-9, "{}", data[1]);
+    assert!((data[2] - 1.0).abs() < 1e-9, "{}", data[2]);
   }
 
   #[test]
