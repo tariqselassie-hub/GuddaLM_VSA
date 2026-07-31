@@ -150,7 +150,6 @@ pub fn model_bin_path_env(env_key: &str) -> Option<PathBuf> {
 mod tests {
     use super::*;
     use crate::vsa::Codebook;
-    use std::io::Write;
 
     #[test]
     fn save_load_roundtrip_preserves_codebook() {
