@@ -9,7 +9,7 @@
 //   - lookup_param_count: dense vs VSA parameter compression
 use guddalm_vsa::{
     hdc::fhrr::FHRRVector,
-    hdc::vector::{HDVector, BinaryHDVector},
+    hdc::vector::HDVector,
     hdc::vsa_trait::VsaVector,
     hdc::cleanup::{CleanupMemory, BinaryCleanupMemory, FhrrCleanupMemory},
     dimensions::{BSC_DEFAULT_DIM, MAP_DEFAULT_DIM, FHRR_DEFAULT_DIM},
@@ -33,7 +33,9 @@ fn random_vec(dim: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();
     (0..dim).map(|_| if rng.gen_bool(0.5) { 1.0 } else { -1.0 }).collect()
 }
+#[allow(dead_code)]
 fn dot(a: &[f64], b: &[f64]) -> f64 { a.iter().zip(b).map(|(x, y)| x * y).sum() }
+#[allow(dead_code)]
 fn cosine(a: &[f64], b: &[f64]) -> f64 {
     let na = a.iter().map(|x| x * x).sum::<f64>().sqrt();
     let nb = b.iter().map(|x| x * x).sum::<f64>().sqrt();
@@ -202,7 +204,7 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
     let mut out = Vec::new();
     for &n in ns {
         let mut kvs = Vec::with_capacity(n);
-        for idx in 0..n {
+        for _idx in 0..n {
             let k = HDVector::random(dim);
             let v = HDVector::random(dim);
             kvs.push((k, v));
@@ -277,7 +279,6 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
     let dim = FHRR_DEFAULT_DIM;
     let mut out = Vec::new();
     for &n in ns {
-        let mut rng = rand::thread_rng();
         let mut kvs = Vec::with_capacity(n);
         for _idx in 0..n {
             let k = FHRRVector::random(dim);

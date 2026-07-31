@@ -21,9 +21,9 @@ use guddalm_vsa::vsa::Codebook;
 use guddalm_vsa::{
     bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence,
     encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges,
-    cartesian_to_phase, phase_to_cartesian, VsaVector,
+    cartesian_to_phase, phase_to_cartesian,
 };
-use guddalm_vsa::hdc::phase_fhrr::{CartesianFhrrVector, PhaseFhrrVector};
+use guddalm_vsa::hdc::phase_fhrr::CartesianFhrrVector;
 use guddalm_vsa::GHRRVector;
 
 #[derive(Default)]

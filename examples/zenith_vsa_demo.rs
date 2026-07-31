@@ -13,7 +13,6 @@ use guddalm_vsa::{
   IndexVector,
 };
 use guddalm_vsa::zenith::{
-  HeptalBinaryMapper, HeptalBipolarMapper, HeptalFhrrMapper,
   QuditVsaAdapter, ZeroCopyQuditView,
 };
 
@@ -49,7 +48,6 @@ fn encode_decode_roundtrip() {
 }
 
 fn bind_unbind_role_filler() {
-  let view = ZeroCopyQuditView::new(&[-3, -2, -1, 0, 1, 2, 3]);
   let adapter = QuditVsaAdapter::bsc();
 
   // Encode a "role" and "filler" from two views

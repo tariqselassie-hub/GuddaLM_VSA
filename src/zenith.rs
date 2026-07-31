@@ -1,11 +1,8 @@
-use std::fmt;
-
 use crate::{
   dimensions::{BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, MAP_DEFAULT_DIM},
   hdc::{
     fhrr::FHRRVector,
     vector::{BinaryHDVector, HDVector},
-    cleanup::CleanupMemory,
   },
   IndexVector,
 };
