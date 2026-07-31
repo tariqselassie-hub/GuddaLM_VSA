@@ -21,7 +21,12 @@ ndarray = { version = "0.16", features = ["serde"] }
 dirs = "5.0"
 thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+num-complex = "0.4"
 
 [features]
 default = []
 candle = ["dep:candle-core"]
+
+[[bin]]
+name = "zenith_bench"
+path = "src/bin/zenith_bench.rs"

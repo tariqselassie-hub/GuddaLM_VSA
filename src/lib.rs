@@ -27,6 +27,7 @@ pub mod vsa;
 pub mod vsa_persist;
 pub mod primitives;
 pub mod primitives_shim;
+pub mod zenith;
 
 pub use hdc::vector::{HDVector, BinaryHDVector, Complex};
 pub use hdc::fhrr::FHRRVector;
@@ -42,7 +43,7 @@ pub use hdc::bundle::{weighted_bundle, selective_bundle};
 pub use hdc::sdm::{sdm_snr_threshold_bipolar, optimal_snr_hamming_radius, sdm_read_bipolar};
 pub use hdc::quantize::{pack_bits, pack_bits_array64, PackedArray64};
 pub use hdc::rff::ContinuousSpaceEncoder;
-pub use hdc::cleanup::CleanupMemory;
+pub use hdc::cleanup::{CleanupMemory, BinaryCleanupMemory, FhrrCleanupMemory};
 pub use hdc::stream::HDStreamBuffer;
 pub use hdc::resonator::{resonator_search, resonator_search_auto, resonator_search_auto_acf, generate_rc_codebook, ResonatorResult};
 pub use hdc::attention::MultiHeadAttention;

@@ -1,0 +1,1034 @@
+warning: only one of `license` or `license-file` is necessary
+`license` should be used if the package license can be expressed with a standard SPDX expression.
+`license-file` should be used if the package uses a non-standard license.
+See https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields for more information.
+warning: unused import: `BinaryHDVector`
+  --> src\bin\zenith_bench.rs:12:29
+   |
+12 |     hdc::vector::{HDVector, BinaryHDVector},
+   |                             ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src\bin\zenith_bench.rs:194:13
+    |
+194 |         let mut rng = rand::thread_rng();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `rng`
+   --> src\bin\zenith_bench.rs:194:13
+    |
+194 |         let mut rng = rand::thread_rng();
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `idx`
+   --> src\bin\zenith_bench.rs:196:13
+    |
+196 |         for idx in 0..n {
+    |             ^^^ help: if this is intentional, prefix it with an underscore: `_idx`
+
+warning: unused variable: `sim`
+   --> src\bin\zenith_bench.rs:209:17
+    |
+209 |             let sim = HDVector::cosine_similarity(&cand, &kvs[0].1);
+    |                 ^^^ help: if this is intentional, prefix it with an underscore: `_sim`
+
+warning: variable does not need to be mutable
+   --> src\bin\zenith_bench.rs:263:13
+    |
+263 |         let mut rng = rand::thread_rng();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src\bin\zenith_bench.rs:264:13
+    |
+264 |         let mut rng2 = rand::thread_rng();
+    |             ----^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: unused variable: `rng`
+   --> src\bin\zenith_bench.rs:263:13
+    |
+263 |         let mut rng = rand::thread_rng();
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_rng`
+
+warning: unused variable: `rng2`
+   --> src\bin\zenith_bench.rs:264:13
+    |
+264 |         let mut rng2 = rand::thread_rng();
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_rng2`
+
+warning: unused variable: `sim`
+   --> src\bin\zenith_bench.rs:277:17
+    |
+277 |             let sim = FHRRVector::cosine_similarity(&cand, &kvs[0].1);
+    |                 ^^^ help: if this is intentional, prefix it with an underscore: `_sim`
+
+warning: function `dot` is never used
+  --> src\bin\zenith_bench.rs:36:4
+   |
+36 | fn dot(a: &[f64], b: &[f64]) -> f64 { a.iter().zip(b).map(|(x, y)| x * y).sum() }
+   |    ^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `cosine` is never used
+  --> src\bin\zenith_bench.rs:37:4
+   |
+37 | fn cosine(a: &[f64], b: &[f64]) -> f64 {
+   |    ^^^^^^
+
+warning: `guddalm_vsa` (bin "zenith_bench") generated 12 warnings (run `cargo fix --bin "zenith_bench" -p guddalm_vsa` to apply 10 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target\debug\zenith_bench.exe`
+{
+  "generated_at": "2026-07-28T21:59:27.586600800+00:00",
+  "seed": 42,
+  "suites": [
+    {
+      "name": "relational_ordering",
+      "axes": [
+        {
+          "label": "relational.resolve_acc",
+          "value": 0.3340223232740802,
+          "unit": "ratio",
+          "notes": "RESOLVE-style binding classifier"
+        },
+        {
+          "label": "relational.baseline_acc",
+          "value": 0.5010334849111203,
+          "unit": "ratio",
+          "notes": "Naive cosine similarity"
+        },
+        {
+          "label": "relational.train_ms",
+          "value": 529.0051,
+          "unit": "ms",
+          "notes": "Combined train latency"
+        },
+        {
+          "label": "relational.infer_ms",
+          "value": 723.4042000000001,
+          "unit": "ms",
+          "notes": "VSA inference latency"
+        }
+      ]
+    },
+    {
+      "name": "memory_superposition",
+      "axes": [
+        {
+          "label": "memory.bsc_10_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.0,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 10,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.00927734375
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.bsc_10_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.01611328125,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 3,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.01220703125
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.bsc_10_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.01025390625,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.01220703125
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.bsc_10_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.01025390625,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.01220703125
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.bsc_50_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.0068359375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 50,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.01220703125
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.bsc_50_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.02294921875,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 13,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.0009765625
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.bsc_50_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.00146484375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 4,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.02490234375
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.bsc_50_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.005859375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.00390625
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.bsc_100_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.00146484375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 100,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.00244140625
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.bsc_100_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.0224609375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 25,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00341796875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.bsc_100_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.017578125,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 7,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.013671875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.bsc_100_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.00537109375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 2,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.01171875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.bsc_500_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.0126953125,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 500,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00244140625
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.bsc_500_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.0166015625,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 125,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.029296875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.bsc_500_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.017578125,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 32,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.02099609375
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.bsc_500_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.00927734375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 8,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.0029296875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.bsc_1000_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.01318359375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 1000,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00146484375
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.bsc_1000_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.0166015625,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 250,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.0068359375
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.bsc_1000_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.00048828125,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 63,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.0185546875
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.bsc_1000_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.00537109375,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.0,
+            "memory_chunks": 16,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.02392578125
+          },
+          "unit": "composite",
+          "notes": "bsc rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.map_10_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.007948671249623486,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 9.7182,
+            "memory_chunks": 10,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.01806640625
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.map_10_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.010532746213912354,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 7.6167,
+            "memory_chunks": 3,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.02197265625
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.map_10_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.30053012394912926,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 7.0463000000000005,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.map_10_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.30053012394912926,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 7.173,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.map_50_chunk_1",
+          "value": {
+            "chunked_fidelity": -0.0013540830987287765,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 30.0278,
+            "memory_chunks": 50,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.001953125
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.map_50_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.01993214460624001,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 20.6445,
+            "memory_chunks": 13,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.01123046875
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.map_50_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.002039994161681812,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 17.8701,
+            "memory_chunks": 4,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.017578125
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.map_50_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.11349814554003357,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 17.4225,
+            "memory_chunks": 1,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.map_100_chunk_1",
+          "value": {
+            "chunked_fidelity": -0.02006399696942056,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 56.192899999999995,
+            "memory_chunks": 100,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.0107421875
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.map_100_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.011302246344212988,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 37.2337,
+            "memory_chunks": 25,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.map_100_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.01615498096070552,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 32.7539,
+            "memory_chunks": 7,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.0146484375
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.map_100_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.13363253765724128,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 30.8656,
+            "memory_chunks": 2,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.map_500_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.0010173054306422042,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 266.2764,
+            "memory_chunks": 500,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.0419921875
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.map_500_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.010302053639829493,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 167.0745,
+            "memory_chunks": 125,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00927734375
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.map_500_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.0004392306456190223,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 141.6653,
+            "memory_chunks": 32,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00537109375
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.map_500_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.022638000976712376,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 135.3717,
+            "memory_chunks": 8,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.00732421875
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.map_1000_chunk_1",
+          "value": {
+            "chunked_fidelity": -0.007665993273891181,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 532.0555,
+            "memory_chunks": 1000,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 0.0146484375
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.map_1000_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.0020341733593983767,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 331.8276,
+            "memory_chunks": 250,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": -0.00537109375
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.map_1000_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.24290820678956537,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 281.7986,
+            "memory_chunks": 63,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.map_1000_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.1433102786927189,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 267.97929999999997,
+            "memory_chunks": 16,
+            "params_per_chunk": 4096,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "map rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.fhrr_10_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.6453798652748644,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 1.0831,
+            "memory_chunks": 10,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 1.0
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.fhrr_10_chunk_4",
+          "value": {
+            "chunked_fidelity": -0.010017353605403121,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.7656,
+            "memory_chunks": 3,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.025642767604694014
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.fhrr_10_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.015176738965028127,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.6553,
+            "memory_chunks": 1,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.025642767604694014
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.fhrr_10_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.015176738965028127,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 0.6406,
+            "memory_chunks": 1,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.025642767604694014
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.fhrr_50_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.0244784785174104,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 4.9609,
+            "memory_chunks": 50,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": -0.02013099834388237
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.fhrr_50_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.018926121571821858,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 3.0237,
+            "memory_chunks": 13,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.03972479080645815
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.fhrr_50_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.012080721526926054,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 2.6349,
+            "memory_chunks": 4,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": -0.0005777608609958733
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.fhrr_50_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.019825125758898554,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 2.5490999999999997,
+            "memory_chunks": 1,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.008742165054980605
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.fhrr_100_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.009712252944429926,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 9.458,
+            "memory_chunks": 100,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.009074901007546128
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.fhrr_100_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.0415173541718809,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 6.0377,
+            "memory_chunks": 25,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.018099254256396528
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.fhrr_100_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.018727994350560637,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 5.0306999999999995,
+            "memory_chunks": 7,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.018099254256396528
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.fhrr_100_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.004015663266402428,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 5.2414000000000005,
+            "memory_chunks": 2,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.011351027843955596
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.fhrr_500_chunk_1",
+          "value": {
+            "chunked_fidelity": 0.01394607093336013,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 48.169200000000004,
+            "memory_chunks": 500,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.007897905380756909
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.fhrr_500_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.033045387707959395,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 32.2015,
+            "memory_chunks": 125,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.007828772185253647
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.fhrr_500_chunk_16",
+          "value": {
+            "chunked_fidelity": 0.020362852076367614,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 25.226200000000002,
+            "memory_chunks": 32,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": -0.010947031517622562
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.fhrr_500_chunk_64",
+          "value": {
+            "chunked_fidelity": 0.021770565546663644,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 24.4336,
+            "memory_chunks": 8,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": -0.010947031517622562
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=64 3x repair"
+        },
+        {
+          "label": "memory.fhrr_1000_chunk_1",
+          "value": {
+            "chunked_fidelity": -0.03383997022335481,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 97.3882,
+            "memory_chunks": 1000,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.0028068492831587258
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=1 3x repair"
+        },
+        {
+          "label": "memory.fhrr_1000_chunk_4",
+          "value": {
+            "chunked_fidelity": 0.021162020983112553,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 63.408500000000004,
+            "memory_chunks": 250,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.011651540391526057
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=4 3x repair"
+        },
+        {
+          "label": "memory.fhrr_1000_chunk_16",
+          "value": {
+            "chunked_fidelity": -0.002357817558575723,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 51.882,
+            "memory_chunks": 63,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": -0.010881662679274248
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=16 3x repair"
+        },
+        {
+          "label": "memory.fhrr_1000_chunk_64",
+          "value": {
+            "chunked_fidelity": -0.041082807181457376,
+            "exact_fidelity": 1.0,
+            "exact_ms": 0.0,
+            "infer_ms": 49.5149,
+            "memory_chunks": 16,
+            "params_per_chunk": 1024,
+            "repaired_fidelity": 0.019015751998918175
+          },
+          "unit": "composite",
+          "notes": "fhrr rep chunk_size=64 3x repair"
+        }
+      ]
+    },
+    {
+      "name": "lookup_param_count",
+      "axes": [
+        {
+          "label": "lookup.vocab_100_param_reduction_pct",
+          "value": 99.0,
+          "unit": "percent",
+          "notes": "Parameter reduction using shared VSA embedding matrix"
+        },
+        {
+          "label": "lookup.vocab_100_dense_params",
+          "value": 409600,
+          "unit": "params",
+          "notes": "Dense embedding table parameter count"
+        },
+        {
+          "label": "lookup.vocab_100_vsa_params",
+          "value": 4096,
+          "unit": "params",
+          "notes": "VSA fixed-codebook storage count"
+        },
+        {
+          "label": "lookup.vocab_1000_param_reduction_pct",
+          "value": 99.9,
+          "unit": "percent",
+          "notes": "Parameter reduction using shared VSA embedding matrix"
+        },
+        {
+          "label": "lookup.vocab_1000_dense_params",
+          "value": 4096000,
+          "unit": "params",
+          "notes": "Dense embedding table parameter count"
+        },
+        {
+          "label": "lookup.vocab_1000_vsa_params",
+          "value": 4096,
+          "unit": "params",
+          "notes": "VSA fixed-codebook storage count"
+        },
+        {
+          "label": "lookup.vocab_10000_param_reduction_pct",
+          "value": 99.99,
+          "unit": "percent",
+          "notes": "Parameter reduction using shared VSA embedding matrix"
+        },
+        {
+          "label": "lookup.vocab_10000_dense_params",
+          "value": 40960000,
+          "unit": "params",
+          "notes": "Dense embedding table parameter count"
+        },
+        {
+          "label": "lookup.vocab_10000_vsa_params",
+          "value": 4096,
+          "unit": "params",
+          "notes": "VSA fixed-codebook storage count"
+        }
+      ]
+    }
+  ]
+}
+
+Saved report to bench_results/zenith_bench_report.json

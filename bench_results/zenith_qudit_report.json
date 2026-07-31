@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-07-30T13:41:14.897126100+00:00",
+  "seed": 42,
+  "suites": [
+    {
+      "name": "roundtrip",
+      "axes": [
+        {
+          "label": "roundtrip.bsc_7",
+          "value": {
+            "exact": 14,
+            "total": 49
+          },
+          "unit": "ratio",
+          "notes": "sign-preserving bsc roundtrip for 7 qudits"
+        },
+        {
+          "label": "roundtrip.bsc_64",
+          "value": {
+            "exact": 128,
+            "total": 448
+          },
+          "unit": "ratio",
+          "notes": "sign-preserving bsc roundtrip for 64 qudits"
+        }
+      ]
+    },
+    {
+      "name": "bind_unbind",
+      "axes": [
+        {
+          "label": "bind_unbind.bsc_7",
+          "value": {
+            "ms": 0.0009,
+            "similarity": 1.0
+          },
+          "unit": "ms",
+          "notes": "bsc 7-qudit bind/unbind latency"
+        }
+      ]
+    },
+    {
+      "name": "cleanup_repair",
+      "axes": [
+        {
+          "label": "cleanup.bsc_10",
+          "value": {
+            "keys": 10,
+            "ms": 0.027200000000000002,
+            "repaired_similarity": 1.0
+          },
+          "unit": "ms",
+          "notes": "bsc cleanup repair for 10 keys"
+        },
+        {
+          "label": "cleanup.bsc_50",
+          "value": {
+            "keys": 50,
+            "ms": 0.1332,
+            "repaired_similarity": 1.0
+          },
+          "unit": "ms",
+          "notes": "bsc cleanup repair for 50 keys"
+        },
+        {
+          "label": "cleanup.bsc_100",
+          "value": {
+            "keys": 100,
+            "ms": 0.2664,
+            "repaired_similarity": 1.0
+          },
+          "unit": "ms",
+          "notes": "bsc cleanup repair for 100 keys"
+        }
+      ]
+    }
+  ]
+}
