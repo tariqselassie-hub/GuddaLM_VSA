@@ -130,7 +130,7 @@ impl SenojianCross {
         }
         let dim = vectors[0].0.dim();
         let mut map_accum = vec![0.0; dim];
-        let mut bsc_accum = vec![0f64; (dim + 63) / 64];
+        let mut bsc_accum = vec![0f64; dim.div_ceil(64)];
 
         for (v, w) in vectors {
             let map_data = v.map.data();
@@ -142,7 +142,7 @@ impl SenojianCross {
             }
         }
 
-        let mut bsc_words = vec![0u64; (dim + 63) / 64];
+        let mut bsc_words = vec![0u64; dim.div_ceil(64)];
         for (idx, word) in bsc_accum.iter().enumerate() {
             if *word > 0.0 {
                 bsc_words[idx] = u64::MAX;
@@ -175,7 +175,7 @@ impl SenojianCross {
 
     pub fn bind(&self, other: &Self) -> Self {
         let dim = self.dim();
-        let n_words = (dim + 63) / 64;
+        let n_words = dim.div_ceil(64);
         let mut new_map = vec![0.0; dim];
         let mut new_bsc = vec![0u64; n_words];
 
@@ -206,7 +206,7 @@ impl SenojianCross {
                     let chunk_b = d / 64;
                     let offset_b = d % 64;
                     let bit_b = (*bsc_b.get_unchecked(chunk_b) >> offset_b) & 1;
-                    let flip_mask = ((bit_b ^ 1) as u64) << 63;
+                    let flip_mask = ((bit_b ^ 1)) << 63;
                     *new_map.get_unchecked_mut(d) = f64::from_bits(m_val.to_bits() ^ flip_mask);
                 }
             }
@@ -217,7 +217,7 @@ impl SenojianCross {
                 let bit_b = (bsc_b[d / 64] >> (d % 64)) & 1;
                 let sign_bit = (map_b[d].to_bits() >> 63) & 1;
                 xor_val ^= sign_bit << (d % 64);
-                let flip_mask = ((bit_b ^ 1) as u64) << 63;
+                let flip_mask = ((bit_b ^ 1)) << 63;
                 new_map[d] = f64::from_bits(m_val.to_bits() ^ flip_mask);
                 if d % 64 == 63 {
                     new_bsc[d / 64] = xor_val;

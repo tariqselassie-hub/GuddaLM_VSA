@@ -41,7 +41,7 @@ pub struct HeptalBinaryMapper;
 
 impl HeptalBinaryMapper {
   pub fn encode_words(&self, view: &ZeroCopyQuditView<'_>, dim: usize) -> Vec<u64> {
-    let n_words = (dim + 63) / 64;
+    let n_words = dim.div_ceil(64);
     let mut words = vec![0u64; n_words];
     for (slot, &val) in view.strata.iter().enumerate() {
       let bit = if val > 0 { 1u64 } else { 0u64 };

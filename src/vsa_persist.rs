@@ -68,7 +68,7 @@ impl VsaPersistentBundle {
             self.packed = self
                 .weights
                 .iter()
-                .map(|w| crate::hdc::quantize::pack_bits(w))
+                .map(crate::hdc::quantize::pack_bits)
                 .collect();
         }
         self

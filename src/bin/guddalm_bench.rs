@@ -243,7 +243,7 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "exact_ms": 0.0,
                     "params_per_chunk": dim
                 }),
-                unit: "composite".into(),
+                unit: "composite",
                 notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
             });
         }
@@ -338,7 +338,7 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "exact_ms": 0.0,
                     "params_per_chunk": dim
                 }),
-                unit: "composite".into(),
+                unit: "composite",
                 notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
             });
         }
@@ -433,7 +433,7 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "exact_ms": 0.0,
                     "params_per_chunk": dim
                 }),
-                unit: "composite".into(),
+                unit: "composite",
                 notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
             });
         }
@@ -450,9 +450,9 @@ fn lookup_count_suite() -> Vec<Axis> {
         let dense_params = v * emb_dim;
         let vsa_params = emb_dim;
         let reduction = 100.0 * (1.0 - vsa_params as f64 / dense_params as f64);
-        out.push(Axis { label: format!("lookup.vocab_{}_param_reduction_pct", v), value: serde_json::json!(reduction), unit: "percent".into(), notes: "Parameter reduction using shared VSA embedding matrix".into() });
-        out.push(Axis { label: format!("lookup.vocab_{}_dense_params", v), value: serde_json::json!(dense_params), unit: "params".into(), notes: "Dense embedding table parameter count".into() });
-        out.push(Axis { label: format!("lookup.vocab_{}_vsa_params", v), value: serde_json::json!(vsa_params), unit: "params".into(), notes: "VSA fixed-codebook storage count".into() });
+        out.push(Axis { label: format!("lookup.vocab_{}_param_reduction_pct", v), value: serde_json::json!(reduction), unit: "percent", notes: "Parameter reduction using shared VSA embedding matrix".into() });
+        out.push(Axis { label: format!("lookup.vocab_{}_dense_params", v), value: serde_json::json!(dense_params), unit: "params", notes: "Dense embedding table parameter count".into() });
+        out.push(Axis { label: format!("lookup.vocab_{}_vsa_params", v), value: serde_json::json!(vsa_params), unit: "params", notes: "VSA fixed-codebook storage count".into() });
     }
     out
 }
@@ -488,7 +488,7 @@ fn noma_nc_suite() -> Vec<Axis> {
         out.push(Axis {
             label: format!("noma_nc.bsc_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
-            unit: "similarity".into(),
+            unit: "similarity",
             notes: format!("BSC NOMA-NC with {} concurrent devices", d),
         });
     }
@@ -518,7 +518,7 @@ fn noma_nc_suite() -> Vec<Axis> {
         out.push(Axis {
             label: format!("noma_nc.map_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
-            unit: "similarity".into(),
+            unit: "similarity",
             notes: format!("MAP NOMA-NC with {} concurrent devices", d),
         });
     }
@@ -548,7 +548,7 @@ fn noma_nc_suite() -> Vec<Axis> {
         out.push(Axis {
             label: format!("noma_nc.fhrr_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
-            unit: "similarity".into(),
+            unit: "similarity",
             notes: format!("FHRR NOMA-NC with {} concurrent devices", d),
         });
     }

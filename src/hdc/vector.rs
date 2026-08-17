@@ -34,6 +34,7 @@ pub fn get_vsa_engine(dim: usize) -> crate::vsa::VsaEngine {
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[repr(C)]
 pub struct Complex {
     pub re: f64,
     pub im: f64,
@@ -78,67 +79,25 @@ impl Complex {
     }
 }
 
-struct TwiddleCache {
-    forward: Vec<Complex>,
-    inverse: Vec<Complex>,
-}
-
-static TWIDDLES: OnceLock<Mutex<std::collections::HashMap<usize, Arc<TwiddleCache>>>> = OnceLock::new();
-
-fn get_twiddles(n: usize) -> Arc<TwiddleCache> {
-    let map_mutex = TWIDDLES.get_or_init(|| Mutex::new(std::collections::HashMap::new()));
-    let mut map = map_mutex.lock().unwrap();
-    if let Some(cache) = map.get(&n) {
-        return cache.clone();
-    }
-    
-    let mut forward = Vec::with_capacity(n / 2);
-    let mut inverse = Vec::with_capacity(n / 2);
-    for i in 0..(n / 2) {
-        let angle = -2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
-        forward.push(Complex { re: angle.cos(), im: angle.sin() });
-        inverse.push(Complex { re: (-angle).cos(), im: (-angle).sin() });
-    }
-    let cache = Arc::new(TwiddleCache { forward, inverse });
-    map.insert(n, cache.clone());
-    cache
-}
+static FFT_PLANNER: OnceLock<Mutex<rustfft::FftPlanner<f64>>> = OnceLock::new();
 
 pub(crate) fn fft(data: &mut [Complex], inverse: bool) {
     let n = data.len();
-    assert!(n.is_power_of_two());
+    assert!(n.is_power_of_two(), "FFT length must be a power of two");
     
-    let mut j = 0;
-    for i in 0..n {
-        if i < j {
-            data.swap(i, j);
-        }
-        let mut m = n >> 1;
-        while m >= 1 && j >= m {
-            j -= m;
-            m >>= 1;
-        }
-        j += m;
-    }
+    let planner_mutex = FFT_PLANNER.get_or_init(|| Mutex::new(rustfft::FftPlanner::new()));
+    let mut planner = planner_mutex.lock().unwrap();
+    let fft_obj = if inverse {
+        planner.plan_fft_inverse(n)
+    } else {
+        planner.plan_fft_forward(n)
+    };
     
-    let twiddles = get_twiddles(n);
-    let twiddle_array = if inverse { &twiddles.inverse } else { &twiddles.forward };
+    let rustfft_data: &mut [rustfft::num_complex::Complex64] = unsafe {
+        std::slice::from_raw_parts_mut(data.as_mut_ptr() as *mut rustfft::num_complex::Complex64, n)
+    };
     
-    let mut len = 2;
-    while len <= n {
-        let half = len >> 1;
-        let step = n / len;
-        for i in (0..n).step_by(len) {
-            for k in 0..half {
-                let w = twiddle_array[k * step];
-                let u = data[i + k];
-                let v = data[i + k + half].mul(w);
-                data[i + k] = u.add(v);
-                data[i + k + half] = u.sub(v);
-            }
-        }
-        len <<= 1;
-    }
+    fft_obj.process(rustfft_data);
     
     if inverse {
         let scale = n as f64;
@@ -608,7 +567,7 @@ pub struct BinaryHDVector {
 impl BinaryHDVector {
     pub fn random(dim: usize) -> Self {
         let mut rng = rand::thread_rng();
-        let n_words = (dim + 63) / 64;
+        let n_words = dim.div_ceil(64);
         let words: Vec<u64> = (0..n_words).map(|_| rng.gen()).collect();
         let mut v = BinaryHDVector { dim, words };
         v.clear_phantom_bits();
@@ -616,7 +575,7 @@ impl BinaryHDVector {
     }
 
     pub fn zeros(dim: usize) -> Self {
-        let n_words = (dim + 63) / 64;
+        let n_words = dim.div_ceil(64);
         BinaryHDVector {
             dim,
             words: vec![0u64; n_words],
@@ -625,7 +584,7 @@ impl BinaryHDVector {
 
     pub fn from_bipolar(bipolar: &HDVector) -> Self {
         let dim = bipolar.dim();
-        let n_words = (dim + 63) / 64;
+        let n_words = dim.div_ceil(64);
         let mut words = vec![0u64; n_words];
         let mut word_idx = 0;
         let mut bit_idx = 0;
@@ -649,7 +608,7 @@ impl BinaryHDVector {
 
     pub fn from_bits(bits: &[u8]) -> Self {
         let dim = bits.len();
-        let n_words = (dim + 63) / 64;
+        let n_words = dim.div_ceil(64);
         let mut words = vec![0u64; n_words];
         let mut word_idx = 0;
         let mut bit_idx = 0;
@@ -710,7 +669,7 @@ impl BinaryHDVector {
         if target_dim >= self.dim {
             return self.clone();
         }
-        let n_words = (target_dim + 63) / 64;
+        let n_words = target_dim.div_ceil(64);
         let mut words = self.words[..n_words].to_vec();
         // Clear phantom bits in the new last word
         let last_bit = target_dim % 64;
@@ -841,7 +800,7 @@ impl BinaryHDVector {
         let n_words = self.words.len();
         
         // Fast path for dimensions that are multiples of 64
-        if self.dim % 64 == 0 {
+        if self.dim.is_multiple_of(64) {
             let word_shift = bit_shift / 64;
             let intra_shift = bit_shift % 64;
             let mut new_words = vec![0u64; n_words];
@@ -961,7 +920,7 @@ impl BinaryHDVector {
 }
 
 pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
-    let n_words = (dim + 63) / 64;
+    let n_words = dim.div_ceil(64);
     let mut words = vec![0u64; n_words];
     let mut word_idx = 0;
     let mut bit_idx = 0;

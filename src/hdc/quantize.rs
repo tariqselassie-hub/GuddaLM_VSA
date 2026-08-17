@@ -58,7 +58,7 @@ pub fn quantize_ternary(vector: &HDVector, threshold: f64) -> HDVector {
 /// Pack bipolar vector into bit-packed representation.
 /// Each dimension becomes 1 bit (1 for +1, 0 for -1), packed into u64 words.
 pub fn pack_bits(vector: &HDVector) -> Vec<u64> {
-    let n_words = (vector.dim() + 63) / 64;
+    let n_words = vector.dim().div_ceil(64);
     let mut words = vec![0u64; n_words];
     for (i, &val) in vector.data().iter().enumerate() {
         if val > 0.0 {
@@ -106,7 +106,7 @@ pub fn unpack_bits(words: &[u64], dim: usize) -> HDVector {
 /// intermediate vectors.
 pub fn quantize_to_nbit_slice(data: &[f64], bits: u32) -> Vec<u64> {
     let range = (1i64 << (bits - 1)) - 1;
-    let n_words = (data.len() * bits as usize + 63) / 64;
+    let n_words = (data.len() * bits as usize).div_ceil(64);
     let mut words = vec![0u64; n_words];
     let mut bit_cursor = 0;
 
@@ -161,7 +161,7 @@ pub fn packed_similarity(vector: &HDVector, packed: &[u64]) -> f64 {
 
     // Fallback for general dimensions: pack query words on the fly to avoid heap allocations
     let mut diff_bits = 0u64;
-    let n_words = packed.len().min((dim + 63) / 64);
+    let n_words = packed.len().min(dim.div_ceil(64));
     let data = vector.data();
     for word_idx in 0..n_words {
         let mut word_bits = 0u64;
@@ -405,7 +405,7 @@ pub fn par_batch_similarity_array64(
 /// representations using rayon.
 pub fn par_pack_bits(vectors: &[HDVector]) -> Vec<Vec<u64>> {
     vectors.par_iter()
-        .map(|v| pack_bits(v))
+        .map(pack_bits)
         .collect()
 }
 
