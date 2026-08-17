@@ -27,7 +27,7 @@ fn bsc_roundtrip_exact() -> Vec<Axis> {
     out.push(Axis {
       label: format!("roundtrip.bsc_{}", n),
       value: serde_json::json!({ "exact": exact, "total": view.strata.len() }),
-      unit: "ratio".into(),
+      unit: "ratio",
       notes: format!("sign-preserving bsc roundtrip for {} qudits", n),
     });
   }
@@ -47,7 +47,7 @@ fn bind_unbind_bench() -> Vec<Axis> {
   out.push(Axis {
     label: "bind_unbind.bsc_7".into(),
     value: serde_json::json!({ "ms": ms, "similarity": sim }),
-    unit: "ms".into(),
+    unit: "ms",
     notes: "bsc 7-qudit bind/unbind latency".into(),
   });
   out
@@ -77,7 +77,7 @@ fn cleanup_repair_bench() -> Vec<Axis> {
     out.push(Axis {
       label: format!("cleanup.bsc_{}", n),
       value: serde_json::json!({ "ms": ms, "repaired_similarity": sim, "keys": n }),
-      unit: "ms".into(),
+      unit: "ms",
       notes: format!("bsc cleanup repair for {} keys", n),
     });
   }

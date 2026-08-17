@@ -65,7 +65,7 @@ impl CleanupMemory {
     /// pre-computed bit-packed signatures.
     pub fn new(codebook: Codebook) -> Self {
         let use_packed = !codebook.packed.is_empty()
-            && codebook.packed[0].len() == (codebook.dim + 63) / 64;
+            && codebook.packed[0].len() == codebook.dim.div_ceil(64);
         CleanupMemory { codebook, use_packed }
     }
 

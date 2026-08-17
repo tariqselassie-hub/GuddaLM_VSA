@@ -11,6 +11,12 @@ Attribution: Terrence A. Jones Sr.
 Contact: Zoddjr@gmail.com
 C/O Mr Terrence A. Jones Sr.
 
+## Features
+
+- Hardware-accelerated circular convolution (via `rustfft` AVX/NEON)
+- Thread-safe VSA Engine Architecture
+- Zero-cost iterator implementations for maximum algebraic throughput
+
 ## Build
 
 - `cargo check`

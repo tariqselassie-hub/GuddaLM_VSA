@@ -21,6 +21,7 @@ dirs = "5.0"
 thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 num-complex = "0.4"
+rustfft = "6.4.1"
 
 [features]
 default = []
