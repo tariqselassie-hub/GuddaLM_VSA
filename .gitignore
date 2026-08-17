@@ -36,3 +36,6 @@ Thumbs.db
 /coverage/
 /.tmp.driveupload/
 *.tmp
+
+# Python environments
+gmvsa/
