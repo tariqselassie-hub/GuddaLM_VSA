@@ -295,7 +295,7 @@ impl GhrrGraphEncoder {
         }
         let edges: Vec<GHRRVector> = edges
             .iter()
-            .map(|&(ref s, ref r, ref t)| self.encode_edge(*s, r, *t))
+            .map(|(s, r, t)| self.encode_edge(*s, r, *t))
             .collect();
         let mut acc = edges[0].clone();
         for e in &edges[1..] {
@@ -320,7 +320,7 @@ impl GhrrGraphEncoder {
     /// Query successors: given source node and relation, recover target nodes.
     ///
     /// Computes `inv(rel) ⊛ (inv(role[source]) ⊛ graph)`.
-    /// In the noiseless single-edge case this exactly recovers role[target].
+    /// In the noiseless single-edge case this exactly recovers `role[target]`.
     pub fn query_successors(
         &self,
         graph: &GHRRVector,

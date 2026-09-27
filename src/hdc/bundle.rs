@@ -135,7 +135,7 @@ pub fn par_weighted_bundle(vectors: &[(HDVector, f64)]) -> HDVector {
     let n = vectors.len();
 
     // Sum weighted contributions in parallel chunks, then reduce
-    let chunk_size = (n + rayon::current_num_threads() - 1) / rayon::current_num_threads();
+    let chunk_size = n.div_ceil(rayon::current_num_threads());
     let partials: Vec<Vec<f64>> = vectors
         .par_chunks(chunk_size.max(1))
         .map(|chunk| {

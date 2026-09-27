@@ -109,7 +109,7 @@ impl Codebook {
     /// Create a zero-initialized codebook (weights must be loaded or trained).
     pub fn new(vocab_size: usize, dim: usize) -> Self {
         let weights = vec![HDVector::zeros(dim); vocab_size];
-        let packed = vec![vec![0u64; (dim + 63) / 64]; vocab_size];
+        let packed = vec![vec![0u64; dim.div_ceil(64)]; vocab_size];
         let engine = VsaEngine::new(dim);
         Self { weights, vocab_size, dim, engine, packed }
     }
@@ -121,7 +121,7 @@ impl Codebook {
     pub fn random(vocab_size: usize, dim: usize) -> Self {
         let engine = VsaEngine::new(dim);
         let weights: Vec<HDVector> = (0..vocab_size).map(|_| HDVector::random(dim)).collect();
-        let packed: Vec<Vec<u64>> = weights.iter().map(|w| pack_bits(w)).collect();
+        let packed: Vec<Vec<u64>> = weights.iter().map(pack_bits).collect();
         Self { weights, vocab_size, dim, engine, packed }
     }
 }

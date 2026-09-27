@@ -255,7 +255,7 @@ pub fn diff_bundle_many(vectors: &[&GradHDVector]) -> GradHDVector {
         }
     }
 
-    let refs: Vec<&GradHDVector> = vectors.iter().map(|v| *v).collect();
+    let refs: Vec<&GradHDVector> = vectors.iter().copied().collect();
     let parent_count = vectors.len();
     GradHDVector::add_node_with_parents(
         HDVector::from_slice(&output),
@@ -418,6 +418,12 @@ pub struct SGDOptimizer {
     params: Vec<(GradHDVector, f64)>, // (parameter, learning_rate)
 }
 
+impl Default for SGDOptimizer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SGDOptimizer {
     pub fn new() -> Self {
         SGDOptimizer { params: Vec::new() }
@@ -497,7 +503,7 @@ pub fn soft_cleanup(
         }
     }
 
-    let cv_refs: Vec<HDVector> = codebook_vectors.iter().cloned().collect();
+    let cv_refs: Vec<HDVector> = codebook_vectors.to_vec();
     let stored_weights = weights;
     GradHDVector::add_node_with_parents(
         HDVector::from_slice(&output),

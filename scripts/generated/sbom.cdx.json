@@ -3,7 +3,7 @@
   "specVersion": "1.4",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-06-16T16:28:02.591236+00:00",
+    "timestamp": "2026-09-27T20:41:42.673690+00:00",
     "component": {
       "name": "GuddaLM_VSA",
       "type": "application",
@@ -37,7 +37,7 @@
     {
       "type": "library",
       "name": "aho-corasick",
-      "version": "1.1.4",
+      "version": "1.1.5",
       "purl": "pkg:cargo/aho-corasick",
       "licenses": [
         {
@@ -65,6 +65,23 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/allocator-api2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "android_system_properties",
+      "version": "0.1.6",
+      "purl": "pkg:cargo/android_system_properties",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/android_system_properties"
         }
       ]
     },
@@ -122,7 +139,7 @@
     {
       "type": "library",
       "name": "bitflags",
-      "version": "2.13.0",
+      "version": "2.13.1",
       "purl": "pkg:cargo/bitflags",
       "licenses": [
         {
@@ -138,8 +155,25 @@
     },
     {
       "type": "library",
+      "name": "bumpalo",
+      "version": "3.20.3",
+      "purl": "pkg:cargo/bumpalo",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/bumpalo"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "bytemuck",
-      "version": "1.25.0",
+      "version": "1.25.2",
       "purl": "pkg:cargo/bytemuck",
       "licenses": [
         {
@@ -156,7 +190,7 @@
     {
       "type": "library",
       "name": "bytemuck_derive",
-      "version": "1.10.2",
+      "version": "1.12.0",
       "purl": "pkg:cargo/bytemuck_derive",
       "licenses": [
         {
@@ -224,7 +258,7 @@
     {
       "type": "library",
       "name": "cc",
-      "version": "1.2.64",
+      "version": "1.4.3",
       "purl": "pkg:cargo/cc",
       "licenses": [
         {
@@ -257,6 +291,23 @@
     },
     {
       "type": "library",
+      "name": "chrono",
+      "version": "0.4.45",
+      "purl": "pkg:cargo/chrono",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/chrono"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "compact_str",
       "version": "0.9.1",
       "purl": "pkg:cargo/compact_str",
@@ -269,6 +320,23 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/compact_str"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "core-foundation-sys",
+      "version": "0.8.7",
+      "purl": "pkg:cargo/core-foundation-sys",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/core-foundation-sys"
         }
       ]
     },
@@ -292,7 +360,7 @@
     {
       "type": "library",
       "name": "crossbeam-deque",
-      "version": "0.8.6",
+      "version": "0.8.7",
       "purl": "pkg:cargo/crossbeam-deque",
       "licenses": [
         {
@@ -309,7 +377,7 @@
     {
       "type": "library",
       "name": "crossbeam-epoch",
-      "version": "0.9.18",
+      "version": "0.9.20",
       "purl": "pkg:cargo/crossbeam-epoch",
       "licenses": [
         {
@@ -326,7 +394,7 @@
     {
       "type": "library",
       "name": "crossbeam-utils",
-      "version": "0.8.21",
+      "version": "0.8.22",
       "purl": "pkg:cargo/crossbeam-utils",
       "licenses": [
         {
@@ -478,6 +546,40 @@
     },
     {
       "type": "library",
+      "name": "dirs",
+      "version": "5.0.1",
+      "purl": "pkg:cargo/dirs",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/dirs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dirs-sys",
+      "version": "0.4.1",
+      "purl": "pkg:cargo/dirs-sys",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/dirs-sys"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "dyn-stack",
       "version": "0.13.2",
       "purl": "pkg:cargo/dyn-stack",
@@ -513,7 +615,7 @@
     {
       "type": "library",
       "name": "either",
-      "version": "1.16.0",
+      "version": "1.17.0",
       "purl": "pkg:cargo/either",
       "licenses": [
         {
@@ -581,7 +683,7 @@
     {
       "type": "library",
       "name": "find-msvc-tools",
-      "version": "0.1.9",
+      "version": "0.1.11",
       "purl": "pkg:cargo/find-msvc-tools",
       "licenses": [
         {
@@ -643,6 +745,57 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/foldhash"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "futures-core",
+      "version": "0.3.34",
+      "purl": "pkg:cargo/futures-core",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/futures-core"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "futures-task",
+      "version": "0.3.34",
+      "purl": "pkg:cargo/futures-task",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/futures-task"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "futures-util",
+      "version": "0.3.34",
+      "purl": "pkg:cargo/futures-util",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/futures-util"
         }
       ]
     },
@@ -886,6 +1039,40 @@
     },
     {
       "type": "library",
+      "name": "iana-time-zone",
+      "version": "0.1.65",
+      "purl": "pkg:cargo/iana-time-zone",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/iana-time-zone"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "iana-time-zone-haiku",
+      "version": "0.1.2",
+      "purl": "pkg:cargo/iana-time-zone-haiku",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/iana-time-zone-haiku"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "ident_case",
       "version": "1.0.1",
       "purl": "pkg:cargo/ident_case",
@@ -954,8 +1141,25 @@
     },
     {
       "type": "library",
+      "name": "js-sys",
+      "version": "0.3.104",
+      "purl": "pkg:cargo/js-sys",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/js-sys"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "libc",
-      "version": "0.2.186",
+      "version": "0.2.189",
       "purl": "pkg:cargo/libc",
       "licenses": [
         {
@@ -988,8 +1192,25 @@
     },
     {
       "type": "library",
+      "name": "libredox",
+      "version": "0.1.20",
+      "purl": "pkg:cargo/libredox",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/libredox"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "log",
-      "version": "0.4.32",
+      "version": "0.4.33",
       "purl": "pkg:cargo/log",
       "licenses": [
         {
@@ -1006,7 +1227,7 @@
     {
       "type": "library",
       "name": "macro_rules_attribute",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "purl": "pkg:cargo/macro_rules_attribute",
       "licenses": [
         {
@@ -1023,7 +1244,7 @@
     {
       "type": "library",
       "name": "macro_rules_attribute-proc_macro",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "purl": "pkg:cargo/macro_rules_attribute-proc_macro",
       "licenses": [
         {
@@ -1040,7 +1261,7 @@
     {
       "type": "library",
       "name": "matrixmultiply",
-      "version": "0.3.10",
+      "version": "0.3.11",
       "purl": "pkg:cargo/matrixmultiply",
       "licenses": [
         {
@@ -1057,7 +1278,7 @@
     {
       "type": "library",
       "name": "memchr",
-      "version": "2.8.2",
+      "version": "2.8.3",
       "purl": "pkg:cargo/memchr",
       "licenses": [
         {
@@ -1074,7 +1295,7 @@
     {
       "type": "library",
       "name": "memmap2",
-      "version": "0.9.10",
+      "version": "0.9.11",
       "purl": "pkg:cargo/memmap2",
       "licenses": [
         {
@@ -1193,7 +1414,7 @@
     {
       "type": "library",
       "name": "num-integer",
-      "version": "0.1.46",
+      "version": "0.1.47",
       "purl": "pkg:cargo/num-integer",
       "licenses": [
         {
@@ -1294,6 +1515,23 @@
     },
     {
       "type": "library",
+      "name": "option-ext",
+      "version": "0.2.0",
+      "purl": "pkg:cargo/option-ext",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/option-ext"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "paste",
       "version": "1.0.15",
       "purl": "pkg:cargo/paste",
@@ -1311,8 +1549,42 @@
     },
     {
       "type": "library",
+      "name": "pastey",
+      "version": "0.2.3",
+      "purl": "pkg:cargo/pastey",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/pastey"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pin-project-lite",
+      "version": "0.2.17",
+      "purl": "pkg:cargo/pin-project-lite",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/pin-project-lite"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "pkg-config",
-      "version": "0.3.33",
+      "version": "0.3.34",
       "purl": "pkg:cargo/pkg-config",
       "licenses": [
         {
@@ -1329,7 +1601,7 @@
     {
       "type": "library",
       "name": "portable-atomic",
-      "version": "1.13.1",
+      "version": "1.15.0",
       "purl": "pkg:cargo/portable-atomic",
       "licenses": [
         {
@@ -1379,8 +1651,25 @@
     },
     {
       "type": "library",
+      "name": "primal-check",
+      "version": "0.3.4",
+      "purl": "pkg:cargo/primal-check",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/primal-check"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "proc-macro2",
-      "version": "1.0.106",
+      "version": "1.0.107",
       "purl": "pkg:cargo/proc-macro2",
       "licenses": [
         {
@@ -1397,7 +1686,7 @@
     {
       "type": "library",
       "name": "pulp",
-      "version": "0.22.2",
+      "version": "0.22.3",
       "purl": "pkg:cargo/pulp",
       "licenses": [
         {
@@ -1414,7 +1703,7 @@
     {
       "type": "library",
       "name": "pulp-wasm-simd-flag",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "purl": "pkg:cargo/pulp-wasm-simd-flag",
       "licenses": [
         {
@@ -1431,7 +1720,7 @@
     {
       "type": "library",
       "name": "quote",
-      "version": "1.0.45",
+      "version": "1.0.47",
       "purl": "pkg:cargo/quote",
       "licenses": [
         {
@@ -1465,7 +1754,7 @@
     {
       "type": "library",
       "name": "rand",
-      "version": "0.8.6",
+      "version": "0.8.7",
       "purl": "pkg:cargo/rand",
       "licenses": [
         {
@@ -1482,7 +1771,7 @@
     {
       "type": "library",
       "name": "rand",
-      "version": "0.9.4",
+      "version": "0.9.5",
       "purl": "pkg:cargo/rand",
       "licenses": [
         {
@@ -1702,8 +1991,25 @@
     },
     {
       "type": "library",
+      "name": "redox_users",
+      "version": "0.4.6",
+      "purl": "pkg:cargo/redox_users",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/redox_users"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "regex",
-      "version": "1.12.4",
+      "version": "1.13.1",
       "purl": "pkg:cargo/regex",
       "licenses": [
         {
@@ -1720,7 +2026,7 @@
     {
       "type": "library",
       "name": "regex-automata",
-      "version": "0.4.14",
+      "version": "0.4.18",
       "purl": "pkg:cargo/regex-automata",
       "licenses": [
         {
@@ -1753,8 +2059,25 @@
     },
     {
       "type": "library",
+      "name": "rustfft",
+      "version": "6.4.1",
+      "purl": "pkg:cargo/rustfft",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/rustfft"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "rustversion",
-      "version": "1.0.22",
+      "version": "1.0.23",
       "purl": "pkg:cargo/rustversion",
       "licenses": [
         {
@@ -1839,7 +2162,7 @@
     {
       "type": "library",
       "name": "serde",
-      "version": "1.0.228",
+      "version": "1.0.229",
       "purl": "pkg:cargo/serde",
       "licenses": [
         {
@@ -1856,7 +2179,7 @@
     {
       "type": "library",
       "name": "serde_core",
-      "version": "1.0.228",
+      "version": "1.0.229",
       "purl": "pkg:cargo/serde_core",
       "licenses": [
         {
@@ -1873,7 +2196,7 @@
     {
       "type": "library",
       "name": "serde_derive",
-      "version": "1.0.228",
+      "version": "1.0.229",
       "purl": "pkg:cargo/serde_derive",
       "licenses": [
         {
@@ -1890,7 +2213,7 @@
     {
       "type": "library",
       "name": "serde_json",
-      "version": "1.0.150",
+      "version": "1.0.151",
       "purl": "pkg:cargo/serde_json",
       "licenses": [
         {
@@ -1918,6 +2241,23 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/shlex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "slab",
+      "version": "0.4.12",
+      "purl": "pkg:cargo/slab",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/slab"
         }
       ]
     },
@@ -1991,6 +2331,23 @@
     },
     {
       "type": "library",
+      "name": "strength_reduce",
+      "version": "0.2.4",
+      "purl": "pkg:cargo/strength_reduce",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/strength_reduce"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "strsim",
       "version": "0.11.1",
       "purl": "pkg:cargo/strsim",
@@ -2009,7 +2366,24 @@
     {
       "type": "library",
       "name": "syn",
-      "version": "2.0.117",
+      "version": "2.0.119",
+      "purl": "pkg:cargo/syn",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/syn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "syn",
+      "version": "3.0.3",
       "purl": "pkg:cargo/syn",
       "licenses": [
         {
@@ -2077,7 +2451,7 @@
     {
       "type": "library",
       "name": "thiserror",
-      "version": "2.0.18",
+      "version": "2.0.20",
       "purl": "pkg:cargo/thiserror",
       "licenses": [
         {
@@ -2111,7 +2485,7 @@
     {
       "type": "library",
       "name": "thiserror-impl",
-      "version": "2.0.18",
+      "version": "2.0.20",
       "purl": "pkg:cargo/thiserror-impl",
       "licenses": [
         {
@@ -2139,6 +2513,23 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/tokenizers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "transpose",
+      "version": "0.2.3",
+      "purl": "pkg:cargo/transpose",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/transpose"
         }
       ]
     },
@@ -2297,6 +2688,74 @@
     },
     {
       "type": "library",
+      "name": "wasm-bindgen",
+      "version": "0.2.127",
+      "purl": "pkg:cargo/wasm-bindgen",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/wasm-bindgen"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wasm-bindgen-macro",
+      "version": "0.2.127",
+      "purl": "pkg:cargo/wasm-bindgen-macro",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/wasm-bindgen-macro"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wasm-bindgen-macro-support",
+      "version": "0.2.127",
+      "purl": "pkg:cargo/wasm-bindgen-macro-support",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/wasm-bindgen-macro-support"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wasm-bindgen-shared",
+      "version": "0.2.127",
+      "purl": "pkg:cargo/wasm-bindgen-shared",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/wasm-bindgen-shared"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "winapi-util",
       "version": "0.1.11",
       "purl": "pkg:cargo/winapi-util",
@@ -2309,6 +2768,57 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/winapi-util"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-core",
+      "version": "0.62.2",
+      "purl": "pkg:cargo/windows-core",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-core"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-implement",
+      "version": "0.60.2",
+      "purl": "pkg:cargo/windows-implement",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-implement"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-interface",
+      "version": "0.59.3",
+      "purl": "pkg:cargo/windows-interface",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-interface"
         }
       ]
     },
@@ -2331,6 +2841,57 @@
     },
     {
       "type": "library",
+      "name": "windows-result",
+      "version": "0.4.1",
+      "purl": "pkg:cargo/windows-result",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-result"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-strings",
+      "version": "0.5.1",
+      "purl": "pkg:cargo/windows-strings",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-strings"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-sys",
+      "version": "0.48.0",
+      "purl": "pkg:cargo/windows-sys",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-sys"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "windows-sys",
       "version": "0.61.2",
       "purl": "pkg:cargo/windows-sys",
@@ -2343,6 +2904,142 @@
         {
           "type": "distribution",
           "url": "https://crates.io/crates/windows-sys"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows-targets",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows-targets",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows-targets"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_aarch64_gnullvm",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_aarch64_gnullvm",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_aarch64_gnullvm"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_aarch64_msvc",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_aarch64_msvc",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_aarch64_msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_i686_gnu",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_i686_gnu",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_i686_gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_i686_msvc",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_i686_msvc",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_i686_msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_x86_64_gnu",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_x86_64_gnu",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_x86_64_gnu"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_x86_64_gnullvm",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_x86_64_gnullvm",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_x86_64_gnullvm"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "windows_x86_64_msvc",
+      "version": "0.48.5",
+      "purl": "pkg:cargo/windows_x86_64_msvc",
+      "licenses": [
+        {
+          "expression": "NOASSERTION"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://crates.io/crates/windows_x86_64_msvc"
         }
       ]
     },
@@ -2400,7 +3097,7 @@
     {
       "type": "library",
       "name": "zerocopy",
-      "version": "0.8.52",
+      "version": "0.8.56",
       "purl": "pkg:cargo/zerocopy",
       "licenses": [
         {
@@ -2417,7 +3114,7 @@
     {
       "type": "library",
       "name": "zerocopy-derive",
-      "version": "0.8.52",
+      "version": "0.8.56",
       "purl": "pkg:cargo/zerocopy-derive",
       "licenses": [
         {

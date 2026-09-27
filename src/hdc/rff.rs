@@ -55,7 +55,7 @@ impl ContinuousSpaceEncoder {
     /// let encoder = ContinuousSpaceEncoder::new(10000, 1.0);
     /// ```
     pub fn new(dimensions: usize, bandwidth: f32) -> Self {
-        assert!(dimensions % 2 == 0, "Dimensions must be even");
+        assert!(dimensions.is_multiple_of(2), "Dimensions must be even");
         assert!(bandwidth > 0.0, "Bandwidth must be positive");
 
         let mut rng = thread_rng();
