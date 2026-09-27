@@ -62,7 +62,7 @@ pub fn optimal_centroid_hamming_radius(dim: usize) -> f64 {
     (dim as f64 / 2.0) - (dim as f64).sqrt()
 }
 
-/// Convert a Hamming distance threshold to a [0,1] similarity threshold
+/// Convert a Hamming distance threshold to a `[0, 1]` similarity threshold
 /// used in bipolar cosine similarity comparisons.
 ///
 /// For Hamming distance d* in binary N-space, the equivalent bipolar
@@ -73,7 +73,7 @@ pub fn hamming_distance_to_bipolar_sim(d_star: f64, dim: usize) -> f64 {
     1.0 - 2.0 * d_star / n
 }
 
-/// Convert a Hamming distance threshold to a [0,1] Hamming similarity
+/// Convert a Hamming distance threshold to a `[0, 1]` Hamming similarity
 /// threshold used in binary comparisons.
 ///
 ///   hamming_sim = 1 - d*/N

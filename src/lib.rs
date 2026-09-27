@@ -28,6 +28,10 @@ pub mod vsa_persist;
 pub mod primitives;
 pub mod primitives_shim;
 pub mod zenith;
+pub mod prelude;
+
+pub use hdc::item_memory::{DeterministicSymbol, ItemMemory};
+pub use hdc::level::ScalarEncoder;
 
 pub use hdc::vector::{HDVector, BinaryHDVector, Complex};
 pub use hdc::fhrr::FHRRVector;

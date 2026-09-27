@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-02T14:00:41.813313+00:00",
+  "generated_at": "2026-08-10T13:49:04.360007+00:00",
   "seed": 42,
   "suites": [
     {
@@ -7,25 +7,25 @@
       "axes": [
         {
           "label": "relational.resolve_acc",
-          "value": 0.3282348077718065,
+          "value": 0.3232740801984291,
           "unit": "ratio",
           "notes": "RESOLVE-style binding classifier"
         },
         {
           "label": "relational.baseline_acc",
-          "value": 0.5018602728400166,
+          "value": 0.5150888797023564,
           "unit": "ratio",
           "notes": "Naive cosine similarity"
         },
         {
           "label": "relational.train_ms",
-          "value": 10.2166,
+          "value": 818.1992,
           "unit": "ms",
           "notes": "Combined train latency"
         },
         {
           "label": "relational.infer_ms",
-          "value": 13.9066,
+          "value": 1072.9793,
           "unit": "ms",
           "notes": "VSA inference latency"
         }
@@ -41,12 +41,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.510498046875,
             "memory_chunks": 10,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=1 full repair"
+          "notes": "bsc rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.bsc_10_chunk_4",
@@ -55,12 +60,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.7685546875,
             "memory_chunks": 3,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=4 full repair"
+          "notes": "bsc rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.bsc_10_chunk_16",
@@ -69,12 +79,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6240234375,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 7,
+            "repair_improvement_rate": 0.7,
+            "repair_no_change": 0,
+            "repair_worsened": 3,
             "repaired_fidelity": 0.60380859375
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=16 full repair"
+          "notes": "bsc rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.bsc_10_chunk_64",
@@ -83,12 +98,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6240234375,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 7,
+            "repair_improvement_rate": 0.7,
+            "repair_no_change": 0,
+            "repair_worsened": 3,
             "repaired_fidelity": 0.60380859375
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=64 full repair"
+          "notes": "bsc rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.bsc_50_chunk_1",
@@ -97,12 +117,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.504150390625,
             "memory_chunks": 50,
             "params_per_chunk": 4096,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=1 full repair"
+          "notes": "bsc rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.bsc_50_chunk_4",
@@ -111,12 +136,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.765380859375,
             "memory_chunks": 13,
             "params_per_chunk": 4096,
+            "repair_improved": 48,
+            "repair_improvement_rate": 0.96,
+            "repair_no_change": 0,
+            "repair_worsened": 2,
             "repaired_fidelity": 0.960478515625
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=4 full repair"
+          "notes": "bsc rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.bsc_50_chunk_16",
@@ -125,12 +155,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.0146484375,
             "memory_chunks": 4,
             "params_per_chunk": 4096,
+            "repair_improved": 32,
+            "repair_improvement_rate": 0.64,
+            "repair_no_change": 1,
+            "repair_worsened": 17,
             "repaired_fidelity": 0.337548828125
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=16 full repair"
+          "notes": "bsc rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.bsc_50_chunk_64",
@@ -139,12 +174,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.001953125,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 27,
+            "repair_improvement_rate": 0.54,
+            "repair_no_change": 0,
+            "repair_worsened": 23,
             "repaired_fidelity": 0.120498046875
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=64 full repair"
+          "notes": "bsc rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.bsc_100_chunk_1",
@@ -153,12 +193,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.501220703125,
             "memory_chunks": 100,
             "params_per_chunk": 4096,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=1 full repair"
+          "notes": "bsc rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.bsc_100_chunk_4",
@@ -167,12 +212,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.78271484375,
             "memory_chunks": 25,
             "params_per_chunk": 4096,
+            "repair_improved": 98,
+            "repair_improvement_rate": 0.98,
+            "repair_no_change": 0,
+            "repair_worsened": 2,
             "repaired_fidelity": 0.97978515625
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=4 full repair"
+          "notes": "bsc rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.bsc_100_chunk_16",
@@ -181,12 +231,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.01220703125,
             "memory_chunks": 7,
             "params_per_chunk": 4096,
+            "repair_improved": 60,
+            "repair_improvement_rate": 0.6,
+            "repair_no_change": 1,
+            "repair_worsened": 39,
             "repaired_fidelity": 0.3080419921875
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=16 full repair"
+          "notes": "bsc rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.bsc_100_chunk_64",
@@ -195,12 +250,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.009765625,
             "memory_chunks": 2,
             "params_per_chunk": 4096,
+            "repair_improved": 63,
+            "repair_improvement_rate": 0.63,
+            "repair_no_change": 2,
+            "repair_worsened": 35,
             "repaired_fidelity": 0.094072265625
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=64 full repair"
+          "notes": "bsc rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.bsc_500_chunk_1",
@@ -209,12 +269,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.500732421875,
             "memory_chunks": 500,
             "params_per_chunk": 4096,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=1 full repair"
+          "notes": "bsc rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.bsc_500_chunk_4",
@@ -223,12 +288,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.760986328125,
             "memory_chunks": 125,
             "params_per_chunk": 4096,
+            "repair_improved": 479,
+            "repair_improvement_rate": 0.958,
+            "repair_no_change": 0,
+            "repair_worsened": 21,
             "repaired_fidelity": 0.9580458984375
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=4 full repair"
+          "notes": "bsc rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.bsc_500_chunk_16",
@@ -237,12 +307,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.0087890625,
             "memory_chunks": 32,
             "params_per_chunk": 4096,
+            "repair_improved": 303,
+            "repair_improvement_rate": 0.606,
+            "repair_no_change": 3,
+            "repair_worsened": 194,
             "repaired_fidelity": 0.2646728515625
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=16 full repair"
+          "notes": "bsc rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.bsc_500_chunk_64",
@@ -251,12 +326,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.001953125,
             "memory_chunks": 8,
             "params_per_chunk": 4096,
+            "repair_improved": 260,
+            "repair_improvement_rate": 0.52,
+            "repair_no_change": 5,
+            "repair_worsened": 235,
             "repaired_fidelity": 0.0681611328125
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=64 full repair"
+          "notes": "bsc rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.bsc_1000_chunk_1",
@@ -265,12 +345,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.5,
             "memory_chunks": 1000,
             "params_per_chunk": 4096,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=1 full repair"
+          "notes": "bsc rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.bsc_1000_chunk_4",
@@ -279,12 +364,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.759521484375,
             "memory_chunks": 250,
             "params_per_chunk": 4096,
+            "repair_improved": 946,
+            "repair_improvement_rate": 0.946,
+            "repair_no_change": 0,
+            "repair_worsened": 54,
             "repaired_fidelity": 0.94609521484375
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=4 full repair"
+          "notes": "bsc rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.bsc_1000_chunk_16",
@@ -293,12 +383,17 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.0068359375,
             "memory_chunks": 63,
             "params_per_chunk": 4096,
+            "repair_improved": 578,
+            "repair_improvement_rate": 0.578,
+            "repair_no_change": 8,
+            "repair_worsened": 414,
             "repaired_fidelity": 0.25165966796875
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=16 full repair"
+          "notes": "bsc rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.bsc_1000_chunk_64",
@@ -307,572 +402,777 @@
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.0009765625,
             "memory_chunks": 16,
             "params_per_chunk": 4096,
+            "repair_improved": 507,
+            "repair_improvement_rate": 0.507,
+            "repair_no_change": 11,
+            "repair_worsened": 482,
             "repaired_fidelity": 0.06073779296875
           },
           "unit": "composite",
-          "notes": "bsc rep chunk_size=64 full repair"
+          "notes": "bsc rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.map_10_chunk_1",
           "value": {
-            "chunked_fidelity": 0.7068869916789254,
+            "chunked_fidelity": 0.7023511967579736,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.29495572162491546,
             "memory_chunks": 10,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=1 full repair"
+          "notes": "map rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.map_10_chunk_4",
           "value": {
-            "chunked_fidelity": 0.4681067177783736,
+            "chunked_fidelity": 0.4763039861767121,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.5480265947820365,
             "memory_chunks": 3,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=4 full repair"
+          "notes": "map rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.map_10_chunk_16",
           "value": {
-            "chunked_fidelity": 0.30211325917698245,
+            "chunked_fidelity": 0.3086907213702621,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6882249215773353,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=16 full repair"
+          "notes": "map rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.map_10_chunk_64",
           "value": {
-            "chunked_fidelity": 0.30211325917698245,
+            "chunked_fidelity": 0.3086907213702621,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6882249215773353,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=64 full repair"
+          "notes": "map rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.map_50_chunk_1",
           "value": {
-            "chunked_fidelity": 0.70919300767282,
+            "chunked_fidelity": 0.7067267703063069,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.29254021059736013,
             "memory_chunks": 50,
             "params_per_chunk": 4096,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=1 full repair"
+          "notes": "map rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.map_50_chunk_4",
           "value": {
-            "chunked_fidelity": 0.4533309213420147,
+            "chunked_fidelity": 0.4510678327460027,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.5551314876960896,
             "memory_chunks": 13,
             "params_per_chunk": 4096,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=4 full repair"
+          "notes": "map rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.map_50_chunk_16",
           "value": {
-            "chunked_fidelity": 0.25718994930249445,
+            "chunked_fidelity": 0.2551963454681641,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.7578649895447607,
             "memory_chunks": 4,
             "params_per_chunk": 4096,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=16 full repair"
+          "notes": "map rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.map_50_chunk_64",
           "value": {
-            "chunked_fidelity": 0.13993311223394148,
+            "chunked_fidelity": 0.14185196902866018,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8575414321958799,
             "memory_chunks": 1,
             "params_per_chunk": 4096,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=64 full repair"
+          "notes": "map rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.map_100_chunk_1",
           "value": {
-            "chunked_fidelity": 0.7082134718127396,
+            "chunked_fidelity": 0.7077205175170532,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.29277175402623257,
             "memory_chunks": 100,
             "params_per_chunk": 4096,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=1 full repair"
+          "notes": "map rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.map_100_chunk_4",
           "value": {
-            "chunked_fidelity": 0.44677339480280515,
+            "chunked_fidelity": 0.44693636426753514,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.553117576057261,
             "memory_chunks": 25,
             "params_per_chunk": 4096,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=4 full repair"
+          "notes": "map rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.map_100_chunk_16",
           "value": {
-            "chunked_fidelity": 0.2514970153220283,
+            "chunked_fidelity": 0.24972025594303301,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.7589530585102477,
             "memory_chunks": 7,
             "params_per_chunk": 4096,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=16 full repair"
+          "notes": "map rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.map_100_chunk_64",
           "value": {
-            "chunked_fidelity": 0.1395946726009184,
+            "chunked_fidelity": 0.13821021289571161,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8678228875806534,
             "memory_chunks": 2,
             "params_per_chunk": 4096,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=64 full repair"
+          "notes": "map rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.map_500_chunk_1",
           "value": {
-            "chunked_fidelity": 0.7073384737001165,
+            "chunked_fidelity": 0.7078217291270558,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.291646421514821,
             "memory_chunks": 500,
             "params_per_chunk": 4096,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=1 full repair"
+          "notes": "map rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.map_500_chunk_4",
           "value": {
-            "chunked_fidelity": 0.4477462815857594,
+            "chunked_fidelity": 0.44740518286899794,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.5524580669439834,
             "memory_chunks": 125,
             "params_per_chunk": 4096,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=4 full repair"
+          "notes": "map rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.map_500_chunk_16",
           "value": {
-            "chunked_fidelity": 0.24477907739227783,
+            "chunked_fidelity": 0.24469816171527234,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.7571049554359843,
             "memory_chunks": 32,
             "params_per_chunk": 4096,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=16 full repair"
+          "notes": "map rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.map_500_chunk_64",
           "value": {
-            "chunked_fidelity": 0.1263767354415143,
+            "chunked_fidelity": 0.12552172795925035,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8747462299385055,
             "memory_chunks": 8,
             "params_per_chunk": 4096,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=64 full repair"
+          "notes": "map rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.map_1000_chunk_1",
           "value": {
-            "chunked_fidelity": 0.7079815873090103,
+            "chunked_fidelity": 0.7079913876278434,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.29167565828315245,
             "memory_chunks": 1000,
             "params_per_chunk": 4096,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=1 full repair"
+          "notes": "map rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.map_1000_chunk_4",
           "value": {
-            "chunked_fidelity": 0.44762374587320325,
+            "chunked_fidelity": 0.44750327687519226,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.5523787646148784,
             "memory_chunks": 250,
             "params_per_chunk": 4096,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=4 full repair"
+          "notes": "map rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.map_1000_chunk_16",
           "value": {
-            "chunked_fidelity": 0.24364890230787972,
+            "chunked_fidelity": 0.24333594870415826,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.7571299782758878,
             "memory_chunks": 63,
             "params_per_chunk": 4096,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=16 full repair"
+          "notes": "map rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.map_1000_chunk_64",
           "value": {
-            "chunked_fidelity": 0.12555656020806158,
+            "chunked_fidelity": 0.1254619053224394,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8752391096169788,
             "memory_chunks": 16,
             "params_per_chunk": 4096,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "map rep chunk_size=64 full repair"
+          "notes": "map rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.fhrr_10_chunk_1",
           "value": {
-            "chunked_fidelity": 0.6320937295675348,
+            "chunked_fidelity": 0.6330893361147205,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.36750768443993487,
             "memory_chunks": 10,
             "params_per_chunk": 1024,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=1 full repair"
+          "notes": "fhrr rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.fhrr_10_chunk_4",
           "value": {
-            "chunked_fidelity": 0.4029369739836314,
+            "chunked_fidelity": 0.3859612836901669,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6361555625265115,
             "memory_chunks": 3,
             "params_per_chunk": 1024,
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=4 full repair"
+          "notes": "fhrr rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.fhrr_10_chunk_16",
           "value": {
-            "chunked_fidelity": 0.17743903257117172,
+            "chunked_fidelity": 0.1709836131790871,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8800017124855017,
             "memory_chunks": 1,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.6909316187794254
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
+            "repaired_fidelity": 0.9026821179515029
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=16 full repair"
+          "notes": "fhrr rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.fhrr_10_chunk_64",
           "value": {
-            "chunked_fidelity": 0.17743903257117172,
+            "chunked_fidelity": 0.1709836131790871,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.8800017124855017,
             "memory_chunks": 1,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.6909316187794254
+            "repair_improved": 10,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
+            "repaired_fidelity": 0.9026821179515029
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=64 full repair"
+          "notes": "fhrr rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.fhrr_50_chunk_1",
           "value": {
-            "chunked_fidelity": 0.6388298827834619,
+            "chunked_fidelity": 0.6353692825714865,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.3641261875608825,
             "memory_chunks": 50,
             "params_per_chunk": 1024,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=1 full repair"
+          "notes": "fhrr rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.fhrr_50_chunk_4",
           "value": {
-            "chunked_fidelity": 0.3666516881963125,
+            "chunked_fidelity": 0.3700789831055332,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6232170648629133,
             "memory_chunks": 13,
             "params_per_chunk": 1024,
+            "repair_improved": 50,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=4 full repair"
+          "notes": "fhrr rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.fhrr_50_chunk_16",
           "value": {
-            "chunked_fidelity": 0.12509173764681017,
+            "chunked_fidelity": 0.12365765393302583,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.03748497242321021,
             "memory_chunks": 4,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.4617178508444188
+            "repair_improved": 29,
+            "repair_improvement_rate": 0.58,
+            "repair_no_change": 0,
+            "repair_worsened": 21,
+            "repaired_fidelity": 0.4508366856364093
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=16 full repair"
+          "notes": "fhrr rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.fhrr_50_chunk_64",
           "value": {
-            "chunked_fidelity": 0.036027962480541076,
+            "chunked_fidelity": 0.03129021205083375,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": -0.003293558221599707,
             "memory_chunks": 1,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.16261977841914743
+            "repair_improved": 24,
+            "repair_improvement_rate": 0.48,
+            "repair_no_change": 0,
+            "repair_worsened": 26,
+            "repaired_fidelity": 0.1360521342467104
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=64 full repair"
+          "notes": "fhrr rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.fhrr_100_chunk_1",
           "value": {
-            "chunked_fidelity": 0.6368369027446443,
+            "chunked_fidelity": 0.635989652036574,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.3649194421068631,
             "memory_chunks": 100,
             "params_per_chunk": 1024,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=1 full repair"
+          "notes": "fhrr rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.fhrr_100_chunk_4",
           "value": {
-            "chunked_fidelity": 0.36521293813600514,
+            "chunked_fidelity": 0.3663570583035296,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6776946486316493,
             "memory_chunks": 25,
             "params_per_chunk": 1024,
+            "repair_improved": 100,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=4 full repair"
+          "notes": "fhrr rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.fhrr_100_chunk_16",
           "value": {
-            "chunked_fidelity": 0.11976197512617244,
+            "chunked_fidelity": 0.12081321776683904,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.009225231302010684,
             "memory_chunks": 7,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.4275549068601548
+            "repair_improved": 60,
+            "repair_improvement_rate": 0.6,
+            "repair_no_change": 0,
+            "repair_worsened": 40,
+            "repaired_fidelity": 0.4191620283537398
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=16 full repair"
+          "notes": "fhrr rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.fhrr_100_chunk_64",
           "value": {
-            "chunked_fidelity": 0.03433280218004179,
+            "chunked_fidelity": 0.03462393354336596,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.009918738799670673,
             "memory_chunks": 2,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.13050603679096956
+            "repair_improved": 58,
+            "repair_improvement_rate": 0.58,
+            "repair_no_change": 0,
+            "repair_worsened": 42,
+            "repaired_fidelity": 0.13139065639071545
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=64 full repair"
+          "notes": "fhrr rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.fhrr_500_chunk_1",
           "value": {
-            "chunked_fidelity": 0.636249757372835,
+            "chunked_fidelity": 0.6362120860240772,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.3643141593538598,
             "memory_chunks": 500,
             "params_per_chunk": 1024,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=1 full repair"
+          "notes": "fhrr rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.fhrr_500_chunk_4",
           "value": {
-            "chunked_fidelity": 0.3664441290804719,
+            "chunked_fidelity": 0.3658553437690009,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6725158540103437,
             "memory_chunks": 125,
             "params_per_chunk": 1024,
+            "repair_improved": 500,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=4 full repair"
+          "notes": "fhrr rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.fhrr_500_chunk_16",
           "value": {
-            "chunked_fidelity": 0.11060137051916356,
+            "chunked_fidelity": 0.11157090135507455,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.013134945264331857,
             "memory_chunks": 32,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.363704851268116
+            "repair_improved": 295,
+            "repair_improvement_rate": 0.59,
+            "repair_no_change": 0,
+            "repair_worsened": 205,
+            "repaired_fidelity": 0.35808707416529206
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=16 full repair"
+          "notes": "fhrr rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.fhrr_500_chunk_64",
           "value": {
-            "chunked_fidelity": 0.02888697130066486,
+            "chunked_fidelity": 0.02888347632932188,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": -0.0002883978981390242,
             "memory_chunks": 8,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.09863439956880544
+            "repair_improved": 246,
+            "repair_improvement_rate": 0.492,
+            "repair_no_change": 0,
+            "repair_worsened": 254,
+            "repaired_fidelity": 0.08653543817156885
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=64 full repair"
+          "notes": "fhrr rep chunk_size=64 full repair distribution"
         },
         {
           "label": "memory.fhrr_1000_chunk_1",
           "value": {
-            "chunked_fidelity": 0.6364251388838752,
+            "chunked_fidelity": 0.6368573670023413,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.3626975003252934,
             "memory_chunks": 1000,
             "params_per_chunk": 1024,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=1 full repair"
+          "notes": "fhrr rep chunk_size=1 full repair distribution"
         },
         {
           "label": "memory.fhrr_1000_chunk_4",
           "value": {
-            "chunked_fidelity": 0.36602988077928905,
+            "chunked_fidelity": 0.3656770484306866,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.6660999824484259,
             "memory_chunks": 250,
             "params_per_chunk": 1024,
+            "repair_improved": 1000,
+            "repair_improvement_rate": 1.0,
+            "repair_no_change": 0,
+            "repair_worsened": 0,
             "repaired_fidelity": 1.0
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=4 full repair"
+          "notes": "fhrr rep chunk_size=4 full repair distribution"
         },
         {
           "label": "memory.fhrr_1000_chunk_16",
           "value": {
-            "chunked_fidelity": 0.1106689719743965,
+            "chunked_fidelity": 0.11078703700631243,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.010830675903615184,
             "memory_chunks": 63,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.34617517116035385
+            "repair_improved": 566,
+            "repair_improvement_rate": 0.566,
+            "repair_no_change": 0,
+            "repair_worsened": 434,
+            "repaired_fidelity": 0.3408993000498736
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=16 full repair"
+          "notes": "fhrr rep chunk_size=16 full repair distribution"
         },
         {
           "label": "memory.fhrr_1000_chunk_64",
           "value": {
-            "chunked_fidelity": 0.027930033984906937,
+            "chunked_fidelity": 0.027903335258135806,
             "exact_fidelity": 1.0,
             "exact_ms": 0.0,
             "infer_ms": 0.0,
+            "median_repair_lift": 0.0019694681254799587,
             "memory_chunks": 16,
             "params_per_chunk": 1024,
-            "repaired_fidelity": 0.09336354930009103
+            "repair_improved": 526,
+            "repair_improvement_rate": 0.526,
+            "repair_no_change": 0,
+            "repair_worsened": 474,
+            "repaired_fidelity": 0.08889777974373812
           },
           "unit": "composite",
-          "notes": "fhrr rep chunk_size=64 full repair"
+          "notes": "fhrr rep chunk_size=64 full repair distribution"
         }
       ]
     },
@@ -964,49 +1264,49 @@
         },
         {
           "label": "noma_nc.map_devices_10",
-          "value": 0.3010644915374317,
+          "value": 0.30597399826566574,
           "unit": "similarity",
           "notes": "MAP NOMA-NC with 10 concurrent devices"
         },
         {
           "label": "noma_nc.map_devices_50",
-          "value": 0.14302183678402353,
+          "value": 0.14011426675011418,
           "unit": "similarity",
           "notes": "MAP NOMA-NC with 50 concurrent devices"
         },
         {
           "label": "noma_nc.map_devices_100",
-          "value": 0.0999140140440924,
+          "value": 0.09928638821535624,
           "unit": "similarity",
           "notes": "MAP NOMA-NC with 100 concurrent devices"
         },
         {
           "label": "noma_nc.map_devices_500",
-          "value": 0.044499930362845254,
+          "value": 0.0440742284880643,
           "unit": "similarity",
           "notes": "MAP NOMA-NC with 500 concurrent devices"
         },
         {
           "label": "noma_nc.fhrr_devices_10",
-          "value": 0.17434581899387364,
+          "value": 0.17816241784568104,
           "unit": "similarity",
           "notes": "FHRR NOMA-NC with 10 concurrent devices"
         },
         {
           "label": "noma_nc.fhrr_devices_50",
-          "value": 0.032189937661043666,
+          "value": 0.03521606970614557,
           "unit": "similarity",
           "notes": "FHRR NOMA-NC with 50 concurrent devices"
         },
         {
           "label": "noma_nc.fhrr_devices_100",
-          "value": 0.015611878450042842,
+          "value": 0.018365420197354706,
           "unit": "similarity",
           "notes": "FHRR NOMA-NC with 100 concurrent devices"
         },
         {
           "label": "noma_nc.fhrr_devices_500",
-          "value": 0.0036418429555728086,
+          "value": 0.0032570344777682054,
           "unit": "similarity",
           "notes": "FHRR NOMA-NC with 500 concurrent devices"
         }
