@@ -320,7 +320,7 @@ impl GhrrGraphEncoder {
     /// Query successors: given source node and relation, recover target nodes.
     ///
     /// Computes `inv(rel) ⊛ (inv(role[source]) ⊛ graph)`.
-    /// In the noiseless single-edge case this exactly recovers role[target].
+    /// In the noiseless single-edge case this exactly recovers `role[target]`.
     pub fn query_successors(
         &self,
         graph: &GHRRVector,

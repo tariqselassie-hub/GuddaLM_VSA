@@ -3,7 +3,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 
-root = Path(r"C:\Users\zoddj\GuddaLM_VSA")
+root = Path(__file__).resolve().parent.parent
 gen = root / "scripts" / "generated"
 lockfile = root / "Cargo.lock"
 
