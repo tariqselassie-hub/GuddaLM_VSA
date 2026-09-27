@@ -128,26 +128,27 @@ pub fn resonator_search_auto_acf(
 /// set `sparsity = 0.0` to disable perturbation.
 pub fn generate_rc_codebook(base: &Codebook, sparsity: f64) -> Codebook {
     if sparsity <= 0.0 {
-        return base.clone();
-    }
-    // Use deterministic LCG for reproducible noise
-    let mut lcg_seed: u64 = 13374269;
-    let mut lcg_rand = move || -> f64 {
-        lcg_seed = lcg_seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-        lcg_seed as f64 / u64::MAX as f64
-    };
+        base.clone()
+    } else {
+        // Use deterministic LCG for reproducible noise
+        let mut lcg_seed: u64 = 13374269;
+        let mut lcg_rand = move || -> f64 {
+            lcg_seed = lcg_seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            lcg_seed as f64 / u64::MAX as f64
+        };
 
-    let mut rc = Codebook::new(base.vocab_size, base.dim);
-    for (i, w) in base.weights.iter().enumerate() {
-        let data: Vec<f64> = w
-            .data()
-            .iter()
-            .map(|&v| if lcg_rand() < sparsity { -v } else { v })
-            .collect();
-        rc.weights[i] = HDVector::from_slice_with_binary(&data, w.is_binary());
-        rc.packed[i] = crate::hdc::quantize::pack_bits(&rc.weights[i]);
+        let mut rc = Codebook::new(base.vocab_size, base.dim);
+        for (i, w) in base.weights.iter().enumerate() {
+            let data: Vec<f64> = w
+                .data()
+                .iter()
+                .map(|&v| if lcg_rand() < sparsity { -v } else { v })
+                .collect();
+            rc.weights[i] = HDVector::from_slice_with_binary(&data, w.is_binary());
+            rc.packed[i] = crate::hdc::quantize::pack_bits(&rc.weights[i]);
+        }
+        rc
     }
-    rc
 }
 
 /// Internal: factorize with optional RC codebooks (separate AS/RC codebooks).
@@ -177,13 +178,24 @@ fn resonator_search_inner(
         );
     }
 
-    // Initialize with random cleanup of composition against each AS codebook
+    // Initialize factor estimates:
+    // For single factor, direct match against codebook works immediately.
+    // For multi-factor, initialize with codebook superposition (uninformative prior) per Frady et al.
     let mut estimates: Vec<HDVector> = Vec::with_capacity(num_factors);
     let mut prev_indices: Vec<usize> = Vec::with_capacity(num_factors);
-    for cb in as_codebooks {
-        let idx = best_match(composition, cb);
+    if num_factors == 1 {
+        let idx = best_match(composition, &as_codebooks[0]);
         prev_indices.push(idx);
-        estimates.push(cb.weights[idx].clone());
+        estimates.push(as_codebooks[0].weights[idx].clone());
+    } else {
+        for cb in as_codebooks {
+            let mut sup = HDVector::zeros(dim);
+            for w in &cb.weights {
+                sup = sup.bundle(w);
+            }
+            estimates.push(sup.binarize());
+            prev_indices.push(usize::MAX);
+        }
     }
 
     let mut iterations = 0;

@@ -1,3 +1,17 @@
+// Copyright (C) 2025 guddalm_vsa contributors.
+// SPDX-License-Identifier: AGPL-3.0
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use crate::{
   dimensions::{BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, MAP_DEFAULT_DIM},
   hdc::{
@@ -41,7 +55,7 @@ pub struct HeptalBinaryMapper;
 
 impl HeptalBinaryMapper {
   pub fn encode_words(&self, view: &ZeroCopyQuditView<'_>, dim: usize) -> Vec<u64> {
-    let n_words = (dim + 63) / 64;
+    let n_words = dim.div_ceil(64);
     let mut words = vec![0u64; n_words];
     for (slot, &val) in view.strata.iter().enumerate() {
       let bit = if val > 0 { 1u64 } else { 0u64 };

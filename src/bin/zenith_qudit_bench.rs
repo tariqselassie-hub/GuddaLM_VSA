@@ -1,3 +1,17 @@
+// Copyright (C) 2025 guddalm_vsa contributors.
+// SPDX-License-Identifier: AGPL-3.0
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Zenith ↔ VSA qudit bench harness
 //! Run: cargo run --bin zenith_qudit_bench -p guddalm_vsa
 //! Output: bench_results/zenith_qudit_report.json
@@ -27,7 +41,7 @@ fn bsc_roundtrip_exact() -> Vec<Axis> {
     out.push(Axis {
       label: format!("roundtrip.bsc_{}", n),
       value: serde_json::json!({ "exact": exact, "total": view.strata.len() }),
-      unit: "ratio".into(),
+      unit: "ratio",
       notes: format!("sign-preserving bsc roundtrip for {} qudits", n),
     });
   }
@@ -47,7 +61,7 @@ fn bind_unbind_bench() -> Vec<Axis> {
   out.push(Axis {
     label: "bind_unbind.bsc_7".into(),
     value: serde_json::json!({ "ms": ms, "similarity": sim }),
-    unit: "ms".into(),
+    unit: "ms",
     notes: "bsc 7-qudit bind/unbind latency".into(),
   });
   out
@@ -77,7 +91,7 @@ fn cleanup_repair_bench() -> Vec<Axis> {
     out.push(Axis {
       label: format!("cleanup.bsc_{}", n),
       value: serde_json::json!({ "ms": ms, "repaired_similarity": sim, "keys": n }),
-      unit: "ms".into(),
+      unit: "ms",
       notes: format!("bsc cleanup repair for {} keys", n),
     });
   }

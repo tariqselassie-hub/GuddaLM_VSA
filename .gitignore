@@ -36,3 +36,23 @@ Thumbs.db
 /coverage/
 /.tmp.driveupload/
 *.tmp
+*.bak
+
+# Distillation & Training Datasets
+*.jsonl
+distillation_data.jsonl
+
+# Python environments & caches
+gmvsa/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Binary model artifacts & weights
+*.bin
+*.safetensors
+*.pt
+*.onnx
+*.gguf
