@@ -22,7 +22,7 @@ use crate::fhrr::{FhrrSetup, FHRRVector as FhrrVector};
 ///
 /// This enum lets generic setup code choose one of the three
 /// canonical VSA modes without hard-coding type-specific branches.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum VsaMode {
     Map,
     Bsc,
@@ -40,7 +40,7 @@ impl VsaMode {
 }
 
 /// Common system-level options for any VSA representation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct VsaSystemOptions {
     pub mode: VsaMode,
     pub dim: usize,
@@ -176,5 +176,24 @@ mod tests {
             let v = system.random().unwrap();
             assert_eq!(v.dim(), 1024);
         }
+    }
+
+    #[test]
+    fn test_vsa_mode_and_options_derives() {
+        use std::collections::HashSet;
+
+        assert_eq!(VsaMode::Map, VsaMode::Map);
+        assert_ne!(VsaMode::Map, VsaMode::Bsc);
+
+        let mut set = HashSet::new();
+        set.insert(VsaMode::Map);
+        set.insert(VsaMode::Bsc);
+        assert!(set.contains(&VsaMode::Map));
+
+        let opt1 = VsaSystemOptions::map(1024);
+        let opt2 = VsaSystemOptions::new(VsaMode::Map, 1024);
+        let opt3 = VsaSystemOptions::bsc(1024);
+        assert_eq!(opt1, opt2);
+        assert_ne!(opt1, opt3);
     }
 }

@@ -19,7 +19,7 @@
 use std::time::Instant;
 use serde::Serialize;
 use guddalm_vsa::{IndexVector, hdc::cleanup::BinaryCleanupMemory};
-use guddalm_vsa::zenith::{HeptalBinaryMapper, QuditVsaAdapter, ZeroCopyQuditView};
+use guddalm_vsa::qudit::{HeptalBinaryMapper, QuditVsaAdapter, OwnedQuditView, ZeroCopyQuditView};
 
 #[derive(Serialize)]
 struct Report { generated_at: String, seed: u64, suites: Vec<Suite> }
@@ -34,7 +34,8 @@ fn bsc_roundtrip_exact() -> Vec<Axis> {
   let mut out = Vec::new();
   let adapter = QuditVsaAdapter::<HeptalBinaryMapper>::new(HeptalBinaryMapper, 4096);
   for n in [7usize, 64] {
-    let view = ZeroCopyQuditView::heptal(n);
+    let owned = OwnedQuditView::heptal(n);
+    let view = owned.as_view();
     let encoded = adapter.encode(&view);
     let back = adapter.decode(&encoded);
     let exact = view.strata.iter().zip(back.iter()).filter(|(a,b)| a==b).count();
@@ -51,7 +52,8 @@ fn bsc_roundtrip_exact() -> Vec<Axis> {
 fn bind_unbind_bench() -> Vec<Axis> {
   let mut out = Vec::new();
   let adapter = QuditVsaAdapter::<HeptalBinaryMapper>::new(HeptalBinaryMapper, 4096);
-  let view = ZeroCopyQuditView::heptal(7);
+  let owned = OwnedQuditView::heptal(7);
+  let view = owned.as_view();
   let encoded = adapter.encode(&view);
   let bound = encoded.bind(&encoded);
   let t0 = Instant::now();

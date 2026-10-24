@@ -27,7 +27,7 @@ pub mod vsa;
 pub mod vsa_persist;
 pub mod primitives;
 pub mod primitives_shim;
-pub mod zenith;
+pub mod qudit;
 pub mod prelude;
 
 pub use hdc::item_memory::{DeterministicSymbol, ItemMemory};

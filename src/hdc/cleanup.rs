@@ -73,7 +73,14 @@ impl CleanupMemory {
     ///
     /// Uses packed XNOR-popcount similarity when the codebook supports it,
     /// otherwise falls back to cosine similarity.
+    ///
+    /// # Panics
+    /// Panics if the codebook is empty. Check [`CleanupMemory::is_empty`] first.
     pub fn cleanup(&self, query: &HDVector) -> CleanupResult {
+        assert!(
+            !self.codebook.weights.is_empty(),
+            "CleanupMemory::cleanup called on empty codebook (vocab_size = 0)"
+        );
         let mut best_idx = 0;
         let mut best_sim = f64::NEG_INFINITY;
 
@@ -178,12 +185,24 @@ impl BinaryCleanupMemory {
     }
 
     /// Find the closest binary prototype to `query`.
+    ///
+    /// Returns `(index, bipolar_similarity, prototype)` where similarity is in
+    /// `[-1, 1]` (matching `CleanupMemory`'s convention).
+    ///
+    /// # Panics
+    /// Panics if `prototypes` is empty. Check [`BinaryCleanupMemory::is_empty`] first.
     pub fn cleanup(&self, query: &BinaryHDVector) -> (usize, f64, BinaryHDVector) {
+        assert!(
+            !self.prototypes.is_empty(),
+            "BinaryCleanupMemory::cleanup called on empty prototype list"
+        );
         let mut best_idx = 0;
         let mut best_sim = f64::NEG_INFINITY;
 
         for (i, p) in self.prototypes.iter().enumerate() {
-            let sim = query.hamming_similarity(p);
+            // Bug fix: use bipolar_similarity [-1,1] to be consistent with
+            // CleanupMemory which uses XNOR-popcount bipolar similarity.
+            let sim = query.bipolar_similarity(p);
             if sim > best_sim {
                 best_sim = sim;
                 best_idx = i;
@@ -221,7 +240,14 @@ impl FhrrCleanupMemory {
     }
 
     /// Find the closest phase prototype to `query`.
+    ///
+    /// # Panics
+    /// Panics if `prototypes` is empty. Check [`FhrrCleanupMemory::is_empty`] first.
     pub fn cleanup(&self, query: &FHRRVector) -> (usize, f64, FHRRVector) {
+        assert!(
+            !self.prototypes.is_empty(),
+            "FhrrCleanupMemory::cleanup called on empty prototype list"
+        );
         let mut best_idx = 0;
         let mut best_sim = f64::NEG_INFINITY;
 
@@ -324,5 +350,30 @@ mod tests {
         let memory = CleanupMemory::new(codebook);
         assert!(memory.is_empty());
         assert_eq!(memory.len(), 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "empty codebook")]
+    fn test_cleanup_memory_empty_panics() {
+        let codebook = Codebook::new(0, 64);
+        let memory = CleanupMemory::new(codebook);
+        let q = HDVector::random(64);
+        memory.cleanup(&q);
+    }
+
+    #[test]
+    #[should_panic(expected = "empty prototype list")]
+    fn test_binary_cleanup_memory_empty_panics() {
+        let memory = BinaryCleanupMemory::new(vec![]);
+        let q = BinaryHDVector::random(64);
+        memory.cleanup(&q);
+    }
+
+    #[test]
+    #[should_panic(expected = "empty prototype list")]
+    fn test_fhrr_cleanup_memory_empty_panics() {
+        let memory = FhrrCleanupMemory::new(vec![]);
+        let q = FHRRVector::random(64);
+        memory.cleanup(&q);
     }
 }

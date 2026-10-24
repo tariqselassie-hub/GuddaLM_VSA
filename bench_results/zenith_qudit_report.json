@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-30T13:41:14.897126100+00:00",
+  "generated_at": "2026-10-22T02:59:21.350433500+00:00",
   "seed": 42,
   "suites": [
     {
@@ -31,7 +31,7 @@
         {
           "label": "bind_unbind.bsc_7",
           "value": {
-            "ms": 0.0009,
+            "ms": 0.0011,
             "similarity": 1.0
           },
           "unit": "ms",
@@ -46,7 +46,7 @@
           "label": "cleanup.bsc_10",
           "value": {
             "keys": 10,
-            "ms": 0.027200000000000002,
+            "ms": 0.027299999999999998,
             "repaired_similarity": 1.0
           },
           "unit": "ms",
@@ -56,7 +56,7 @@
           "label": "cleanup.bsc_50",
           "value": {
             "keys": 50,
-            "ms": 0.1332,
+            "ms": 0.4045,
             "repaired_similarity": 1.0
           },
           "unit": "ms",
@@ -66,7 +66,7 @@
           "label": "cleanup.bsc_100",
           "value": {
             "keys": 100,
-            "ms": 0.2664,
+            "ms": 0.2803,
             "repaired_similarity": 1.0
           },
           "unit": "ms",

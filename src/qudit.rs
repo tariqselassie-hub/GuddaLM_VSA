@@ -39,14 +39,40 @@ pub struct ZeroCopyQuditView<'a> {
   pub strata: &'a [i8],
 }
 
+/// Owned variant that carries its own backing buffer. Eliminates the need for
+/// `Box::leak` when generating synthetic qudit views (e.g. `heptal`).
+#[derive(Clone, Debug)]
+pub struct OwnedQuditView {
+  pub num_qudits: usize,
+  backing: Vec<i8>,
+}
+
+impl OwnedQuditView {
+  /// Build a 7-level qudit view with strata cycling `[-3,-2,-1,0,1,2,3]`
+  /// repeated `num_qudits` times. Memory is freed when the view drops.
+  pub fn heptal(num_qudits: usize) -> Self {
+    let pattern: [i8; 7] = [-3, -2, -1, 0, 1, 2, 3];
+    let backing: Vec<i8> = pattern.iter().cloned().cycle().take(num_qudits * 7).collect();
+    Self { num_qudits, backing }
+  }
+
+  /// Borrow as a `ZeroCopyQuditView` for the lifetime of this value.
+  pub fn as_view(&self) -> ZeroCopyQuditView<'_> {
+    ZeroCopyQuditView { num_qudits: self.num_qudits, strata: &self.backing }
+  }
+
+  pub fn strata(&self) -> &[i8] { &self.backing }
+}
+
 impl<'a> ZeroCopyQuditView<'a> {
   pub fn new(strata: &'a [i8]) -> Self { Self { num_qudits: strata.len(), strata } }
-  pub fn heptal(num_qudits: usize) -> Self {
-    let buf: Vec<i8> = vec![-3, -2, -1, 0, 1, 2, 3];
-    let repeated = buf.repeat(num_qudits);
-    let leaked: &'a [i8] = Box::leak(repeated.into_boxed_slice());
-    Self { num_qudits, strata: leaked }
+
+  /// Convenience constructor for tests/benches that own a fixed slice.
+  /// Prefer `OwnedQuditView::heptal` when the caller needs ownership.
+  pub fn heptal_borrowed(backing: &'a [i8], num_qudits: usize) -> Self {
+    Self { num_qudits, strata: backing }
   }
+
   pub fn strata(&self) -> &'a [i8] { self.strata }
 }
 

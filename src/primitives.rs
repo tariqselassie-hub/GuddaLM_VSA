@@ -21,7 +21,7 @@ use crate::hdc::vsa_trait::VsaVector;
 /// Bind a series of vectors sequentially: v0 ⊗ v1 ⊗ v2 ⊗ ...
 pub fn bind_sequence<V: VsaVector>(vectors: &[V]) -> V {
     if vectors.is_empty() {
-        panic!("bind_sequence: empty vector slice");
+        return V::zero(0);
     }
     let mut result = vectors[0].clone();
     for v in &vectors[1..] {
@@ -33,7 +33,7 @@ pub fn bind_sequence<V: VsaVector>(vectors: &[V]) -> V {
 /// Bundle a series of vectors together using pairwise superposition: v0 ⊕ v1 ⊕ v2 ⊕ ...
 pub fn bundle_sequence<V: VsaVector>(vectors: &[V]) -> V {
     if vectors.is_empty() {
-        panic!("bundle_sequence: empty vector slice");
+        return V::zero(0);
     }
     let mut result = vectors[0].clone();
     for v in &vectors[1..] {
@@ -134,4 +134,35 @@ pub fn encode_non_commutative_edges<V: VsaVector>(edges: &[(V, V)]) -> V {
         result = result.bundle(&edge);
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hdc::vector::HDVector;
+
+    #[test]
+    fn test_bind_and_bundle_sequence_empty() {
+        let empty: Vec<HDVector> = vec![];
+        let bound = bind_sequence(&empty);
+        assert_eq!(bound.dim(), 0);
+
+        let bundled = bundle_sequence(&empty);
+        assert_eq!(bundled.dim(), 0);
+    }
+
+    #[test]
+    fn test_bind_and_bundle_sequence_non_empty() {
+        let v1 = HDVector::random(64);
+        let v2 = HDVector::random(64);
+        let seq = vec![v1.clone(), v2.clone()];
+
+        let bound = bind_sequence(&seq);
+        assert_eq!(bound.dim(), 64);
+        assert_eq!(bound, v1.bind(&v2));
+
+        let bundled = bundle_sequence(&seq);
+        assert_eq!(bundled.dim(), 64);
+        assert_eq!(bundled, v1.bundle(&v2));
+    }
 }

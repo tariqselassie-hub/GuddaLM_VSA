@@ -1,4 +1,4 @@
-//! Joint VSA ↔ Heptal Bridge Demo — validation gate
+//! GuddaLM VSA Heptal Bridge Demo — validation gate
 //!
 //! Exercises:
 //! - encode/decode roundtrip for BSC/MAP/FHRR
@@ -12,7 +12,7 @@ use guddalm_vsa::{
   hdc::cleanup::BinaryCleanupMemory,
   IndexVector,
 };
-use guddalm_vsa::zenith::{
+use guddalm_vsa::qudit::{
   QuditVsaAdapter, ZeroCopyQuditView,
 };
 

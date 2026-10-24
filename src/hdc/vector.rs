@@ -122,9 +122,12 @@ pub struct HDVector {
 
 impl Serialize for HDVector {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut state = serializer.serialize_struct("HDVector", 2)?;
+        // Bug fix: include is_binary so the fast bipolar similarity path
+        // is preserved across serde roundtrips.
+        let mut state = serializer.serialize_struct("HDVector", 3)?;
         state.serialize_field("dim", &self.dim)?;
         state.serialize_field("data", &*self.data)?;
+        state.serialize_field("is_binary", &self.is_binary)?;
         state.end()
     }
 }
@@ -133,7 +136,13 @@ impl<'de> serde::Deserialize<'de> for HDVector {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "lowercase")]
-        enum Field { Dim, Data }
+        enum Field {
+            Dim,
+            Data,
+            // Backward-compat: old blobs without this field default to false.
+            #[serde(rename = "is_binary")]
+            IsBinary,
+        }
 
         struct HDVectorVisitor;
         impl<'de> Visitor<'de> for HDVectorVisitor {
@@ -144,23 +153,29 @@ impl<'de> serde::Deserialize<'de> for HDVector {
             fn visit_seq<V: de::SeqAccess<'de>>(self, mut seq: V) -> Result<HDVector, V::Error> {
                 let dim = seq.next_element::<usize>()?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
                 let data = seq.next_element::<Vec<f64>>()?.ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                // is_binary is optional for backward compat with old 2-field blobs.
+                let is_binary = seq.next_element::<bool>()?.unwrap_or(false);
+                Ok(HDVector { dim, data: Arc::new(data), is_binary })
             }
             fn visit_map<M: de::MapAccess<'de>>(self, mut map: M) -> Result<HDVector, M::Error> {
                 let mut dim = None;
                 let mut data = None;
+                let mut is_binary = None;
                 while let Some(key) = map.next_key::<Field>()? {
                     match key {
                         Field::Dim => { dim = Some(map.next_value()?); }
                         Field::Data => { data = Some(map.next_value()?); }
+                        Field::IsBinary => { is_binary = Some(map.next_value()?); }
                     }
                 }
                 let dim = dim.ok_or_else(|| de::Error::missing_field("dim"))?;
                 let data = data.ok_or_else(|| de::Error::missing_field("data"))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                // Default to false for backward compat with old blobs.
+                let is_binary = is_binary.unwrap_or(false);
+                Ok(HDVector { dim, data: Arc::new(data), is_binary })
             }
         }
-        deserializer.deserialize_struct("HDVector", &["dim", "data"], HDVectorVisitor)
+        deserializer.deserialize_struct("HDVector", &["dim", "data", "is_binary"], HDVectorVisitor)
     }
 }
 
@@ -941,7 +956,11 @@ pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
             word_idx += 1;
         }
     }
-    BinaryHDVector { dim, words }
+    // Bug fix: clear phantom bits in the last word so equality checks and
+    // similarity computations are not corrupted when dim % 64 != 0.
+    let mut result = BinaryHDVector { dim, words };
+    result.clear_phantom_bits();
+    result
 }
 
 impl PartialEq for BinaryHDVector {
@@ -988,5 +1007,34 @@ mod tests {
         let actual = dot_product_slice(&a, &b);
         
         assert!((expected - actual).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_majority_from_sums_clears_phantom_bits() {
+        // Dim 65 has 2 u64 words; word 1 has only 1 valid bit (bit 0), bits 1..63 are phantom bits.
+        let sums = vec![1i64; 65];
+        let v = majority_from_sums(&sums, 65);
+        assert_eq!(v.dim(), 65);
+        assert_eq!(v.words().len(), 2);
+        // Bit 0 is 1, all phantom bits 1..63 must be 0
+        assert_eq!(v.words()[1], 1u64);
+        assert_eq!(v.words()[0], u64::MAX);
+    }
+
+    #[test]
+    fn test_hdvector_serde_preserves_is_binary() {
+        let v_binary = HDVector::random(128);
+        assert!(v_binary.is_binary());
+        let json = serde_json::to_string(&v_binary).expect("serialize json");
+        let restored: HDVector = serde_json::from_str(&json).expect("deserialize json");
+        assert_eq!(restored.is_binary(), v_binary.is_binary());
+        assert_eq!(restored.dim(), v_binary.dim());
+
+        // Also test non-binary
+        let v_non_binary = HDVector::from_slice(&vec![0.5; 128]);
+        assert!(!v_non_binary.is_binary());
+        let json_nb = serde_json::to_string(&v_non_binary).expect("serialize json");
+        let restored_nb: HDVector = serde_json::from_str(&json_nb).expect("deserialize json");
+        assert!(!restored_nb.is_binary());
     }
 }
