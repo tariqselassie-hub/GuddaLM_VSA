@@ -35,7 +35,7 @@ for line in lockfile.read_text(encoding="utf-8").splitlines():
 
 notice_lines = [
     "Dependency name,Version,License(as declared by upstream)",
-    "guddalm_vsa,0.1.0,AGPL-3.0",
+    "guddalm_vsa,0.1.1,AGPL-3.0",
 ]
 for dep_name, dep_version, _ in deps:
     notice_lines.append(f"{dep_name},{dep_version},(see package metadata)")
@@ -49,7 +49,7 @@ notice_md = [
     "",
     "| Dependency | Version | License | Source |",
     "| --- | --- | --- | --- |",
-    "| guddalm_vsa | 0.1.0 | AGPL-3.0 | local |",
+    "| guddalm_vsa | 0.1.1 | AGPL-3.0 | local |",
 ]
 for dep_name, dep_version, _ in deps:
     crates_io = f"https://crates.io/crates/{dep_name}"

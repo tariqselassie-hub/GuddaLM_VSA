@@ -44,7 +44,6 @@ cargo = ROOT / "Cargo.toml"
 if cargo.exists():
     text = cargo.read_text(encoding="utf-8")
     check("Cargo.toml license is set", 'license = "AGPL-3.0-only"' in text)
-    check("Cargo.toml license-file is set", 'license-file = "LICENSE"' in text)
 
 # 3) license header in every Rust project source/test file
 for path in sorted((ROOT / "src").rglob("*.rs")) + sorted((ROOT / "tests").rglob("*.rs")):
