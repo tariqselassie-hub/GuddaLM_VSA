@@ -1,10 +1,10 @@
 # Third Party Notices
 
-_Generated 2026-09-27 from `Cargo.lock`._
+_Generated 2026-10-30 from `Cargo.lock`._
 
 | Dependency | Version | License | Source |
 | --- | --- | --- | --- |
-| guddalm_vsa | 0.1.0 | AGPL-3.0 | local |
+| guddalm_vsa | 0.1.1 | AGPL-3.0 | local |
 | ahash | 0.8.12 | (see crates.io metadata) | https://crates.io/crates/ahash |
 | aho-corasick | 1.1.5 | (see crates.io metadata) | https://crates.io/crates/aho-corasick |
 | allocator-api2 | 0.2.21 | (see crates.io metadata) | https://crates.io/crates/allocator-api2 |
