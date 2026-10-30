@@ -1,5 +1,5 @@
 Dependency name,Version,License(as declared by upstream)
-guddalm_vsa,0.1.0,AGPL-3.0
+guddalm_vsa,0.1.1,AGPL-3.0
 ahash,0.8.12,(see package metadata)
 aho-corasick,1.1.5,(see package metadata)
 allocator-api2,0.2.21,(see package metadata)

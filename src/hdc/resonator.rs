@@ -327,8 +327,7 @@ mod tests {
             "two-factor resonator should converge or find a correct factor (got {:?})", result.factors);
     }
 
-    #[ignore]
-    #[allow(dead_code)]
+    #[test]
     fn test_resonator_auto_associative() {
         let dim = 4096;
         let vocab_size = 15;

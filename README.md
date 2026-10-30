@@ -12,7 +12,7 @@ Add `guddalm_vsa` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-guddalm_vsa = "0.1.0"
+guddalm_vsa = "0.1.1"
 ```
 
 Encode and query a key-value record in 10 lines:

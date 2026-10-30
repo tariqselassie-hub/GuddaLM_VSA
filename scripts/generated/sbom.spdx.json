@@ -3,9 +3,9 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "GuddaLM_VSA",
-  "documentNamespace": "https://spdx.guddalm_vsa/GuddaLM_VSA-2026-09-27",
+  "documentNamespace": "https://spdx.guddalm_vsa/GuddaLM_VSA-2026-10-30",
   "creationInfo": {
-    "created": "2026-09-27T20:41:42.672696+00:00",
+    "created": "2026-10-30T23:39:41.125756+00:00",
     "creators": [
       "Tool: guddalm_vsa-release-scripts"
     ]
