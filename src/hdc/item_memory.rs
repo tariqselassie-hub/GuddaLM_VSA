@@ -176,41 +176,23 @@ impl<V: VsaVector> ItemMemory<V> {
     /// Clean up a noisy or unbound vector by finding the symbol with maximum cosine similarity.
     ///
     /// Returns `Some((symbol_name, similarity))` or `None` if memory is empty.
-    pub fn cleanup(&self, query: &V) -> Option<(String, f64)> {
-        if self.vectors.is_empty() {
-            None
-        } else {
-            let mut best_idx = 0;
-            let mut best_sim = f64::NEG_INFINITY;
-
-            for (i, v) in self.vectors.iter().enumerate() {
-                let sim = query.cosine_similarity(v);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
-
-            Some((self.symbols[best_idx].clone(), best_sim))
-        }
+    pub fn cleanup(&self, query: &V) -> Option<(String, f64)>
+    where
+        V: Sync,
+    {
+        crate::search::best_by(self.vectors.len(), |i| query.cosine_similarity(&self.vectors[i]))
+            .map(|(i, sim)| (self.symbols[i].clone(), sim))
     }
 
     /// Return the top `k` most similar symbols sorted in descending order of similarity.
-    pub fn cleanup_top_k(&self, query: &V, k: usize) -> Vec<(String, f64)> {
-        if self.vectors.is_empty() || k == 0 {
-            Vec::new()
-        } else {
-            let mut scores: Vec<(String, f64)> = self.symbols
-                .iter()
-                .zip(self.vectors.iter())
-                .map(|(s, v)| (s.clone(), query.cosine_similarity(v)))
-                .collect();
-
-            // Sort descending by similarity score
-            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-            scores.truncate(k);
-            scores
-        }
+    pub fn cleanup_top_k(&self, query: &V, k: usize) -> Vec<(String, f64)>
+    where
+        V: Sync,
+    {
+        crate::search::top_k_by(self.vectors.len(), k, |i| query.cosine_similarity(&self.vectors[i]))
+            .into_iter()
+            .map(|(i, sim)| (self.symbols[i].clone(), sim))
+            .collect()
     }
 
     /// Slice of all registered symbol names.

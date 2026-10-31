@@ -21,15 +21,18 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::Mutex;
 use rayon::prelude::*;
-static VSA_ENGINES: OnceLock<Mutex<Vec<crate::vsa::VsaEngine>>> = OnceLock::new();
-pub fn get_vsa_engine(dim: usize) -> crate::vsa::VsaEngine {
+static VSA_ENGINES: OnceLock<Mutex<Vec<Arc<crate::vsa::VsaEngine>>>> = OnceLock::new();
+
+/// Shared permutation engine for `dim`. Engines are built once per dimension
+/// and handed out as `Arc`s, so callers never copy the permutation tables.
+pub fn get_vsa_engine(dim: usize) -> Arc<crate::vsa::VsaEngine> {
     let mutex = VSA_ENGINES.get_or_init(|| Mutex::new(Vec::new()));
     let mut engines = mutex.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(engine) = engines.iter().find(|e| e.dim == dim) {
-        return engine.clone();
+        return Arc::clone(engine);
     }
-    let engine = crate::vsa::VsaEngine::new(dim);
-    engines.push(engine.clone());
+    let engine = Arc::new(crate::vsa::VsaEngine::new(dim));
+    engines.push(Arc::clone(&engine));
     engine
 }
 
@@ -79,35 +82,71 @@ impl Complex {
     }
 }
 
-static FFT_PLANNER: OnceLock<Mutex<rustfft::FftPlanner<f64>>> = OnceLock::new();
+thread_local! {
+    // One planner per thread: rustfft caches plans inside the planner, so
+    // repeated transforms of the same length reuse the plan without locking.
+    static FFT_PLANNER: std::cell::RefCell<rustfft::FftPlanner<f64>> =
+        std::cell::RefCell::new(rustfft::FftPlanner::new());
+}
 
+/// In-place FFT of any length (rustfft picks mixed-radix / Bluestein plans
+/// for non-power-of-two sizes). The inverse transform is scaled by `1/n`.
 pub(crate) fn fft(data: &mut [Complex], inverse: bool) {
     let n = data.len();
-    assert!(n.is_power_of_two(), "FFT length must be a power of two");
-    
-    let planner_mutex = FFT_PLANNER.get_or_init(|| Mutex::new(rustfft::FftPlanner::new()));
-    let mut planner = planner_mutex.lock().unwrap();
-    let fft_obj = if inverse {
-        planner.plan_fft_inverse(n)
-    } else {
-        planner.plan_fft_forward(n)
-    };
-    
+    if n == 0 {
+        return;
+    }
+    let fft_obj = FFT_PLANNER.with(|planner| {
+        let mut planner = planner.borrow_mut();
+        if inverse {
+            planner.plan_fft_inverse(n)
+        } else {
+            planner.plan_fft_forward(n)
+        }
+    });
+
+    // SAFETY: `Complex` is `#[repr(C)]` with two `f64` fields, the same
+    // layout as `num_complex::Complex64`.
     let rustfft_data: &mut [rustfft::num_complex::Complex64] = unsafe {
         std::slice::from_raw_parts_mut(data.as_mut_ptr() as *mut rustfft::num_complex::Complex64, n)
     };
-    
+
     fft_obj.process(rustfft_data);
-    
+
     if inverse {
-        let scale = n as f64;
+        let scale = 1.0 / n as f64;
         for x in data.iter_mut() {
-            x.re /= scale;
-            x.im /= scale;
+            x.re *= scale;
+            x.im *= scale;
         }
     }
 }
 
+/// Un-normalized circular convolution (`conj_b = false`) or correlation
+/// (`conj_b = true`) of two real slices via FFT, O(n log n) for any length.
+pub(crate) fn fft_circular(a: &[f64], b: &[f64], conj_b: bool) -> Vec<f64> {
+    assert_eq!(a.len(), b.len());
+    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
+    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
+    fft(&mut a_c, false);
+    fft(&mut b_c, false);
+    for (x, y) in a_c.iter_mut().zip(b_c.iter()) {
+        *x = if conj_b { x.mul(y.conj()) } else { x.mul(*y) };
+    }
+    fft(&mut a_c, true);
+    a_c.into_iter().map(|x| x.re).collect()
+}
+
+fn l2_normalize(mut v: Vec<f64>) -> Vec<f64> {
+    let norm = v.iter().map(|x| x * x).sum::<f64>().sqrt();
+    if norm > 0.0 {
+        let inv = 1.0 / norm;
+        for x in v.iter_mut() {
+            *x *= inv;
+        }
+    }
+    v
+}
 
 /// Bipolar HD vector (+1, -1) using MAP (Multiply-Add-Permute) architecture.
 /// Binding = element-wise multiplication (self-inverse).
@@ -318,18 +357,7 @@ impl HDVector {
     #[inline(always)]
     pub fn cosine_similarity(&self, other: &HDVector) -> f64 {
         assert_eq!(self.dim, other.dim);
-        let dot: f64 = self
-            .data
-            .iter()
-            .zip(other.data.iter())
-            .map(|(a, b)| a * b)
-            .sum();
-        let norm_a: f64 = self.data.iter().map(|x| x * x).sum::<f64>().sqrt();
-        let norm_b: f64 = other.data.iter().map(|x| x * x).sum::<f64>().sqrt();
-        if norm_a == 0.0 || norm_b == 0.0 {
-            return 0.0;
-        }
-        (dot / (norm_a * norm_b)).clamp(-1.0, 1.0)
+        cosine_similarity_slice(&self.data, &other.data)
     }
     /// Sub-sample this vector to a lower dimension by truncation.
     ///
@@ -422,15 +450,44 @@ pub fn dot_product_slice(a: &[f64], b: &[f64]) -> f64 {
     a.iter().zip(b).map(|(x, y)| x * y).sum()
 }
 
+/// Dot product and both squared norms in a single pass over `a` and `b`.
+///
+/// Four independent accumulator lanes let the compiler vectorize the loop
+/// without needing to reassociate floating-point sums.
+#[inline]
+fn dot_and_sq_norms(a: &[f64], b: &[f64]) -> (f64, f64, f64) {
+    const LANES: usize = 4;
+    let mut dot = [0.0f64; LANES];
+    let mut na = [0.0f64; LANES];
+    let mut nb = [0.0f64; LANES];
+    let chunks_a = a.chunks_exact(LANES);
+    let chunks_b = b.chunks_exact(LANES);
+    let (rem_a, rem_b) = (chunks_a.remainder(), chunks_b.remainder());
+    for (ca, cb) in chunks_a.zip(chunks_b) {
+        for l in 0..LANES {
+            dot[l] += ca[l] * cb[l];
+            na[l] += ca[l] * ca[l];
+            nb[l] += cb[l] * cb[l];
+        }
+    }
+    let mut d: f64 = dot.iter().sum();
+    let mut sa: f64 = na.iter().sum();
+    let mut sb: f64 = nb.iter().sum();
+    for (x, y) in rem_a.iter().zip(rem_b) {
+        d += x * y;
+        sa += x * x;
+        sb += y * y;
+    }
+    (d, sa, sb)
+}
+
 pub fn cosine_similarity_slice(a: &[f64], b: &[f64]) -> f64 {
     assert_eq!(a.len(), b.len());
-    let dot = dot_product_slice(a, b);
-    let norm_a = a.iter().map(|x| x * x).sum::<f64>().sqrt();
-    let norm_b = b.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm_a == 0.0 || norm_b == 0.0 {
+    let (dot, sq_a, sq_b) = dot_and_sq_norms(a, b);
+    if sq_a == 0.0 || sq_b == 0.0 {
         return 0.0;
     }
-    (dot / (norm_a * norm_b)).clamp(-1.0, 1.0)
+    (dot / (sq_a * sq_b).sqrt()).clamp(-1.0, 1.0)
 }
 
 /// Optimized cosine similarity for bipolar vectors (all elements ±1).
@@ -468,44 +525,7 @@ pub fn bipolar_cosine_similarity(a: &HDVector, b: &HDVector) -> f64 {
 /// as `HDVector::bind` but operates directly on `&[f64]` to eliminate
 /// intermediate `Arc<Vec<f64>>` allocations.
 pub fn convolve_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    assert_eq!(dim, b.len());
-
-    let c = if dim.is_power_of_two() {
-        let mut a_complex: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-        let mut b_complex: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-
-        fft(&mut a_complex, false);
-        fft(&mut b_complex, false);
-
-        let mut c_complex = vec![Complex::zero(); dim];
-        for i in 0..dim {
-            c_complex[i] = a_complex[i].mul(b_complex[i]);
-        }
-
-        fft(&mut c_complex, true);
-        c_complex.iter().map(|x| x.re).collect()
-    } else {
-        let mut c_direct = vec![0.0; dim];
-        for i in 0..dim {
-            let mut sum = 0.0;
-            for j in 0..dim {
-                let k = if i >= j { i - j } else { dim + i - j };
-                sum += a[j] * b[k];
-            }
-            c_direct[i] = sum;
-        }
-        c_direct
-    };
-
-    let mut c_normalized = c;
-    let norm = c_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm > 0.0 {
-        for x in c_normalized.iter_mut() {
-            *x /= norm;
-        }
-    }
-    c_normalized
+    l2_normalize(fft_circular(a, b, false))
 }
 
 /// Circular correlation of two f64 slices (inverse of convolution) with L2 normalization.
@@ -513,44 +533,7 @@ pub fn convolve_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
 /// This is the same operation as `HDVector::unbind` but operates directly
 /// on `&[f64]` to eliminate intermediate `Arc<Vec<f64>>` allocations.
 pub fn correlate_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    assert_eq!(dim, b.len());
-
-    let d = if dim.is_power_of_two() {
-        let mut a_complex: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-        let mut b_complex: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-
-        fft(&mut a_complex, false);
-        fft(&mut b_complex, false);
-
-        let mut d_complex = vec![Complex::zero(); dim];
-        for i in 0..dim {
-            d_complex[i] = a_complex[i].mul(b_complex[i].conj());
-        }
-
-        fft(&mut d_complex, true);
-        d_complex.iter().map(|x| x.re).collect()
-    } else {
-        let mut a_direct = vec![0.0; dim];
-        for i in 0..dim {
-            let mut sum = 0.0;
-            for j in 0..dim {
-                let k = if j >= i { j - i } else { dim + j - i };
-                sum += a[j] * b[k];
-            }
-            a_direct[i] = sum;
-        }
-        a_direct
-    };
-
-    let mut d_normalized = d;
-    let norm = d_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm > 0.0 {
-        for x in d_normalized.iter_mut() {
-            *x /= norm;
-        }
-    }
-    d_normalized
+    l2_normalize(fft_circular(a, b, true))
 }
 
 /// Binary HD vector (0, 1) using BSC (Binary Spatter Coding) architecture.
@@ -988,5 +971,44 @@ mod tests {
         let actual = dot_product_slice(&a, &b);
         
         assert!((expected - actual).abs() < 1e-10);
+    }
+
+    /// Reference O(n²) circular convolution / correlation from the definitions.
+    fn direct_circular(a: &[f64], b: &[f64], correlate: bool) -> Vec<f64> {
+        let n = a.len();
+        (0..n)
+            .map(|i| {
+                (0..n)
+                    .map(|j| {
+                        let k = if correlate { (j + n - i) % n } else { (i + n - j) % n };
+                        a[j] * b[k]
+                    })
+                    .sum()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_fft_circular_matches_definition_any_length() {
+        // Powers of two, odd, prime and mixed-radix lengths.
+        for &n in &[8usize, 64, 100, 127, 1000, 1024] {
+            let a = HDVector::random(n);
+            let b = HDVector::random(n);
+            for &correlate in &[false, true] {
+                let expected = direct_circular(a.data(), b.data(), correlate);
+                let actual = fft_circular(a.data(), b.data(), correlate);
+                for (e, x) in expected.iter().zip(actual.iter()) {
+                    assert!((e - x).abs() < 1e-8, "n={n} correlate={correlate}: {e} vs {x}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_bind_unbind_round_trip_non_power_of_two() {
+        let a = HDVector::random(10_000);
+        let b = HDVector::random(10_000);
+        let recovered = a.bind(&b).unbind(&b);
+        assert!(a.cosine_similarity(&recovered) > 0.65);
     }
 }

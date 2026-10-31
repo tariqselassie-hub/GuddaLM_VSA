@@ -337,75 +337,11 @@ pub fn similarity_loss(pred: &GradHDVector, target: &HDVector) -> GradHDVector {
 // ── Raw convolution / correlation helpers (no normalization) ──
 
 pub(crate) fn raw_convolve(a: &HDVector, b: &HDVector) -> Vec<f64> {
-    let dim = a.dim();
-    if dim.is_power_of_two() {
-        fft_convolve(a.data(), b.data())
-    } else {
-        direct_convolve(a.data(), b.data())
-    }
+    super::vector::fft_circular(a.data(), b.data(), false)
 }
 
 pub(crate) fn raw_correlate(a: &HDVector, b: &HDVector) -> Vec<f64> {
-    let dim = a.dim();
-    if dim.is_power_of_two() {
-        fft_correlate(a.data(), b.data())
-    } else {
-        direct_correlate(a.data(), b.data())
-    }
-}
-
-fn fft_convolve(a: &[f64], b: &[f64]) -> Vec<f64> {
-    use super::vector::Complex;
-    let dim = a.len();
-    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    super::vector::fft(&mut a_c, false);
-    super::vector::fft(&mut b_c, false);
-    let mut c = vec![Complex::zero(); dim];
-    for i in 0..dim { c[i] = a_c[i].mul(b_c[i]); }
-    super::vector::fft(&mut c, true);
-    c.iter().map(|x| x.re).collect()
-}
-
-fn fft_correlate(a: &[f64], b: &[f64]) -> Vec<f64> {
-    use super::vector::Complex;
-    let dim = a.len();
-    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    super::vector::fft(&mut a_c, false);
-    super::vector::fft(&mut b_c, false);
-    let mut d = vec![Complex::zero(); dim];
-    for i in 0..dim { d[i] = a_c[i].mul(b_c[i].conj()); }
-    super::vector::fft(&mut d, true);
-    d.iter().map(|x| x.re).collect()
-}
-
-fn direct_convolve(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    let mut c = vec![0.0; dim];
-    for i in 0..dim {
-        let mut sum = 0.0;
-        for j in 0..dim {
-            let k = if i >= j { i - j } else { dim + i - j };
-            sum += a[j] * b[k];
-        }
-        c[i] = sum;
-    }
-    c
-}
-
-fn direct_correlate(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    let mut d = vec![0.0; dim];
-    for i in 0..dim {
-        let mut sum = 0.0;
-        for j in 0..dim {
-            let k = if j >= i { j - i } else { dim + j - i };
-            sum += a[j] * b[k];
-        }
-        d[i] = sum;
-    }
-    d
+    super::vector::fft_circular(a.data(), b.data(), true)
 }
 
 // ── Optimizer ─────────────────────────────────────────────────

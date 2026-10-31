@@ -74,28 +74,18 @@ impl CleanupMemory {
     /// Uses packed XNOR-popcount similarity when the codebook supports it,
     /// otherwise falls back to cosine similarity.
     pub fn cleanup(&self, query: &HDVector) -> CleanupResult {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
-
-        if self.use_packed && query.is_binary() {
+        let best = if self.use_packed && query.is_binary() {
             // Fast path: bit-packed similarity
-            for (i, packed) in self.codebook.packed.iter().enumerate() {
-                let sim = crate::hdc::quantize::packed_similarity(query, packed);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
+            let packed = &self.codebook.packed;
+            crate::search::best_by(packed.len(), |i| {
+                crate::hdc::quantize::packed_similarity(query, &packed[i])
+            })
         } else {
             // General path: cosine similarity
-            for (i, w) in self.codebook.weights.iter().enumerate() {
-                let sim = HDVector::cosine_similarity(query, w);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
-        }
+            let weights = &self.codebook.weights;
+            crate::search::best_by(weights.len(), |i| HDVector::cosine_similarity(query, &weights[i]))
+        };
+        let (best_idx, best_sim) = best.unwrap_or((0, f64::NEG_INFINITY));
 
         CleanupResult {
             index: best_idx,

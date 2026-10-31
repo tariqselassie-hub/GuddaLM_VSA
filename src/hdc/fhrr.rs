@@ -221,8 +221,6 @@ impl FHRRVector {
     /// Project a real-valued spatial vector (HDVector) onto FHRR space in the frequency domain.
     /// Transforms the real vector via FFT and projects onto unit circle to get phase angles.
     pub fn project_real(vec: &HDVector) -> FHRRVector {
-        let dim = vec.dim();
-        assert!(dim.is_power_of_two(), "FFT projection requires power-of-two dimension");
         let mut complex_data: Vec<Complex> = vec.data().iter()
             .map(|&x| Complex { re: x, im: 0.0 })
             .collect();
