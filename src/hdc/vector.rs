@@ -13,23 +13,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use rayon::prelude::*;
 use serde::de::{self, Visitor};
 use serde::ser::SerializeStruct;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::sync::Arc;
-use std::sync::OnceLock;
 use std::sync::Mutex;
-use rayon::prelude::*;
-static VSA_ENGINES: OnceLock<Mutex<Vec<crate::vsa::VsaEngine>>> = OnceLock::new();
-pub fn get_vsa_engine(dim: usize) -> crate::vsa::VsaEngine {
+use std::sync::OnceLock;
+static VSA_ENGINES: OnceLock<Mutex<Vec<Arc<crate::vsa::VsaEngine>>>> = OnceLock::new();
+
+/// Shared permutation engine for `dim`. Engines are built once per dimension
+/// and handed out as `Arc`s, so callers never copy the permutation tables.
+pub fn get_vsa_engine(dim: usize) -> Arc<crate::vsa::VsaEngine> {
     let mutex = VSA_ENGINES.get_or_init(|| Mutex::new(Vec::new()));
     let mut engines = mutex.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(engine) = engines.iter().find(|e| e.dim == dim) {
-        return engine.clone();
+        return Arc::clone(engine);
     }
-    let engine = crate::vsa::VsaEngine::new(dim);
-    engines.push(engine.clone());
+    let engine = Arc::new(crate::vsa::VsaEngine::new(dim));
+    engines.push(Arc::clone(&engine));
     engine
 }
 
@@ -42,18 +45,13 @@ pub struct Complex {
 
 impl Complex {
     #[inline(always)]
-    pub(crate) fn zero() -> Self {
-        Complex { re: 0.0, im: 0.0 }
-    }
-    
-    #[inline(always)]
     pub(crate) fn add(self, other: Self) -> Self {
         Complex {
             re: self.re + other.re,
             im: self.im + other.im,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn sub(self, other: Self) -> Self {
         Complex {
@@ -61,7 +59,7 @@ impl Complex {
             im: self.im - other.im,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn mul(self, other: Self) -> Self {
         Complex {
@@ -69,7 +67,7 @@ impl Complex {
             im: self.re * other.im + self.im * other.re,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn conj(self) -> Self {
         Complex {
@@ -79,35 +77,71 @@ impl Complex {
     }
 }
 
-static FFT_PLANNER: OnceLock<Mutex<rustfft::FftPlanner<f64>>> = OnceLock::new();
+thread_local! {
+    // One planner per thread: rustfft caches plans inside the planner, so
+    // repeated transforms of the same length reuse the plan without locking.
+    static FFT_PLANNER: std::cell::RefCell<rustfft::FftPlanner<f64>> =
+        std::cell::RefCell::new(rustfft::FftPlanner::new());
+}
 
+/// In-place FFT of any length (rustfft picks mixed-radix / Bluestein plans
+/// for non-power-of-two sizes). The inverse transform is scaled by `1/n`.
 pub(crate) fn fft(data: &mut [Complex], inverse: bool) {
     let n = data.len();
-    assert!(n.is_power_of_two(), "FFT length must be a power of two");
-    
-    let planner_mutex = FFT_PLANNER.get_or_init(|| Mutex::new(rustfft::FftPlanner::new()));
-    let mut planner = planner_mutex.lock().unwrap();
-    let fft_obj = if inverse {
-        planner.plan_fft_inverse(n)
-    } else {
-        planner.plan_fft_forward(n)
-    };
-    
+    if n == 0 {
+        return;
+    }
+    let fft_obj = FFT_PLANNER.with(|planner| {
+        let mut planner = planner.borrow_mut();
+        if inverse {
+            planner.plan_fft_inverse(n)
+        } else {
+            planner.plan_fft_forward(n)
+        }
+    });
+
+    // SAFETY: `Complex` is `#[repr(C)]` with two `f64` fields, the same
+    // layout as `num_complex::Complex64`.
     let rustfft_data: &mut [rustfft::num_complex::Complex64] = unsafe {
         std::slice::from_raw_parts_mut(data.as_mut_ptr() as *mut rustfft::num_complex::Complex64, n)
     };
-    
+
     fft_obj.process(rustfft_data);
-    
+
     if inverse {
-        let scale = n as f64;
+        let scale = 1.0 / n as f64;
         for x in data.iter_mut() {
-            x.re /= scale;
-            x.im /= scale;
+            x.re *= scale;
+            x.im *= scale;
         }
     }
 }
 
+/// Un-normalized circular convolution (`conj_b = false`) or correlation
+/// (`conj_b = true`) of two real slices via FFT, O(n log n) for any length.
+pub(crate) fn fft_circular(a: &[f64], b: &[f64], conj_b: bool) -> Vec<f64> {
+    assert_eq!(a.len(), b.len());
+    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
+    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
+    fft(&mut a_c, false);
+    fft(&mut b_c, false);
+    for (x, y) in a_c.iter_mut().zip(b_c.iter()) {
+        *x = if conj_b { x.mul(y.conj()) } else { x.mul(*y) };
+    }
+    fft(&mut a_c, true);
+    a_c.into_iter().map(|x| x.re).collect()
+}
+
+fn l2_normalize(mut v: Vec<f64>) -> Vec<f64> {
+    let norm = v.iter().map(|x| x * x).sum::<f64>().sqrt();
+    if norm > 0.0 {
+        let inv = 1.0 / norm;
+        for x in v.iter_mut() {
+            *x *= inv;
+        }
+    }
+    v
+}
 
 /// Bipolar HD vector (+1, -1) using MAP (Multiply-Add-Permute) architecture.
 /// Binding = element-wise multiplication (self-inverse).
@@ -133,7 +167,10 @@ impl<'de> serde::Deserialize<'de> for HDVector {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "lowercase")]
-        enum Field { Dim, Data }
+        enum Field {
+            Dim,
+            Data,
+        }
 
         struct HDVectorVisitor;
         impl<'de> Visitor<'de> for HDVectorVisitor {
@@ -142,22 +179,38 @@ impl<'de> serde::Deserialize<'de> for HDVector {
                 formatter.write_str("struct HDVector")
             }
             fn visit_seq<V: de::SeqAccess<'de>>(self, mut seq: V) -> Result<HDVector, V::Error> {
-                let dim = seq.next_element::<usize>()?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let data = seq.next_element::<Vec<f64>>()?.ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                let dim = seq
+                    .next_element::<usize>()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let data = seq
+                    .next_element::<Vec<f64>>()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                Ok(HDVector {
+                    dim,
+                    data: Arc::new(data),
+                    is_binary: false,
+                })
             }
             fn visit_map<M: de::MapAccess<'de>>(self, mut map: M) -> Result<HDVector, M::Error> {
                 let mut dim = None;
                 let mut data = None;
                 while let Some(key) = map.next_key::<Field>()? {
                     match key {
-                        Field::Dim => { dim = Some(map.next_value()?); }
-                        Field::Data => { data = Some(map.next_value()?); }
+                        Field::Dim => {
+                            dim = Some(map.next_value()?);
+                        }
+                        Field::Data => {
+                            data = Some(map.next_value()?);
+                        }
                     }
                 }
                 let dim = dim.ok_or_else(|| de::Error::missing_field("dim"))?;
                 let data = data.ok_or_else(|| de::Error::missing_field("data"))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                Ok(HDVector {
+                    dim,
+                    data: Arc::new(data),
+                    is_binary: false,
+                })
             }
         }
         deserializer.deserialize_struct("HDVector", &["dim", "data"], HDVectorVisitor)
@@ -198,6 +251,15 @@ impl HDVector {
             dim: slice.len(),
             data: Arc::new(slice.to_vec()),
             is_binary,
+        }
+    }
+
+    /// Take ownership of `data` without copying it.
+    pub fn from_vec(data: Vec<f64>) -> Self {
+        HDVector {
+            dim: data.len(),
+            data: Arc::new(data),
+            is_binary: false,
         }
     }
 
@@ -291,8 +353,14 @@ impl HDVector {
         // dimension index.  This ensures reproducibility while maintaining
         // the ~50/50 split that random tie-breaking provides.
         let tie_dash = |i: usize| -> f64 {
-            let h = (i as u64).wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-            if (h >> 63) & 1 == 0 { 1.0 } else { -1.0 }
+            let h = (i as u64)
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            if (h >> 63) & 1 == 0 {
+                1.0
+            } else {
+                -1.0
+            }
         };
         let data: Vec<f64> = self
             .data
@@ -318,18 +386,7 @@ impl HDVector {
     #[inline(always)]
     pub fn cosine_similarity(&self, other: &HDVector) -> f64 {
         assert_eq!(self.dim, other.dim);
-        let dot: f64 = self
-            .data
-            .iter()
-            .zip(other.data.iter())
-            .map(|(a, b)| a * b)
-            .sum();
-        let norm_a: f64 = self.data.iter().map(|x| x * x).sum::<f64>().sqrt();
-        let norm_b: f64 = other.data.iter().map(|x| x * x).sum::<f64>().sqrt();
-        if norm_a == 0.0 || norm_b == 0.0 {
-            return 0.0;
-        }
-        (dot / (norm_a * norm_b)).clamp(-1.0, 1.0)
+        cosine_similarity_slice(&self.data, &other.data)
     }
     /// Sub-sample this vector to a lower dimension by truncation.
     ///
@@ -383,28 +440,28 @@ impl PartialEq for HDVector {
 
 impl Eq for HDVector {}
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2", enable = "fma")]
 unsafe fn dot_product_slice_avx2(a: &[f64], b: &[f64]) -> f64 {
     use std::arch::x86_64::*;
-    
+
     let len = a.len().min(b.len());
     let chunks = len / 4;
     let mut sum_vec = _mm256_setzero_pd();
-    
+
     let a_ptr = a.as_ptr();
     let b_ptr = b.as_ptr();
-    
+
     for i in 0..chunks {
         let va = _mm256_loadu_pd(a_ptr.add(i * 4));
         let vb = _mm256_loadu_pd(b_ptr.add(i * 4));
         sum_vec = _mm256_fmadd_pd(va, vb, sum_vec);
     }
-    
+
     let mut temp = [0.0; 4];
     _mm256_storeu_pd(temp.as_mut_ptr(), sum_vec);
     let mut dot = temp[0] + temp[1] + temp[2] + temp[3];
-    
+
     for i in (chunks * 4)..len {
         dot += a[i] * b[i];
     }
@@ -413,7 +470,7 @@ unsafe fn dot_product_slice_avx2(a: &[f64], b: &[f64]) -> f64 {
 
 #[inline(always)]
 pub fn dot_product_slice(a: &[f64], b: &[f64]) -> f64 {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(target_arch = "x86_64")]
     {
         if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
             return unsafe { dot_product_slice_avx2(a, b) };
@@ -422,15 +479,44 @@ pub fn dot_product_slice(a: &[f64], b: &[f64]) -> f64 {
     a.iter().zip(b).map(|(x, y)| x * y).sum()
 }
 
+/// Dot product and both squared norms in a single pass over `a` and `b`.
+///
+/// Four independent accumulator lanes let the compiler vectorize the loop
+/// without needing to reassociate floating-point sums.
+#[inline]
+fn dot_and_sq_norms(a: &[f64], b: &[f64]) -> (f64, f64, f64) {
+    const LANES: usize = 4;
+    let mut dot = [0.0f64; LANES];
+    let mut na = [0.0f64; LANES];
+    let mut nb = [0.0f64; LANES];
+    let chunks_a = a.chunks_exact(LANES);
+    let chunks_b = b.chunks_exact(LANES);
+    let (rem_a, rem_b) = (chunks_a.remainder(), chunks_b.remainder());
+    for (ca, cb) in chunks_a.zip(chunks_b) {
+        for l in 0..LANES {
+            dot[l] += ca[l] * cb[l];
+            na[l] += ca[l] * ca[l];
+            nb[l] += cb[l] * cb[l];
+        }
+    }
+    let mut d: f64 = dot.iter().sum();
+    let mut sa: f64 = na.iter().sum();
+    let mut sb: f64 = nb.iter().sum();
+    for (x, y) in rem_a.iter().zip(rem_b) {
+        d += x * y;
+        sa += x * x;
+        sb += y * y;
+    }
+    (d, sa, sb)
+}
+
 pub fn cosine_similarity_slice(a: &[f64], b: &[f64]) -> f64 {
     assert_eq!(a.len(), b.len());
-    let dot = dot_product_slice(a, b);
-    let norm_a = a.iter().map(|x| x * x).sum::<f64>().sqrt();
-    let norm_b = b.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm_a == 0.0 || norm_b == 0.0 {
+    let (dot, sq_a, sq_b) = dot_and_sq_norms(a, b);
+    if sq_a == 0.0 || sq_b == 0.0 {
         return 0.0;
     }
-    (dot / (norm_a * norm_b)).clamp(-1.0, 1.0)
+    (dot / (sq_a * sq_b).sqrt()).clamp(-1.0, 1.0)
 }
 
 /// Optimized cosine similarity for bipolar vectors (all elements ±1).
@@ -457,7 +543,12 @@ pub fn bipolar_cosine_similarity_slice(a: &[f64], b: &[f64]) -> f64 {
 pub fn bipolar_cosine_similarity(a: &HDVector, b: &HDVector) -> f64 {
     assert_eq!(a.dim(), b.dim());
     let dim = a.dim() as f64;
-    let dot = a.data().iter().zip(b.data().iter()).map(|(x, y)| x * y).sum::<f64>();
+    let dot = a
+        .data()
+        .iter()
+        .zip(b.data().iter())
+        .map(|(x, y)| x * y)
+        .sum::<f64>();
     (dot / dim).clamp(-1.0, 1.0)
 }
 
@@ -468,44 +559,7 @@ pub fn bipolar_cosine_similarity(a: &HDVector, b: &HDVector) -> f64 {
 /// as `HDVector::bind` but operates directly on `&[f64]` to eliminate
 /// intermediate `Arc<Vec<f64>>` allocations.
 pub fn convolve_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    assert_eq!(dim, b.len());
-
-    let c = if dim.is_power_of_two() {
-        let mut a_complex: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-        let mut b_complex: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-
-        fft(&mut a_complex, false);
-        fft(&mut b_complex, false);
-
-        let mut c_complex = vec![Complex::zero(); dim];
-        for i in 0..dim {
-            c_complex[i] = a_complex[i].mul(b_complex[i]);
-        }
-
-        fft(&mut c_complex, true);
-        c_complex.iter().map(|x| x.re).collect()
-    } else {
-        let mut c_direct = vec![0.0; dim];
-        for i in 0..dim {
-            let mut sum = 0.0;
-            for j in 0..dim {
-                let k = if i >= j { i - j } else { dim + i - j };
-                sum += a[j] * b[k];
-            }
-            c_direct[i] = sum;
-        }
-        c_direct
-    };
-
-    let mut c_normalized = c;
-    let norm = c_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm > 0.0 {
-        for x in c_normalized.iter_mut() {
-            *x /= norm;
-        }
-    }
-    c_normalized
+    l2_normalize(fft_circular(a, b, false))
 }
 
 /// Circular correlation of two f64 slices (inverse of convolution) with L2 normalization.
@@ -513,44 +567,7 @@ pub fn convolve_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
 /// This is the same operation as `HDVector::unbind` but operates directly
 /// on `&[f64]` to eliminate intermediate `Arc<Vec<f64>>` allocations.
 pub fn correlate_slices(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    assert_eq!(dim, b.len());
-
-    let d = if dim.is_power_of_two() {
-        let mut a_complex: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-        let mut b_complex: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-
-        fft(&mut a_complex, false);
-        fft(&mut b_complex, false);
-
-        let mut d_complex = vec![Complex::zero(); dim];
-        for i in 0..dim {
-            d_complex[i] = a_complex[i].mul(b_complex[i].conj());
-        }
-
-        fft(&mut d_complex, true);
-        d_complex.iter().map(|x| x.re).collect()
-    } else {
-        let mut a_direct = vec![0.0; dim];
-        for i in 0..dim {
-            let mut sum = 0.0;
-            for j in 0..dim {
-                let k = if j >= i { j - i } else { dim + j - i };
-                sum += a[j] * b[k];
-            }
-            a_direct[i] = sum;
-        }
-        a_direct
-    };
-
-    let mut d_normalized = d;
-    let norm = d_normalized.iter().map(|x| x * x).sum::<f64>().sqrt();
-    if norm > 0.0 {
-        for x in d_normalized.iter_mut() {
-            *x /= norm;
-        }
-    }
-    d_normalized
+    l2_normalize(fft_circular(a, b, true))
 }
 
 /// Binary HD vector (0, 1) using BSC (Binary Spatter Coding) architecture.
@@ -598,10 +615,7 @@ impl BinaryHDVector {
                 word_idx += 1;
             }
         }
-        let mut v = BinaryHDVector {
-            dim,
-            words,
-        };
+        let mut v = BinaryHDVector { dim, words };
         v.clear_phantom_bits();
         v
     }
@@ -651,15 +665,8 @@ impl BinaryHDVector {
 
     pub fn to_bits(&self) -> Vec<u8> {
         let mut bits = vec![0u8; self.dim];
-        let mut word_idx = 0;
-        let mut bit_idx = 0;
-        for i in 0..self.dim {
-            bits[i] = ((self.words[word_idx] >> bit_idx) & 1) as u8;
-            bit_idx += 1;
-            if bit_idx == 64 {
-                bit_idx = 0;
-                word_idx += 1;
-            }
+        for (i, b) in bits.iter_mut().enumerate() {
+            *b = ((self.words[i / 64] >> (i % 64)) & 1) as u8;
         }
         bits
     }
@@ -752,24 +759,22 @@ impl BinaryHDVector {
         let tie_breaker = &vectors[0];
         let mut words = vec![0u64; n_words];
 
-        for w_idx in 0..n_words {
-            let start_bit = w_idx * 64;
-            let end_bit = (start_bit + 64).min(dim);
-            
+        for (w_idx, out) in words.iter_mut().enumerate() {
+            let width = (dim - w_idx * 64).min(64);
+
             let mut counts = [0i32; 64];
             for v in vectors {
                 assert_eq!(v.dim, dim);
                 let word = v.words[w_idx];
-                for bit_idx in 0..(end_bit - start_bit) {
+                for (bit_idx, c) in counts.iter_mut().take(width).enumerate() {
                     let bit = (word >> bit_idx) & 1;
-                    counts[bit_idx] += if bit == 1 { 1 } else { -1 };
+                    *c += if bit == 1 { 1 } else { -1 };
                 }
             }
-            
+
             let tie_word = tie_breaker.words[w_idx];
             let mut final_word = 0u64;
-            for bit_idx in 0..(end_bit - start_bit) {
-                let c = counts[bit_idx];
+            for (bit_idx, &c) in counts.iter().take(width).enumerate() {
                 let bit = if c > 0 {
                     1
                 } else if c < 0 {
@@ -779,7 +784,7 @@ impl BinaryHDVector {
                 };
                 final_word |= bit << bit_idx;
             }
-            words[w_idx] = final_word;
+            *out = final_word;
         }
 
         let mut result = BinaryHDVector { dim, words };
@@ -798,7 +803,7 @@ impl BinaryHDVector {
         }
 
         let n_words = self.words.len();
-        
+
         // Fast path for dimensions that are multiples of 64
         if self.dim.is_multiple_of(64) {
             let word_shift = bit_shift / 64;
@@ -832,17 +837,17 @@ impl BinaryHDVector {
         let mut dst = bit_shift;
         let mut dst_word_idx = dst / 64;
         let mut dst_bit_idx = dst % 64;
-        
+
         for _ in 0..self.dim {
             let src_bit = (self.words[src_word_idx] >> src_bit_idx) & 1;
             new_words[dst_word_idx] |= src_bit << dst_bit_idx;
-            
+
             src_bit_idx += 1;
             if src_bit_idx == 64 {
                 src_bit_idx = 0;
                 src_word_idx += 1;
             }
-            
+
             dst += 1;
             if dst == self.dim {
                 dst = 0;
@@ -922,24 +927,17 @@ impl BinaryHDVector {
 pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
     let n_words = dim.div_ceil(64);
     let mut words = vec![0u64; n_words];
-    let mut word_idx = 0;
-    let mut bit_idx = 0;
-    for i in 0..dim {
-        let bit = if sums[i] > 0 {
+    for (i, &s) in sums.iter().enumerate().take(dim) {
+        let bit = if s > 0 {
             1u64
-        } else if sums[i] < 0 {
+        } else if s < 0 {
             0u64
         } else {
             // Deterministic tie-breaking using a hash of the bit position
             let h = (i as u64).wrapping_mul(0x9E3779B97F4A7C15);
             (h >> 63) & 1
         };
-        words[word_idx] |= bit << bit_idx;
-        bit_idx += 1;
-        if bit_idx == 64 {
-            bit_idx = 0;
-            word_idx += 1;
-        }
+        words[i / 64] |= bit << (i % 64);
     }
     BinaryHDVector { dim, words }
 }
@@ -955,22 +953,19 @@ impl Eq for BinaryHDVector {}
 /// Parallel batch convolution: convolve a single vector against multiple
 /// others using rayon.
 pub fn par_convolve_batch(a: &[f64], batch: &[&[f64]]) -> Vec<Vec<f64>> {
-    batch.par_iter()
-        .map(|b| convolve_slices(a, b))
-        .collect()
+    batch.par_iter().map(|b| convolve_slices(a, b)).collect()
 }
 
 /// Parallel batch correlation: correlate a single vector against multiple
 /// others using rayon.
 pub fn par_correlate_batch(a: &[f64], batch: &[&[f64]]) -> Vec<Vec<f64>> {
-    batch.par_iter()
-        .map(|b| correlate_slices(a, b))
-        .collect()
+    batch.par_iter().map(|b| correlate_slices(a, b)).collect()
 }
 
 /// Parallel cosine similarity: compute similarities between pairs of slices.
 pub fn par_cosine_similarity_slice(a: &[f64], batch: &[&[f64]]) -> Vec<f64> {
-    batch.par_iter()
+    batch
+        .par_iter()
         .map(|b| cosine_similarity_slice(a, b))
         .collect()
 }
@@ -983,10 +978,56 @@ mod tests {
     fn test_dot_product_slice_avx2_equivalence() {
         let a = vec![1.5, -2.0, 3.25, 4.0, -0.5, 0.25, 9.75, 11.1];
         let b = vec![0.5, 4.0, -2.0, 1.5, 8.0, -6.0, 1.25, 0.1];
-        
+
         let expected = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f64>();
         let actual = dot_product_slice(&a, &b);
-        
+
         assert!((expected - actual).abs() < 1e-10);
+    }
+
+    /// Reference O(n²) circular convolution / correlation from the definitions.
+    fn direct_circular(a: &[f64], b: &[f64], correlate: bool) -> Vec<f64> {
+        let n = a.len();
+        (0..n)
+            .map(|i| {
+                (0..n)
+                    .map(|j| {
+                        let k = if correlate {
+                            (j + n - i) % n
+                        } else {
+                            (i + n - j) % n
+                        };
+                        a[j] * b[k]
+                    })
+                    .sum()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_fft_circular_matches_definition_any_length() {
+        // Powers of two, odd, prime and mixed-radix lengths.
+        for &n in &[8usize, 64, 100, 127, 1000, 1024] {
+            let a = HDVector::random(n);
+            let b = HDVector::random(n);
+            for &correlate in &[false, true] {
+                let expected = direct_circular(a.data(), b.data(), correlate);
+                let actual = fft_circular(a.data(), b.data(), correlate);
+                for (e, x) in expected.iter().zip(actual.iter()) {
+                    assert!(
+                        (e - x).abs() < 1e-8,
+                        "n={n} correlate={correlate}: {e} vs {x}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_bind_unbind_round_trip_non_power_of_two() {
+        let a = HDVector::random(10_000);
+        let b = HDVector::random(10_000);
+        let recovered = a.bind(&b).unbind(&b);
+        assert!(a.cosine_similarity(&recovered) > 0.65);
     }
 }

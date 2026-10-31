@@ -26,7 +26,7 @@ pub use crate::hdc::vector::BinaryHDVector;
 pub struct BscSetup;
 
 impl BscSetup {
-    pub const DEFAULT_DIM: usize = 4096;
+    pub const DEFAULT_DIM: usize = crate::dimensions::BSC_DEFAULT_DIM;
 
     /// Convert a MAP bipolar vector into BSC bit-packed form.
     #[inline(always)]

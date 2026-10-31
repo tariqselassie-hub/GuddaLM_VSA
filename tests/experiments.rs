@@ -12,29 +12,30 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-/// Pushing the VSA crate to its limits — 3 experiments
-///
-/// Run with:
-///   cargo test --package guddalm_vsa --test experiments -- --nocapture
-///
-/// These experiments test capabilities NOT covered by the existing
-/// stress_tests: FHRR capacity at scale, GHRR non-commutative graph
-/// encoding, and autograd throughput/fidelity.
+//! Pushing the VSA crate to its limits — 3 experiments
+//!
+//! Run with:
+//!   cargo test --package guddalm_vsa --test experiments -- --nocapture
+//!
+//! These experiments test capabilities NOT covered by the existing
+//! stress_tests: FHRR capacity at scale, GHRR non-commutative graph
+//! encoding, and autograd throughput/fidelity.
 
-use std::time::Instant;
 use rand::Rng;
+use std::time::Instant;
 
-use guddalm_vsa::hdc::vector::HDVector;
+use guddalm_vsa::hdc::autograd::{
+    backward, diff_bind, diff_bundle, diff_permute, similarity_loss, GradHDVector, SGDOptimizer,
+};
+use guddalm_vsa::hdc::bundle::bundle_vectors;
 use guddalm_vsa::hdc::fhrr::FHRRVector;
 use guddalm_vsa::hdc::ghrr::GHRRVector;
-use guddalm_vsa::hdc::bundle::bundle_vectors;
-use guddalm_vsa::hdc::graph::{GraphEncoder, GhrrGraphEncoder};
-use guddalm_vsa::hdc::autograd::{
-    backward, diff_bind, diff_bundle, diff_permute, similarity_loss,
-    GradHDVector, SGDOptimizer,
+use guddalm_vsa::hdc::graph::{GhrrGraphEncoder, GraphEncoder};
+use guddalm_vsa::hdc::resonator::{
+    resonator_search, resonator_search_auto, resonator_search_auto_acf,
 };
+use guddalm_vsa::hdc::vector::HDVector;
 use guddalm_vsa::vsa::Codebook;
-use guddalm_vsa::hdc::resonator::{resonator_search, resonator_search_auto, resonator_search_auto_acf};
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -76,7 +77,9 @@ fn header(title: &str) {
     println!("\n  {} {}", LINE, title);
 }
 
-fn dims() -> &'static [usize] { &[256, 512, 1024] }
+fn dims() -> &'static [usize] {
+    &[256, 512, 1024]
+}
 
 // ═══════════════════════════════════════════════════════════════
 // EXPERIMENT 1: FHRR vs MAP Bundling Capacity
@@ -99,15 +102,7 @@ fn experiment_fhrr_vs_map_capacity() {
 
     for &dim in dims() {
         let max_n = dim * 4;
-        let test_ns = [
-            dim / 8,
-            dim / 4,
-            dim / 2,
-            dim,
-            dim * 2,
-            dim * 3,
-            dim * 4,
-        ];
+        let test_ns = [dim / 8, dim / 4, dim / 2, dim, dim * 2, dim * 3, dim * 4];
 
         for &n in &test_ns {
             if n > max_n || n < 1 {
@@ -116,18 +111,15 @@ fn experiment_fhrr_vs_map_capacity() {
 
             // MAP bundle
             let target_map = HDVector::random(dim);
-            let mut others_map: Vec<HDVector> = (0..n - 1)
-                .map(|_| HDVector::random(dim))
-                .collect();
+            let mut others_map: Vec<HDVector> = (0..n - 1).map(|_| HDVector::random(dim)).collect();
             others_map.push(target_map.clone());
             let bundle_map = bundle_vectors(&others_map);
             let sim_map = bundle_map.cosine_similarity(&target_map);
 
             // FHRR bundle
             let target_fhrr = FHRRVector::random(dim);
-            let mut others_fhrr: Vec<FHRRVector> = (0..n - 1)
-                .map(|_| FHRRVector::random(dim))
-                .collect();
+            let mut others_fhrr: Vec<FHRRVector> =
+                (0..n - 1).map(|_| FHRRVector::random(dim)).collect();
             others_fhrr.push(target_fhrr.clone());
             let bundle_fhrr = FHRRVector::bundle_all(&others_fhrr);
             let sim_fhrr = bundle_fhrr.cosine_similarity(&target_fhrr);
@@ -346,7 +338,11 @@ fn experiment_autograd_throughput() {
             50,
         );
 
-        let bind_overhead = if fwd_ns > 0.0 { fwd_bk_ns / fwd_ns } else { 0.0 };
+        let bind_overhead = if fwd_ns > 0.0 {
+            fwd_bk_ns / fwd_ns
+        } else {
+            0.0
+        };
 
         // Bundle forward only
         let gc = GradHDVector::param(a.clone());
@@ -373,7 +369,11 @@ fn experiment_autograd_throughput() {
             50,
         );
 
-        let bundle_overhead = if b_fwd_ns > 0.0 { b_fwd_bk_ns / b_fwd_ns } else { 0.0 };
+        let bundle_overhead = if b_fwd_ns > 0.0 {
+            b_fwd_bk_ns / b_fwd_ns
+        } else {
+            0.0
+        };
 
         println!(
             "  {:>4}  │ {:>7}   {:>7}     {:>5.1}× │ {:>7}   {:>7}     {:>5.1}×",
@@ -619,7 +619,9 @@ fn experiment_autograd_throughput() {
     println!();
     println!("  ── Single-factor lookup (codebook size = 100) ──");
     println!("  D     │ SGD final cosim  │ Resonator cosim  │ Resonator iters  │ Resonator exact?");
-    println!("  ──────┼──────────────────┼───────────────────┼──────────────────┼─────────────────");
+    println!(
+        "  ──────┼──────────────────┼───────────────────┼──────────────────┼─────────────────"
+    );
 
     for &dim in &[256, 512, 1024] {
         let codebook = Codebook::random(100, dim);
@@ -645,7 +647,9 @@ fn experiment_autograd_throughput() {
             let cur = param.value();
             let test = cur.bind(&key);
             let cosim = test.cosine_similarity(target);
-            if cosim > sgd_best { sgd_best = cosim; }
+            if cosim > sgd_best {
+                sgd_best = cosim;
+            }
         }
 
         // --- Resonator attempt ---
@@ -681,7 +685,9 @@ fn experiment_autograd_throughput() {
             let idx_a = rand::thread_rng().gen_range(0..vocab);
             let idx_b = {
                 let mut b = rand::thread_rng().gen_range(0..vocab);
-                while b == idx_a { b = rand::thread_rng().gen_range(0..vocab); }
+                while b == idx_a {
+                    b = rand::thread_rng().gen_range(0..vocab);
+                }
                 b
             };
             let a = &codebook.weights[idx_a];
@@ -705,7 +711,9 @@ fn experiment_autograd_throughput() {
                 opt.step();
 
                 let cosim = ga.value().cosine_similarity(a);
-                if cosim > sgd_best { sgd_best = cosim; }
+                if cosim > sgd_best {
+                    sgd_best = cosim;
+                }
             }
 
             // Standard resonator: factorize a ⊛ b auto-associatively
@@ -739,7 +747,13 @@ fn experiment_autograd_throughput() {
                 std_cosim,
                 acf_cosim,
                 acf_res.iterations,
-                if found_a && found_b { "✓✓" } else if found_a || found_b { "✓" } else { "✗" }
+                if found_a && found_b {
+                    "✓✓"
+                } else if found_a || found_b {
+                    "✓"
+                } else {
+                    "✗"
+                }
             );
         }
     }

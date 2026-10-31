@@ -12,20 +12,19 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-/// Sparse Distributed Memory (SDM) — optimal radius calculations.
-///
-/// SDM operates in N-dimensional binary space. Given a read address (query),
-/// it activates all memory locations within a Hamming distance radius d*.
-/// The optimal d* depends on the optimization target:
-///
-///   d*_SNR  — maximizes signal-to-noise ratio for readout
-///   d*_Mem  — maximizes memory capacity (number of storable items)
-///   d*_Cent — centroid radius, aligns with majority-rule bundling
-///
-/// These radii are calibrated to the statistics of random HD vectors in
-/// N-dimensional space, where the expected Hamming distance between any
-/// two random vectors is N/2 with variance N/4.
-
+//! Sparse Distributed Memory (SDM) — optimal radius calculations.
+//!
+//! SDM operates in N-dimensional binary space. Given a read address (query),
+//! it activates all memory locations within a Hamming distance radius d*.
+//! The optimal d* depends on the optimization target:
+//!
+//!   d*_SNR  — maximizes signal-to-noise ratio for readout
+//!   d*_Mem  — maximizes memory capacity (number of storable items)
+//!   d*_Cent — centroid radius, aligns with majority-rule bundling
+//!
+//! These radii are calibrated to the statistics of random HD vectors in
+//! N-dimensional space, where the expected Hamming distance between any
+//! two random vectors is N/2 with variance N/4.
 use crate::hdc::vector::{BinaryHDVector, HDVector};
 
 /// Optimal Hamming distance radius for maximum signal-to-noise ratio (SNR).
@@ -113,11 +112,7 @@ pub fn sdm_mem_threshold_binary(dim: usize) -> f64 {
 /// fall within the optimal SNR radius. This mirrors softmax attention by
 /// weighting values exponentially by their proximity to the query, but
 /// uses only bitwise operations and a pre-calibrated threshold.
-pub fn sdm_read_bipolar(
-    query: &HDVector,
-    keys: &[HDVector],
-    values: &[HDVector],
-) -> HDVector {
+pub fn sdm_read_bipolar(query: &HDVector, keys: &[HDVector], values: &[HDVector]) -> HDVector {
     let dim = query.dim();
     let threshold = sdm_snr_threshold_bipolar(dim);
     let mut data = vec![0.0; dim];
@@ -144,19 +139,16 @@ pub fn sdm_read_binary(
 ) -> BinaryHDVector {
     let dim = query.dim();
     let threshold = sdm_snr_threshold_binary(dim);
-    let mut sums = vec![0i64; dim];
+    let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(dim);
 
     for (k, v) in keys.iter().zip(values.iter()) {
         let sim = query.hamming_similarity(k);
         if sim > threshold {
-            for i in 0..dim {
-                let bit = (v.words()[i / 64] >> (i % 64)) & 1;
-                sums[i] += if bit == 1 { 1 } else { -1 };
-            }
+            acc.add(v);
         }
     }
 
-    crate::hdc::vector::majority_from_sums(&sums, dim)
+    acc.binarize()
 }
 
 #[cfg(test)]
@@ -186,8 +178,16 @@ mod tests {
         let dim = 10000;
         let bip = sdm_snr_threshold_bipolar(dim);
         let bin = sdm_snr_threshold_binary(dim);
-        assert!(bip > -1.0 && bip < 1.0, "bipolar threshold out of range: {}", bip);
-        assert!(bin > 0.0 && bin < 1.0, "binary threshold out of range: {}", bin);
+        assert!(
+            bip > -1.0 && bip < 1.0,
+            "bipolar threshold out of range: {}",
+            bip
+        );
+        assert!(
+            bin > 0.0 && bin < 1.0,
+            "binary threshold out of range: {}",
+            bin
+        );
     }
 
     #[test]

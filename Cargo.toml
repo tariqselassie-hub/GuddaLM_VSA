@@ -2,6 +2,7 @@
 name = "guddalm_vsa"
 version = "0.1.1"
 edition = "2021"
+rust-version = "1.87"
 description = "Core VSA/HDC engine and algebraic primitives"
 license = "AGPL-3.0-only"
 documentation = "https://docs.rs/guddalm_vsa"
@@ -23,6 +24,9 @@ chrono = { version = "0.4", features = ["serde"] }
 num-complex = "0.4"
 rustfft = "6.4.1"
 
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
+
 [features]
 default = []
 candle = ["dep:candle-core"]
@@ -30,3 +34,7 @@ candle = ["dep:candle-core"]
 [[bin]]
 name = "guddalm_bench"
 path = "src/bin/guddalm_bench.rs"
+
+[[bench]]
+name = "core_ops"
+harness = false

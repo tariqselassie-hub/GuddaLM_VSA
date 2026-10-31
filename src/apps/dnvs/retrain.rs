@@ -14,8 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! DNVS Retrainer — Dynamic retraining with adaptive margins (HDVector)
 
-use crate::hdc::vector::HDVector;
 use crate::dnvs::config::DnvsConfig;
+use crate::hdc::vector::HDVector;
 
 /// Retrainer for DNVS classifiers (HDVector-specific)
 pub struct DnvsRetrainer {
@@ -56,10 +56,7 @@ impl DnvsRetrainer {
             }
         }
 
-        let prototypes: Vec<HDVector> = sums
-            .iter()
-            .map(|sum| HDVector::from_slice(sum))
-            .collect();
+        let prototypes: Vec<HDVector> = sums.iter().map(|sum| HDVector::from_slice(sum)).collect();
 
         Self {
             config,
@@ -69,7 +66,12 @@ impl DnvsRetrainer {
     }
 
     /// Run one retraining round
-    pub fn retrain_round<E>(&mut self, train_data: &[&[f32]], train_labels: &[usize], encode_fn: &E) -> usize
+    pub fn retrain_round<E>(
+        &mut self,
+        train_data: &[&[f32]],
+        train_labels: &[usize],
+        encode_fn: &E,
+    ) -> usize
     where
         E: Fn(&[f32]) -> HDVector,
     {
@@ -97,9 +99,9 @@ impl DnvsRetrainer {
                 let margin = self.compute_margin(diff).min(0.25);
 
                 let hd = encoded.data();
-                for d in 0..self.config.dim {
-                    self.prototype_sums[best][d] -= hd[d] * margin;
-                    self.prototype_sums[true_label][d] += hd[d] * margin;
+                for (d, &x) in hd.iter().enumerate().take(self.config.dim) {
+                    self.prototype_sums[best][d] -= x * margin;
+                    self.prototype_sums[true_label][d] += x * margin;
                 }
                 errors += 1;
             }
@@ -128,7 +130,12 @@ impl DnvsRetrainer {
     }
 
     /// Run multiple retraining rounds
-    pub fn retrain<E>(&mut self, train_data: &[&[f32]], train_labels: &[usize], encode_fn: E) -> Vec<usize>
+    pub fn retrain<E>(
+        &mut self,
+        train_data: &[&[f32]],
+        train_labels: &[usize],
+        encode_fn: E,
+    ) -> Vec<usize>
     where
         E: Fn(&[f32]) -> HDVector,
     {
@@ -183,7 +190,8 @@ mod tests {
             retrain_weight: -2.0,
             ..Default::default()
         };
-        let retrainer = DnvsRetrainer::new(config, vec![HDVector::random(64), HDVector::random(64)]);
+        let retrainer =
+            DnvsRetrainer::new(config, vec![HDVector::random(64), HDVector::random(64)]);
         let margin_tight = retrainer.compute_margin(0.05);
         let margin_loose = retrainer.compute_margin(0.95);
         assert!(margin_tight >= margin_loose);

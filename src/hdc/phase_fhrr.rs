@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use ndarray::{Array1, Zip};
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::TAU;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CartesianFhrrVector {
-    pub re: Array1<f32>,  // real components
-    pub im: Array1<f32>,  // imaginary components
+    pub re: Array1<f32>, // real components
+    pub im: Array1<f32>, // imaginary components
 }
 
 impl CartesianFhrrVector {
@@ -131,7 +131,9 @@ impl PhaseFhrrVector {
     pub fn random(dim: usize, seed: u64) -> Self {
         let mut rng = StdRng::seed_from_u64(seed);
         let phases: Vec<f32> = (0..dim).map(|_| rng.gen_range(0.0..TAU)).collect();
-        Self { phases: Array1::from_vec(phases) }
+        Self {
+            phases: Array1::from_vec(phases),
+        }
     }
 
     pub fn bind(&self, other: &Self) -> Self {
@@ -183,11 +185,37 @@ impl PhaseFhrrVector {
         let mut permuted = Array1::zeros(self.phases.raw_dim());
         let shift_offset = ((shift % len as isize) + len as isize) as usize % len;
         if shift_offset == 0 {
-            return Self { phases: self.phases.clone() };
+            return Self {
+                phases: self.phases.clone(),
+            };
         }
-        let (left, right) = self.phases.view().split_at(ndarray::Axis(0), len - shift_offset);
-        permuted.slice_mut(ndarray::s![..shift_offset]).assign(&right);
-        permuted.slice_mut(ndarray::s![shift_offset..]).assign(&left);
+        let (left, right) = self
+            .phases
+            .view()
+            .split_at(ndarray::Axis(0), len - shift_offset);
+        permuted
+            .slice_mut(ndarray::s![..shift_offset])
+            .assign(&right);
+        permuted
+            .slice_mut(ndarray::s![shift_offset..])
+            .assign(&left);
         Self { phases: permuted }
     }
+}
+
+// ── Cartesian ⇄ phase conversions (formerly `primitives_shim`) ──
+
+/// Convert a `CartesianFhrrVector` into a `PhaseFhrrVector` by calculating the phase angles ($\theta = \text{atan2}(im, re)$).
+pub fn cartesian_to_phase(v: &CartesianFhrrVector) -> PhaseFhrrVector {
+    let phases = Zip::from(&v.re)
+        .and(&v.im)
+        .map_collect(|&re, &im| im.atan2(re));
+    PhaseFhrrVector::new(phases)
+}
+
+/// Convert a `PhaseFhrrVector` into a `CartesianFhrrVector` by mapping phase angle $\theta$ to complex unit circle ($e^{i\theta} = \cos(\theta) + i\sin(\theta)$).
+pub fn phase_to_cartesian(v: &PhaseFhrrVector) -> CartesianFhrrVector {
+    let re = v.phases.mapv(|p| p.cos());
+    let im = v.phases.mapv(|p| p.sin());
+    CartesianFhrrVector::new(re, im)
 }

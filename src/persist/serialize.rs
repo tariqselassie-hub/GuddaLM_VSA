@@ -12,9 +12,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::io::{BufReader, BufWriter, Read, Write};
 use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::vsa::Codebook;
+use std::io::{BufReader, BufWriter, Read, Write};
 
 // ── JSON serialization (human-readable, slow) ──
 
@@ -59,7 +59,10 @@ pub fn load_hdvector(path: &str) -> Result<HDVector, Box<dyn std::error::Error>>
     Ok(vector)
 }
 
-pub fn save_binary_hdvector(path: &str, vector: &BinaryHDVector) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_binary_hdvector(
+    path: &str,
+    vector: &BinaryHDVector,
+) -> Result<(), Box<dyn std::error::Error>> {
     let encoded = bincode::serialize(vector)?;
     std::fs::write(path, encoded)?;
     Ok(())
@@ -85,7 +88,10 @@ pub fn load_vectors(path: &str) -> Result<Vec<HDVector>, Box<dyn std::error::Err
     Ok(vectors)
 }
 
-pub fn save_binary_vectors(path: &str, vectors: &[BinaryHDVector]) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_binary_vectors(
+    path: &str,
+    vectors: &[BinaryHDVector],
+) -> Result<(), Box<dyn std::error::Error>> {
     let encoded = bincode::serialize(vectors)?;
     std::fs::write(path, encoded)?;
     Ok(())
@@ -186,7 +192,10 @@ pub fn read_binary_vectors_stream<R: Read>(
 
 /// Legacy alias: use bincode-based `save_hdvector` by default.
 /// Kept for backward compatibility with existing callers.
-pub fn save_hdvector_legacy(path: &str, vector: &HDVector) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_hdvector_legacy(
+    path: &str,
+    vector: &HDVector,
+) -> Result<(), Box<dyn std::error::Error>> {
     save_hdvector(path, vector)
 }
 
@@ -203,7 +212,11 @@ mod tests {
         let loaded: HDVector = bincode::deserialize(&bytes).unwrap();
         assert_eq!(v.dim(), loaded.dim());
         let sim = v.cosine_similarity(&loaded);
-        assert!((sim - 1.0).abs() < 0.001, "bincode roundtrip must preserve vector (sim={})", sim);
+        assert!(
+            (sim - 1.0).abs() < 0.001,
+            "bincode roundtrip must preserve vector (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -213,7 +226,11 @@ mod tests {
         let loaded: BinaryHDVector = bincode::deserialize(&bytes).unwrap();
         assert_eq!(v.dim(), loaded.dim());
         let sim = v.hamming_similarity(&loaded);
-        assert!((sim - 1.0).abs() < 0.001, "bincode roundtrip must preserve vector (sim={})", sim);
+        assert!(
+            (sim - 1.0).abs() < 0.001,
+            "bincode roundtrip must preserve vector (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -248,7 +265,10 @@ mod tests {
         save_hdvector(path, &v).unwrap();
         let loaded = load_hdvector(path).unwrap();
         let sim = v2.cosine_similarity(&loaded);
-        assert!((sim - 1.0).abs() < 0.001, "file save/load must preserve vector");
+        assert!(
+            (sim - 1.0).abs() < 0.001,
+            "file save/load must preserve vector"
+        );
         let _ = std::fs::remove_file(path);
     }
 
@@ -283,6 +303,9 @@ mod tests {
         let json = serde_json::to_string(&v).unwrap();
         let loaded: HDVector = serde_json::from_str(&json).unwrap();
         let sim = v.cosine_similarity(&loaded);
-        assert!((sim - 1.0).abs() < 0.001, "JSON roundtrip must preserve vector");
+        assert!(
+            (sim - 1.0).abs() < 0.001,
+            "JSON roundtrip must preserve vector"
+        );
     }
 }

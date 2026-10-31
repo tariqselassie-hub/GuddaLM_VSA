@@ -12,6 +12,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use crate::hdc::fhrr::FHRRVector;
+use crate::hdc::ghrr::GHRRVector;
 /// # VsaVector Trait — Unified VSA Vector Interface
 ///
 /// This trait provides a common API across all three VSA representations
@@ -38,8 +40,6 @@
 /// }
 /// ```
 use crate::hdc::vector::{BinaryHDVector, HDVector};
-use crate::hdc::fhrr::FHRRVector;
-use crate::hdc::ghrr::GHRRVector;
 
 /// Unified trait for all VSA vector representations.
 ///
@@ -69,6 +69,21 @@ pub trait VsaVector: Clone + Sized {
     /// - BSC: majority rule
     /// - FHRR: complex sum → normalize to unit circle
     fn bundle(&self, other: &Self) -> Self;
+
+    /// Bundle a whole slice in one superposition, so every input carries
+    /// equal weight. Panics on an empty slice.
+    ///
+    /// The default folds [`bundle`](Self::bundle) pairwise. MAP and BSC
+    /// override it with the streaming accumulators: for MAP the result is the
+    /// same sum without the per-step allocations, and for BSC it is a true
+    /// majority vote instead of a pairwise fold that halves the weight of
+    /// earlier inputs at every step.
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let (first, rest) = vectors
+            .split_first()
+            .expect("bundle_many: empty vector slice");
+        rest.iter().fold(first.clone(), |acc, v| acc.bundle(v))
+    }
 
     /// Permute (rotate/shuffle) the vector by `shift` positions.
     ///
@@ -116,19 +131,36 @@ pub trait VsaVectorRaw: VsaVector {
 
 impl VsaVector for HDVector {
     #[inline(always)]
-    fn dim(&self) -> usize { self.dim() }
+    fn dim(&self) -> usize {
+        self.dim()
+    }
 
     #[inline(always)]
-    fn bind(&self, other: &Self) -> Self { HDVector::bind(self, other) }
+    fn bind(&self, other: &Self) -> Self {
+        HDVector::bind(self, other)
+    }
 
     #[inline(always)]
-    fn unbind(&self, other: &Self) -> Self { HDVector::unbind(self, other) }
+    fn unbind(&self, other: &Self) -> Self {
+        HDVector::unbind(self, other)
+    }
 
     #[inline(always)]
-    fn bundle(&self, other: &Self) -> Self { HDVector::bundle(self, other) }
+    fn bundle(&self, other: &Self) -> Self {
+        HDVector::bundle(self, other)
+    }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BundleAccumulator::new(first.dim());
+        acc.extend(vectors);
+        acc.into_vector()
+    }
 
     #[inline(always)]
-    fn permute(&self, shift: usize) -> Self { HDVector::permute(self, shift) }
+    fn permute(&self, shift: usize) -> Self {
+        HDVector::permute(self, shift)
+    }
 
     #[inline(always)]
     fn cosine_similarity(&self, other: &Self) -> f64 {
@@ -143,98 +175,162 @@ impl VsaVector for HDVector {
         BinaryHDVector::from_bipolar(self)
     }
 
-    fn zero(dim: usize) -> Self { HDVector::zeros(dim) }
+    fn zero(dim: usize) -> Self {
+        HDVector::zeros(dim)
+    }
 
-    fn random(dim: usize) -> Self { HDVector::random(dim) }
+    fn random(dim: usize) -> Self {
+        HDVector::random(dim)
+    }
 }
 
 impl VsaVectorRaw for HDVector {
     #[inline(always)]
-    fn from_slice(slice: &[f64]) -> Self { HDVector::from_slice(slice) }
+    fn from_slice(slice: &[f64]) -> Self {
+        HDVector::from_slice(slice)
+    }
 
     #[inline(always)]
-    fn data(&self) -> &[f64] { self.data() }
+    fn data(&self) -> &[f64] {
+        self.data()
+    }
 
     #[inline(always)]
-    fn data_mut(&mut self) -> &mut [f64] { self.data_mut() }
+    fn data_mut(&mut self) -> &mut [f64] {
+        self.data_mut()
+    }
 }
 
 impl VsaVector for BinaryHDVector {
     #[inline(always)]
-    fn dim(&self) -> usize { self.dim() }
+    fn dim(&self) -> usize {
+        self.dim()
+    }
 
     #[inline(always)]
-    fn bind(&self, other: &Self) -> Self { self.xor_bind(other) }
+    fn bind(&self, other: &Self) -> Self {
+        self.xor_bind(other)
+    }
 
     #[inline(always)]
-    fn unbind(&self, other: &Self) -> Self { self.xor_bind(other) }
+    fn unbind(&self, other: &Self) -> Self {
+        self.xor_bind(other)
+    }
 
     #[inline(always)]
-    fn bundle(&self, other: &Self) -> Self { self.majority_bundle(other) }
+    fn bundle(&self, other: &Self) -> Self {
+        self.majority_bundle(other)
+    }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(first.dim());
+        acc.extend(vectors);
+        acc.binarize()
+    }
 
     #[inline(always)]
-    fn permute(&self, shift: usize) -> Self { self.rotate(shift) }
+    fn permute(&self, shift: usize) -> Self {
+        self.rotate(shift)
+    }
 
     #[inline(always)]
-    fn cosine_similarity(&self, other: &Self) -> f64 { self.bipolar_similarity(other) }
+    fn cosine_similarity(&self, other: &Self) -> f64 {
+        self.bipolar_similarity(other)
+    }
 
-    fn binarize(&self) -> BinaryHDVector { self.clone() }
+    fn binarize(&self) -> BinaryHDVector {
+        self.clone()
+    }
 
-    fn zero(dim: usize) -> Self { BinaryHDVector::zeros(dim) }
+    fn zero(dim: usize) -> Self {
+        BinaryHDVector::zeros(dim)
+    }
 
-    fn random(dim: usize) -> Self { BinaryHDVector::random(dim) }
+    fn random(dim: usize) -> Self {
+        BinaryHDVector::random(dim)
+    }
 }
 
 impl VsaVector for FHRRVector {
     #[inline(always)]
-    fn dim(&self) -> usize { self.dim() }
+    fn dim(&self) -> usize {
+        self.dim()
+    }
 
     #[inline(always)]
-    fn bind(&self, other: &Self) -> Self { FHRRVector::bind(self, other) }
+    fn bind(&self, other: &Self) -> Self {
+        FHRRVector::bind(self, other)
+    }
 
     #[inline(always)]
-    fn unbind(&self, other: &Self) -> Self { self.bind(&other.inverse()) }
+    fn unbind(&self, other: &Self) -> Self {
+        self.bind(&other.inverse())
+    }
 
     #[inline(always)]
-    fn bundle(&self, other: &Self) -> Self { FHRRVector::bundle(self, other) }
+    fn bundle(&self, other: &Self) -> Self {
+        FHRRVector::bundle(self, other)
+    }
 
     #[inline(always)]
-    fn permute(&self, shift: usize) -> Self { FHRRVector::permute(self, shift) }
+    fn permute(&self, shift: usize) -> Self {
+        FHRRVector::permute(self, shift)
+    }
 
     #[inline(always)]
-    fn cosine_similarity(&self, other: &Self) -> f64 { FHRRVector::cosine_similarity(self, other) }
+    fn cosine_similarity(&self, other: &Self) -> f64 {
+        FHRRVector::cosine_similarity(self, other)
+    }
 
     fn binarize(&self) -> BinaryHDVector {
-        let bits: Vec<u8> = self.phases()
+        let bits: Vec<u8> = self
+            .phases()
             .iter()
             .map(|&p| if p.cos() > 0.0 { 1u8 } else { 0u8 })
             .collect();
         BinaryHDVector::from_bits(&bits)
     }
 
-    fn zero(dim: usize) -> Self { FHRRVector::zeros(dim) }
+    fn zero(dim: usize) -> Self {
+        FHRRVector::zeros(dim)
+    }
 
-    fn random(dim: usize) -> Self { FHRRVector::random(dim) }
+    fn random(dim: usize) -> Self {
+        FHRRVector::random(dim)
+    }
 }
 
 impl VsaVector for GHRRVector {
     #[inline(always)]
-    fn dim(&self) -> usize { self.dim() }
+    fn dim(&self) -> usize {
+        self.dim()
+    }
 
     #[inline(always)]
-    fn bind(&self, other: &Self) -> Self { GHRRVector::bind(self, other) }
+    fn bind(&self, other: &Self) -> Self {
+        GHRRVector::bind(self, other)
+    }
 
     #[inline(always)]
-    fn unbind(&self, other: &Self) -> Self { GHRRVector::unbind(self, other) }
+    fn unbind(&self, other: &Self) -> Self {
+        GHRRVector::unbind(self, other)
+    }
 
     #[inline(always)]
-    fn bundle(&self, other: &Self) -> Self { GHRRVector::bundle(self, other) }
+    fn bundle(&self, other: &Self) -> Self {
+        GHRRVector::bundle(self, other)
+    }
 
     #[inline(always)]
-    fn permute(&self, shift: usize) -> Self { GHRRVector::permute(self, shift) }
+    fn permute(&self, shift: usize) -> Self {
+        GHRRVector::permute(self, shift)
+    }
 
     #[inline(always)]
-    fn cosine_similarity(&self, other: &Self) -> f64 { GHRRVector::cosine_similarity(self, other) }
+    fn cosine_similarity(&self, other: &Self) -> f64 {
+        GHRRVector::cosine_similarity(self, other)
+    }
 
     fn binarize(&self) -> BinaryHDVector {
         let bits: Vec<u8> = self
@@ -245,9 +341,13 @@ impl VsaVector for GHRRVector {
         BinaryHDVector::from_bits(&bits)
     }
 
-    fn zero(dim: usize) -> Self { GHRRVector::zeros(dim) }
+    fn zero(dim: usize) -> Self {
+        GHRRVector::zeros(dim)
+    }
 
-    fn random(dim: usize) -> Self { GHRRVector::random(dim) }
+    fn random(dim: usize) -> Self {
+        GHRRVector::random(dim)
+    }
 }
 
 // ── IndexVector ───────────────────────────────────────────────
@@ -371,7 +471,9 @@ impl IndexVector {
     /// assert!((v1.similarity_to(&v2) - 1.0).abs() < 1e-9);
     /// ```
     pub fn from_key(base_seed: u64, key: &str, dim: usize) -> Self {
-        IndexVector(crate::seed::deterministic_binary_hd_vector(base_seed, key, dim))
+        IndexVector(crate::seed::deterministic_binary_hd_vector(
+            base_seed, key, dim,
+        ))
     }
 
     /// Role-filler encoding via XOR binding.
@@ -409,28 +511,53 @@ impl IndexVector {
 
 impl VsaVector for IndexVector {
     #[inline(always)]
-    fn dim(&self) -> usize { self.0.dim() }
+    fn dim(&self) -> usize {
+        self.0.dim()
+    }
 
     #[inline(always)]
-    fn bind(&self, other: &Self) -> Self { self.bind(other) }
+    fn bind(&self, other: &Self) -> Self {
+        self.bind(other)
+    }
 
     #[inline(always)]
-    fn unbind(&self, other: &Self) -> Self { self.unbind(other) }
+    fn unbind(&self, other: &Self) -> Self {
+        self.unbind(other)
+    }
 
     #[inline(always)]
-    fn bundle(&self, other: &Self) -> Self { self.bundle(other) }
+    fn bundle(&self, other: &Self) -> Self {
+        self.bundle(other)
+    }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(first.0.dim());
+        acc.extend(vectors.iter().map(|v| &v.0));
+        IndexVector(acc.binarize())
+    }
 
     #[inline(always)]
-    fn permute(&self, shift: usize) -> Self { self.permute(shift) }
+    fn permute(&self, shift: usize) -> Self {
+        self.permute(shift)
+    }
 
     #[inline(always)]
-    fn cosine_similarity(&self, other: &Self) -> f64 { self.similarity_to(other) }
+    fn cosine_similarity(&self, other: &Self) -> f64 {
+        self.similarity_to(other)
+    }
 
-    fn binarize(&self) -> BinaryHDVector { self.0.clone() }
+    fn binarize(&self) -> BinaryHDVector {
+        self.0.clone()
+    }
 
-    fn zero(dim: usize) -> Self { IndexVector::zero(dim) }
+    fn zero(dim: usize) -> Self {
+        IndexVector::zero(dim)
+    }
 
-    fn random(dim: usize) -> Self { IndexVector::random(dim) }
+    fn random(dim: usize) -> Self {
+        IndexVector::random(dim)
+    }
 }
 
 impl serde::Serialize for IndexVector {
@@ -478,7 +605,11 @@ mod tests {
         let bound = a.bind(&b);
         let roundtrip = bound.unbind(&b);
         let sim = roundtrip.similarity_to(&a);
-        assert!((sim - 1.0).abs() < 1e-9, "XOR bind+unbind must recover exactly (sim={})", sim);
+        assert!(
+            (sim - 1.0).abs() < 1e-9,
+            "XOR bind+unbind must recover exactly (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -486,7 +617,11 @@ mod tests {
         let a = IndexVector::random(1024);
         let bundle = a.bundle(&a);
         let sim = a.similarity_to(&bundle);
-        assert!(sim > 0.99, "bundle(a,a) must be nearly identical (sim={})", sim);
+        assert!(
+            sim > 0.99,
+            "bundle(a,a) must be nearly identical (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -514,7 +649,11 @@ mod tests {
         let composite = IndexVector::encode_role_filler(&role, &filler);
         let decoded = IndexVector::decode_role_filler(&composite, &role);
         let sim = decoded.similarity_to(&filler);
-        assert!((sim - 1.0).abs() < 1e-9, "role-filler must recover exactly (sim={})", sim);
+        assert!(
+            (sim - 1.0).abs() < 1e-9,
+            "role-filler must recover exactly (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -522,7 +661,11 @@ mod tests {
         let vecs: Vec<IndexVector> = (0..5).map(|_| IndexVector::random(1024)).collect();
         let bundled = IndexVector::bundle_all(&vecs);
         let sim = vecs[0].similarity_to(&bundled);
-        assert!(sim > 0.0, "bundled must have non-zero sim to component (sim={})", sim);
+        assert!(
+            sim > 0.0,
+            "bundled must have non-zero sim to component (sim={})",
+            sim
+        );
     }
 
     #[test]
@@ -540,7 +683,10 @@ mod tests {
             let w = V::random(dim);
             let bound = v.bind(&w);
             let sim = bound.cosine_similarity(&w);
-            assert!(sim.abs() < 1.0 || (sim - 1.0).abs() < 1e-9, "sim must be in [-1,1]");
+            assert!(
+                sim.abs() < 1.0 || (sim - 1.0).abs() < 1e-9,
+                "sim must be in [-1,1]"
+            );
             let binarized = v.binarize();
             assert_eq!(binarized.dim(), dim, "binarized must preserve dim");
         }
@@ -561,9 +707,13 @@ mod tests {
             let bound = a.bind(&b);
             let rebound = bound.unbind(&b);
             let sim = rebound.cosine_similarity(&a);
-            assert!(sim > 0.4,
+            assert!(
+                sim > 0.4,
                 "bind+unbind roundtrip should recover (sim={}) for {}, dim={}",
-                sim, std::any::type_name::<V>(), dim);
+                sim,
+                std::any::type_name::<V>(),
+                dim
+            );
         }
 
         for &dim in &[64, 128, 256] {
@@ -582,8 +732,12 @@ mod tests {
             let bundled = a.bundle(&b);
             let sim_a = bundled.cosine_similarity(&a);
             let sim_b = bundled.cosine_similarity(&b);
-            assert!(sim_a > 0.2 && sim_b > 0.2,
-                "bundle must retain similarity to both components (a={}, b={})", sim_a, sim_b);
+            assert!(
+                sim_a > 0.2 && sim_b > 0.2,
+                "bundle must retain similarity to both components (a={}, b={})",
+                sim_a,
+                sim_b
+            );
         }
 
         bundle_cleanup::<HDVector>(128);

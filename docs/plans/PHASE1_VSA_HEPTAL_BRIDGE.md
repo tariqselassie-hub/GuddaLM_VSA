@@ -1,7 +1,7 @@
-# Phase 1 Plan: GuddaLM VSA ↔ GuddaLM Heptal Bridge
+# Phase 1 Plan: GuddaLM VSA ↔ Heptal Qudit Bridge
 
 ## Goal
-Run VSA hyperdimensional operations on GuddaLM’s 7-strata qudit registers.
+Run VSA hyperdimensional operations on 7-strata qudit registers.
 
 ## Deliverables
 1. `guddalm_quantum_core/src/qudit_vsa.rs` — VSA state bridge

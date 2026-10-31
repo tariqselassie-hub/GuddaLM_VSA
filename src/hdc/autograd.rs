@@ -98,7 +98,8 @@ impl GradHDVector {
     ) -> GradHDVector {
         let dim = value.dim();
         let any_grad = requires_grad || parents.iter().any(|p| p.requires_grad());
-        let parent_refs: Vec<Rc<RefCell<GradNode>>> = parents.iter().map(|p| Rc::clone(&p.inner)).collect();
+        let parent_refs: Vec<Rc<RefCell<GradNode>>> =
+            parents.iter().map(|p| Rc::clone(&p.inner)).collect();
 
         GradHDVector {
             inner: Rc::new(RefCell::new(GradNode {
@@ -120,7 +121,8 @@ impl GradHDVector {
 /// set to 1.0 (the upstream "seed").
 pub fn backward(loss: &GradHDVector) {
     // Topological sort via DFS
-    let mut visited: std::collections::HashSet<*const RefCell<GradNode>> = std::collections::HashSet::new();
+    let mut visited: std::collections::HashSet<*const RefCell<GradNode>> =
+        std::collections::HashSet::new();
     let mut order: Vec<Rc<RefCell<GradNode>>> = Vec::new();
 
     fn dfs(
@@ -161,7 +163,10 @@ pub fn backward(loss: &GradHDVector) {
         };
         let parent_count = node_rc.borrow().parents.len();
 
-        let backward_fn = node_rc.borrow_mut().backward.take()
+        let backward_fn = node_rc
+            .borrow_mut()
+            .backward
+            .take()
             .expect("backward must be set when has_backward is true");
         let parent_grads = backward_fn(&grad_output);
 
@@ -200,7 +205,9 @@ pub fn diff_bind(a: &GradHDVector, b: &GradHDVector) -> GradHDVector {
     let mut output = raw_convolve(&a_val, &b_val);
     let norm: f64 = output.iter().map(|x| x * x).sum::<f64>().sqrt();
     if norm > 0.0 {
-        for x in output.iter_mut() { *x /= norm; }
+        for x in output.iter_mut() {
+            *x /= norm;
+        }
     }
 
     GradHDVector::add_node_with_parents(
@@ -224,8 +231,12 @@ pub fn diff_bind(a: &GradHDVector, b: &GradHDVector) -> GradHDVector {
 pub fn diff_bundle(a: &GradHDVector, b: &GradHDVector) -> GradHDVector {
     let a_val = a.value();
     let b_val = b.value();
-    let output: Vec<f64> = a_val.data().iter().zip(b_val.data().iter())
-        .map(|(x, y)| x + y).collect();
+    let output: Vec<f64> = a_val
+        .data()
+        .iter()
+        .zip(b_val.data().iter())
+        .map(|(x, y)| x + y)
+        .collect();
 
     GradHDVector::add_node_with_parents(
         HDVector::from_slice(&output),
@@ -255,7 +266,7 @@ pub fn diff_bundle_many(vectors: &[&GradHDVector]) -> GradHDVector {
         }
     }
 
-    let refs: Vec<&GradHDVector> = vectors.iter().copied().collect();
+    let refs: Vec<&GradHDVector> = vectors.to_vec();
     let parent_count = vectors.len();
     GradHDVector::add_node_with_parents(
         HDVector::from_slice(&output),
@@ -302,11 +313,20 @@ pub fn similarity_loss(pred: &GradHDVector, target: &HDVector) -> GradHDVector {
     let dim = p.dim();
     let t = target;
 
-    let dot: f64 = p.data().iter().zip(t.data().iter()).map(|(a, b)| a * b).sum();
+    let dot: f64 = p
+        .data()
+        .iter()
+        .zip(t.data().iter())
+        .map(|(a, b)| a * b)
+        .sum();
     let np: f64 = p.data().iter().map(|x| x * x).sum::<f64>().sqrt();
     let nt: f64 = t.data().iter().map(|x| x * x).sum::<f64>().sqrt();
 
-    let sim = if np > 0.0 && nt > 0.0 { dot / (np * nt) } else { 0.0 };
+    let sim = if np > 0.0 && nt > 0.0 {
+        dot / (np * nt)
+    } else {
+        0.0
+    };
     let loss = (1.0 - sim).clamp(0.0, 2.0);
 
     let p_data = p.data().to_vec();
@@ -337,75 +357,11 @@ pub fn similarity_loss(pred: &GradHDVector, target: &HDVector) -> GradHDVector {
 // ── Raw convolution / correlation helpers (no normalization) ──
 
 pub(crate) fn raw_convolve(a: &HDVector, b: &HDVector) -> Vec<f64> {
-    let dim = a.dim();
-    if dim.is_power_of_two() {
-        fft_convolve(a.data(), b.data())
-    } else {
-        direct_convolve(a.data(), b.data())
-    }
+    super::vector::fft_circular(a.data(), b.data(), false)
 }
 
 pub(crate) fn raw_correlate(a: &HDVector, b: &HDVector) -> Vec<f64> {
-    let dim = a.dim();
-    if dim.is_power_of_two() {
-        fft_correlate(a.data(), b.data())
-    } else {
-        direct_correlate(a.data(), b.data())
-    }
-}
-
-fn fft_convolve(a: &[f64], b: &[f64]) -> Vec<f64> {
-    use super::vector::Complex;
-    let dim = a.len();
-    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    super::vector::fft(&mut a_c, false);
-    super::vector::fft(&mut b_c, false);
-    let mut c = vec![Complex::zero(); dim];
-    for i in 0..dim { c[i] = a_c[i].mul(b_c[i]); }
-    super::vector::fft(&mut c, true);
-    c.iter().map(|x| x.re).collect()
-}
-
-fn fft_correlate(a: &[f64], b: &[f64]) -> Vec<f64> {
-    use super::vector::Complex;
-    let dim = a.len();
-    let mut a_c: Vec<Complex> = a.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    let mut b_c: Vec<Complex> = b.iter().map(|&x| Complex { re: x, im: 0.0 }).collect();
-    super::vector::fft(&mut a_c, false);
-    super::vector::fft(&mut b_c, false);
-    let mut d = vec![Complex::zero(); dim];
-    for i in 0..dim { d[i] = a_c[i].mul(b_c[i].conj()); }
-    super::vector::fft(&mut d, true);
-    d.iter().map(|x| x.re).collect()
-}
-
-fn direct_convolve(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    let mut c = vec![0.0; dim];
-    for i in 0..dim {
-        let mut sum = 0.0;
-        for j in 0..dim {
-            let k = if i >= j { i - j } else { dim + i - j };
-            sum += a[j] * b[k];
-        }
-        c[i] = sum;
-    }
-    c
-}
-
-fn direct_correlate(a: &[f64], b: &[f64]) -> Vec<f64> {
-    let dim = a.len();
-    let mut d = vec![0.0; dim];
-    for i in 0..dim {
-        let mut sum = 0.0;
-        for j in 0..dim {
-            let k = if j >= i { j - i } else { dim + j - i };
-            sum += a[j] * b[k];
-        }
-        d[i] = sum;
-    }
-    d
+    super::vector::fft_circular(a.data(), b.data(), true)
 }
 
 // ── Optimizer ─────────────────────────────────────────────────
@@ -456,7 +412,9 @@ impl SGDOptimizer {
                 let norm: f64 = new_data.iter().map(|x| x * x).sum::<f64>().sqrt();
                 if norm > 0.0 {
                     let scale = (new_data.len() as f64).sqrt() / norm;
-                    for x in new_data.iter_mut() { *x *= scale; }
+                    for x in new_data.iter_mut() {
+                        *x *= scale;
+                    }
                 }
                 p.set_value(HDVector::from_slice(&new_data));
             }
@@ -484,7 +442,8 @@ pub fn soft_cleanup(
     let q_val = query.value();
 
     // Compute cosine similarities and soft weights
-    let sims: Vec<f64> = codebook_vectors.iter()
+    let sims: Vec<f64> = codebook_vectors
+        .iter()
         .map(|cv| q_val.cosine_similarity(cv))
         .collect();
 
@@ -492,7 +451,9 @@ pub fn soft_cleanup(
     let mut weights: Vec<f64> = sims.iter().map(|&s| (beta * (s - max_sim)).exp()).collect();
     let sum_w: f64 = weights.iter().sum();
     if sum_w > 1e-12 {
-        for w in weights.iter_mut() { *w /= sum_w; }
+        for w in weights.iter_mut() {
+            *w /= sum_w;
+        }
     }
 
     // Weighted bundle
@@ -516,12 +477,12 @@ pub fn soft_cleanup(
             // and only propagate through the weighted sum (not through the
             // softmax that depends on query).  This is a straight-through
             // estimator, sufficient for proof-of-concept.
-            for j in 0..dim {
+            for (j, gq) in grad_q.iter_mut().enumerate() {
                 let mut g = 0.0;
                 for (cv, w) in cv_refs.iter().zip(stored_weights.iter()) {
                     g += w * cv.data()[j];
                 }
-                grad_q[j] = go.data()[j] * g * 0.01;
+                *gq = go.data()[j] * g * 0.01;
             }
 
             vec![grad_q]
@@ -657,10 +618,7 @@ mod tests {
             grad_norm
         );
 
-        assert!(
-            grad_norm > 0.0,
-            "bundle gradient must be non-zero"
-        );
+        assert!(grad_norm > 0.0, "bundle gradient must be non-zero");
     }
 
     // ── Differentiable permutation ──
@@ -675,7 +633,10 @@ mod tests {
         let autograd_val = gp.value();
         let hd_val = v.permute(3);
 
-        assert_eq!(autograd_val, hd_val, "diff_permute forward must equal HDVector permute");
+        assert_eq!(
+            autograd_val, hd_val,
+            "diff_permute forward must equal HDVector permute"
+        );
     }
 
     #[test]
@@ -807,8 +768,12 @@ mod tests {
             backward(&loss);
 
             let loss_val = loss.value().data()[0];
-            assert!(loss_val <= last_loss + 1e-4,
-                "codebook learning must decrease loss (prev={}, cur={})", last_loss, loss_val);
+            assert!(
+                loss_val <= last_loss + 1e-4,
+                "codebook learning must decrease loss (prev={}, cur={})",
+                last_loss,
+                loss_val
+            );
             last_loss = loss_val;
 
             opt.step();
@@ -816,6 +781,10 @@ mod tests {
 
         let learned = param.value();
         let sim = learned.cosine_similarity(&codebook[idx_a]);
-        assert!(sim > 0.5, "learned vector must converge toward target (sim={})", sim);
+        assert!(
+            sim > 0.5,
+            "learned vector must converge toward target (sim={})",
+            sim
+        );
     }
 }

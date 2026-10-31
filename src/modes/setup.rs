@@ -14,9 +14,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use crate::error::GuddaResult;
 
-use crate::map::{MapSetup, HDVector as MapVector};
-use crate::bsc::{BscSetup, BinaryHDVector as BscVector};
-use crate::fhrr::{FhrrSetup, FHRRVector as FhrrVector};
+use crate::bsc::{BinaryHDVector as BscVector, BscSetup};
+use crate::fhrr::{FHRRVector as FhrrVector, FhrrSetup};
+use crate::map::{HDVector as MapVector, MapSetup};
 
 /// Unified representation selector for GuddaLM VSA systems.
 ///

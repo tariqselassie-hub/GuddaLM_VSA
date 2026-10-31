@@ -1,6 +1,6 @@
 # Third Party Notices
 
-_Generated 2026-10-30 from `Cargo.lock`._
+_Generated 2026-10-31 from `Cargo.lock`._
 
 | Dependency | Version | License | Source |
 | --- | --- | --- | --- |
@@ -9,6 +9,8 @@ _Generated 2026-10-30 from `Cargo.lock`._
 | aho-corasick | 1.1.5 | (see crates.io metadata) | https://crates.io/crates/aho-corasick |
 | allocator-api2 | 0.2.21 | (see crates.io metadata) | https://crates.io/crates/allocator-api2 |
 | android_system_properties | 0.1.6 | (see crates.io metadata) | https://crates.io/crates/android_system_properties |
+| anes | 0.1.6 | (see crates.io metadata) | https://crates.io/crates/anes |
+| anstyle | 1.0.14 | (see crates.io metadata) | https://crates.io/crates/anstyle |
 | autocfg | 1.5.1 | (see crates.io metadata) | https://crates.io/crates/autocfg |
 | base64 | 0.13.1 | (see crates.io metadata) | https://crates.io/crates/base64 |
 | bincode | 1.3.3 | (see crates.io metadata) | https://crates.io/crates/bincode |
@@ -18,13 +20,22 @@ _Generated 2026-10-30 from `Cargo.lock`._
 | bytemuck_derive | 1.12.0 | (see crates.io metadata) | https://crates.io/crates/bytemuck_derive |
 | byteorder | 1.5.0 | (see crates.io metadata) | https://crates.io/crates/byteorder |
 | candle-core | 0.10.2 | (see crates.io metadata) | https://crates.io/crates/candle-core |
+| cast | 0.3.0 | (see crates.io metadata) | https://crates.io/crates/cast |
 | castaway | 0.2.4 | (see crates.io metadata) | https://crates.io/crates/castaway |
 | cc | 1.4.3 | (see crates.io metadata) | https://crates.io/crates/cc |
 | cfg-if | 1.0.4 | (see crates.io metadata) | https://crates.io/crates/cfg-if |
 | chrono | 0.4.45 | (see crates.io metadata) | https://crates.io/crates/chrono |
+| ciborium | 0.2.2 | (see crates.io metadata) | https://crates.io/crates/ciborium |
+| ciborium-io | 0.2.2 | (see crates.io metadata) | https://crates.io/crates/ciborium-io |
+| ciborium-ll | 0.2.2 | (see crates.io metadata) | https://crates.io/crates/ciborium-ll |
+| clap | 4.6.7 | (see crates.io metadata) | https://crates.io/crates/clap |
+| clap_builder | 4.6.7 | (see crates.io metadata) | https://crates.io/crates/clap_builder |
+| clap_lex | 1.1.1 | (see crates.io metadata) | https://crates.io/crates/clap_lex |
 | compact_str | 0.9.1 | (see crates.io metadata) | https://crates.io/crates/compact_str |
 | core-foundation-sys | 0.8.7 | (see crates.io metadata) | https://crates.io/crates/core-foundation-sys |
 | crc32fast | 1.5.0 | (see crates.io metadata) | https://crates.io/crates/crc32fast |
+| criterion | 0.5.1 | (see crates.io metadata) | https://crates.io/crates/criterion |
+| criterion-plot | 0.5.0 | (see crates.io metadata) | https://crates.io/crates/criterion-plot |
 | crossbeam-deque | 0.8.7 | (see crates.io metadata) | https://crates.io/crates/crossbeam-deque |
 | crossbeam-epoch | 0.9.20 | (see crates.io metadata) | https://crates.io/crates/crossbeam-epoch |
 | crossbeam-utils | 0.8.22 | (see crates.io metadata) | https://crates.io/crates/crossbeam-utils |
@@ -69,6 +80,8 @@ _Generated 2026-10-30 from `Cargo.lock`._
 | iana-time-zone-haiku | 0.1.2 | (see crates.io metadata) | https://crates.io/crates/iana-time-zone-haiku |
 | ident_case | 1.0.1 | (see crates.io metadata) | https://crates.io/crates/ident_case |
 | indexmap | 2.14.0 | (see crates.io metadata) | https://crates.io/crates/indexmap |
+| is-terminal | 0.4.17 | (see crates.io metadata) | https://crates.io/crates/is-terminal |
+| itertools | 0.10.5 | (see crates.io metadata) | https://crates.io/crates/itertools |
 | itertools | 0.14.0 | (see crates.io metadata) | https://crates.io/crates/itertools |
 | itoa | 1.0.18 | (see crates.io metadata) | https://crates.io/crates/itoa |
 | js-sys | 0.3.104 | (see crates.io metadata) | https://crates.io/crates/js-sys |
@@ -93,6 +106,7 @@ _Generated 2026-10-30 from `Cargo.lock`._
 | once_cell | 1.21.4 | (see crates.io metadata) | https://crates.io/crates/once_cell |
 | onig | 6.5.3 | (see crates.io metadata) | https://crates.io/crates/onig |
 | onig_sys | 69.9.3 | (see crates.io metadata) | https://crates.io/crates/onig_sys |
+| oorandom | 11.1.5 | (see crates.io metadata) | https://crates.io/crates/oorandom |
 | option-ext | 0.2.0 | (see crates.io metadata) | https://crates.io/crates/option-ext |
 | paste | 1.0.15 | (see crates.io metadata) | https://crates.io/crates/paste |
 | pastey | 0.2.3 | (see crates.io metadata) | https://crates.io/crates/pastey |
@@ -151,6 +165,7 @@ _Generated 2026-10-30 from `Cargo.lock`._
 | thiserror | 2.0.20 | (see crates.io metadata) | https://crates.io/crates/thiserror |
 | thiserror-impl | 1.0.69 | (see crates.io metadata) | https://crates.io/crates/thiserror-impl |
 | thiserror-impl | 2.0.20 | (see crates.io metadata) | https://crates.io/crates/thiserror-impl |
+| tinytemplate | 1.2.1 | (see crates.io metadata) | https://crates.io/crates/tinytemplate |
 | tokenizers | 0.22.2 | (see crates.io metadata) | https://crates.io/crates/tokenizers |
 | transpose | 0.2.3 | (see crates.io metadata) | https://crates.io/crates/transpose |
 | typed-path | 0.12.3 | (see crates.io metadata) | https://crates.io/crates/typed-path |

@@ -33,10 +33,10 @@
 use rand::Rng;
 use rand::SeedableRng;
 
-use crate::hdc::vector::HDVector;
 use crate::hdc::fhrr::FHRRVector;
 use crate::hdc::ghrr::GHRRVector;
 use crate::hdc::vector::Complex;
+use crate::hdc::vector::HDVector;
 
 // ── Core Seed Computation ────────────────────────────────────
 
@@ -54,8 +54,9 @@ use crate::hdc::vector::Complex;
 /// assert_eq!(s1, s2);
 /// ```
 pub fn deterministic_seed(base_seed: u64, key: &str) -> u64 {
-    key.bytes()
-        .fold(base_seed, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64))
+    key.bytes().fold(base_seed, |acc, b| {
+        acc.wrapping_mul(31).wrapping_add(b as u64)
+    })
 }
 
 // ── HDVector (MAP / bipolar ±1) ──────────────────────────────
@@ -98,7 +99,11 @@ pub fn deterministic_hd_vector(base_seed: u64, key: &str, dim: usize) -> HDVecto
 /// let v2 = deterministic_binary_hd_vector(42, "token:hello", 1024);
 /// assert_eq!(v1, v2);
 /// ```
-pub fn deterministic_binary_hd_vector(base_seed: u64, key: &str, dim: usize) -> crate::hdc::vector::BinaryHDVector {
+pub fn deterministic_binary_hd_vector(
+    base_seed: u64,
+    key: &str,
+    dim: usize,
+) -> crate::hdc::vector::BinaryHDVector {
     let seed = deterministic_seed(base_seed, key);
     let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
     let bits: Vec<u8> = (0..dim)
@@ -239,7 +244,13 @@ mod tests {
         });
         let mut old_rng = rand::rngs::StdRng::seed_from_u64(old_seed);
         let old_data: Vec<f64> = (0..dim)
-            .map(|_| if old_rng.gen::<f64>() < 0.5 { 1.0 } else { -1.0 })
+            .map(|_| {
+                if old_rng.gen::<f64>() < 0.5 {
+                    1.0
+                } else {
+                    -1.0
+                }
+            })
             .collect();
         let old_vec = HDVector::from_slice(&old_data);
 

@@ -12,11 +12,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//! Generic algebraic primitives for Vector Symbolic Architectures (VSA).
+//! These primitives operate on any type implementing the `VsaVector` trait.
 
 use crate::hdc::vsa_trait::VsaVector;
-
-/// Generic algebraic primitives for Vector Symbolic Architectures (VSA).
-/// These primitives operate on any type implementing the `VsaVector` trait.
 
 /// Bind a series of vectors sequentially: v0 ⊗ v1 ⊗ v2 ⊗ ...
 pub fn bind_sequence<V: VsaVector>(vectors: &[V]) -> V {
@@ -30,16 +29,16 @@ pub fn bind_sequence<V: VsaVector>(vectors: &[V]) -> V {
     result
 }
 
-/// Bundle a series of vectors together using pairwise superposition: v0 ⊕ v1 ⊕ v2 ⊕ ...
+/// Bundle a series of vectors into one superposition: v0 ⊕ v1 ⊕ v2 ⊕ ...
+///
+/// Every input carries equal weight (see [`VsaVector::bundle_many`]). For
+/// BSC this is a true per-bit majority vote, so the result differs from
+/// folding `bundle` pairwise, which lets the last inputs dominate.
 pub fn bundle_sequence<V: VsaVector>(vectors: &[V]) -> V {
     if vectors.is_empty() {
         panic!("bundle_sequence: empty vector slice");
     }
-    let mut result = vectors[0].clone();
-    for v in &vectors[1..] {
-        result = result.bundle(v);
-    }
-    result
+    V::bundle_many(vectors)
 }
 
 /// Encode a set of key-value pairs into a single composite representation: ⊕_i (key_i ⊗ value_i)
@@ -85,14 +84,14 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
         // Fallback to binding whatever we have
         return bind_sequence(vectors);
     }
-    
+
     // First window
     let mut first_window = vectors[0].clone();
-    for j in 1..n {
-        let permuted = vectors[j].permute(j);
+    for (j, v) in vectors.iter().enumerate().take(n).skip(1) {
+        let permuted = v.permute(j);
         first_window = first_window.bind(&permuted);
     }
-    
+
     let mut result = first_window;
     for i in 1..=(vectors.len() - n) {
         let mut window_bound = vectors[i].clone();
@@ -107,15 +106,14 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
 
 /// Encode a set of directed graph edges using role-filler binding: ⊕_(u, v) ( source_marker ⊗ u ⊕ sink_marker ⊗ v )
 /// This is the classic commutative VSA representation for graphs.
-pub fn encode_graph_edges<V: VsaVector>(
-    edges: &[(V, V)],
-    source_marker: &V,
-    sink_marker: &V,
-) -> V {
+pub fn encode_graph_edges<V: VsaVector>(edges: &[(V, V)], source_marker: &V, sink_marker: &V) -> V {
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0].0.bind(source_marker).bundle(&edges[0].1.bind(sink_marker));
+    let mut result = edges[0]
+        .0
+        .bind(source_marker)
+        .bundle(&edges[0].1.bind(sink_marker));
     for (u, v) in &edges[1..] {
         let edge = u.bind(source_marker).bundle(&v.bind(sink_marker));
         result = result.bundle(&edge);
@@ -134,4 +132,67 @@ pub fn encode_non_commutative_edges<V: VsaVector>(edges: &[(V, V)]) -> V {
         result = result.bundle(&edge);
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hdc::fhrr::FHRRVector;
+    use crate::hdc::vector::{BinaryHDVector, HDVector};
+    use crate::hdc::vsa_trait::IndexVector;
+
+    #[test]
+    fn bundle_sequence_map_equals_pairwise_sum() {
+        let vs: Vec<HDVector> = (0..9).map(|_| HDVector::random(1000)).collect();
+        let pairwise = vs[1..].iter().fold(vs[0].clone(), |a, b| a.bundle(b));
+        let bundled = bundle_sequence(&vs);
+        for (x, y) in bundled.data().iter().zip(pairwise.data().iter()) {
+            assert!((x - y).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn bundle_sequence_bsc_is_exact_majority() {
+        let vs: Vec<BinaryHDVector> = (0..7).map(|_| BinaryHDVector::random(1000)).collect();
+        assert_eq!(
+            bundle_sequence(&vs),
+            BinaryHDVector::majority_bundle_all(&vs)
+        );
+    }
+
+    #[test]
+    fn bundle_sequence_bsc_keeps_every_member() {
+        let vs: Vec<BinaryHDVector> = (0..15).map(|_| BinaryHDVector::random(8192)).collect();
+        let bundled = bundle_sequence(&vs);
+        for (i, v) in vs.iter().enumerate() {
+            assert!(bundled.bipolar_similarity(v) > 0.1, "member {i} lost");
+        }
+    }
+
+    #[test]
+    fn bundle_sequence_index_vector_matches_bsc() {
+        let raw: Vec<BinaryHDVector> = (0..5).map(|_| BinaryHDVector::random(512)).collect();
+        let wrapped: Vec<IndexVector> = raw.iter().cloned().map(IndexVector::new).collect();
+        assert_eq!(
+            bundle_sequence(&wrapped).into_inner(),
+            bundle_sequence(&raw)
+        );
+    }
+
+    #[test]
+    fn bundle_sequence_single_input_and_default_fold() {
+        let a = BinaryHDVector::random(256);
+        assert_eq!(bundle_sequence(std::slice::from_ref(&a)), a);
+        // FHRR keeps the trait's default pairwise fold.
+        let fs: Vec<FHRRVector> = (0..3).map(|_| FHRRVector::random(64)).collect();
+        let expected = fs[0].bundle(&fs[1]).bundle(&fs[2]);
+        assert_eq!(bundle_sequence(&fs).phases(), expected.phases());
+    }
+
+    #[test]
+    #[should_panic(expected = "empty vector slice")]
+    fn bundle_sequence_empty_panics() {
+        let empty: Vec<HDVector> = Vec::new();
+        bundle_sequence(&empty);
+    }
 }

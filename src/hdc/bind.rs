@@ -12,24 +12,23 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use crate::hdc::vector::{HDVector, majority_from_sums};
-
-/// Walsh-Hadamard Transform utilities.
-///
-/// The Fast Walsh-Hadamard Transform (FWHT) is provided as a general-purpose
-/// linear transform for HD vectors. Unlike the element-wise MAP operations
-/// (bind/bundle/permute) which are the primary VSA primitives, the FWHT
-/// serves specialized roles:
-///
-///   - Mixing/demixing dimensions for role-filler binding analysis
-///   - Random projection (Johnson-Lindenstrauss) for dimensionality reduction
-///   - Noise whitening: the FWHT spreads localized noise across all
-///     coefficients, making it amenable to threshold-based denoising
-///
-/// For bipolar VSA, the standard MAP binding (element-wise multiply) is
-/// optimal: self-inverse, exact, O(n). The FWHT-based operations do NOT
-/// outperform MAP for binding/bundling bipolar vectors, and are provided
-/// only for use cases where a linear transform domain is needed.
+//! Walsh-Hadamard Transform utilities.
+//!
+//! The Fast Walsh-Hadamard Transform (FWHT) is provided as a general-purpose
+//! linear transform for HD vectors. Unlike the element-wise MAP operations
+//! (bind/bundle/permute) which are the primary VSA primitives, the FWHT
+//! serves specialized roles:
+//!
+//!   - Mixing/demixing dimensions for role-filler binding analysis
+//!   - Random projection (Johnson-Lindenstrauss) for dimensionality reduction
+//!   - Noise whitening: the FWHT spreads localized noise across all
+//!     coefficients, making it amenable to threshold-based denoising
+//!
+//! For bipolar VSA, the standard MAP binding (element-wise multiply) is
+//! optimal: self-inverse, exact, O(n). The FWHT-based operations do NOT
+//! outperform MAP for binding/bundling bipolar vectors, and are provided
+//! only for use cases where a linear transform domain is needed.
+use crate::hdc::vector::{majority_from_sums, HDVector};
 
 /// Fast Walsh-Hadamard Transform (in-place, unnormalized).
 ///
@@ -163,7 +162,10 @@ pub fn bind_sequence(keys: &[HDVector], values: &[HDVector]) -> HDVector {
 /// Requires power-of-two dimension for FWHT.
 pub fn fractional_permute(v: &HDVector, t: f64) -> HDVector {
     let dim = v.dim();
-    assert!(dim.is_power_of_two(), "fractional_permute requires power-of-two dimension");
+    assert!(
+        dim.is_power_of_two(),
+        "fractional_permute requires power-of-two dimension"
+    );
 
     let floor_t = t.floor() as usize;
     let frac = t - t.floor(); // fractional part in [0, 1)
@@ -215,7 +217,9 @@ pub fn encode_continuous(t: f64, anchor_low: &HDVector, anchor_high: &HDVector) 
     let w_low = 1.0 - t_clamped;
     let w_high = t_clamped;
 
-    let data: Vec<f64> = anchor_low.data().iter()
+    let data: Vec<f64> = anchor_low
+        .data()
+        .iter()
         .zip(anchor_high.data().iter())
         .map(|(&a, &b)| w_low * a + w_high * b)
         .collect();
@@ -239,7 +243,10 @@ pub fn encode_continuous_thermometer(
     anchor_high: &HDVector,
     n_levels: usize,
 ) -> HDVector {
-    assert!(n_levels >= 2, "Need at least 2 levels for thermometer encoding");
+    assert!(
+        n_levels >= 2,
+        "Need at least 2 levels for thermometer encoding"
+    );
     assert_eq!(anchor_low.dim(), anchor_high.dim());
     let dim = anchor_low.dim();
     let t_clamped = t.clamp(0.0, 1.0);
@@ -258,8 +265,8 @@ pub fn encode_continuous_thermometer(
             let permuted = anchor_low.permute(shift % dim);
             let level_vec = permuted.bind(anchor_high);
             let vote = level_vec.binarize();
-            for i in 0..dim {
-                sums[i] += if vote.data()[i] > 0.0 { 1 } else { -1 };
+            for (s, &x) in sums.iter_mut().zip(vote.data().iter()) {
+                *s += if x > 0.0 { 1 } else { -1 };
             }
         }
     }
@@ -268,19 +275,17 @@ pub fn encode_continuous_thermometer(
     crate::hdc::quantize::unpack_bits(binary.words(), dim)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-use crate::hdc::vector::HDVector;
+    use crate::hdc::vector::HDVector;
 
     #[test]
     fn test_fwht_inverse() {
         let dim = 1024;
-        let mut original = vec![0.0; dim];
-        for i in 0..dim {
-            original[i] = if i % 2 == 0 { 1.0 } else { -1.0 };
-        }
+        let original: Vec<f64> = (0..dim)
+            .map(|i| if i % 2 == 0 { 1.0 } else { -1.0 })
+            .collect();
         let mut data = original.clone();
         fwht(&mut data);
         ifwht(&mut data);
@@ -298,7 +303,10 @@ use crate::hdc::vector::HDVector;
         // After FWHT of a bipolar vector, coefficients should not be ±1
         // (they are sums of many ±1 values, so roughly N(0, sqrt(dim)))
         let has_large_values = data.iter().any(|x| x.abs() > 5.0);
-        assert!(has_large_values, "FWHT should mix bipolar values into wider range");
+        assert!(
+            has_large_values,
+            "FWHT should mix bipolar values into wider range"
+        );
     }
 
     #[test]
@@ -399,7 +407,8 @@ use crate::hdc::vector::HDVector;
         assert!(
             sim_close > sim_far,
             "encode_continuous must preserve monotonicity: sim(0.2,0.3)={} > sim(0.2,0.8)={}",
-            sim_close, sim_far
+            sim_close,
+            sim_far
         );
     }
 
@@ -419,8 +428,8 @@ use crate::hdc::vector::HDVector;
         assert!(
             sim_close + 1e-3 >= sim_far,
             "Thermometer encoding must preserve monotonicity: sim(0.2,0.3)={} > sim(0.2,0.8)={}",
-            sim_close, sim_far
+            sim_close,
+            sim_far
         );
     }
 }
-

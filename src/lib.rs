@@ -12,80 +12,88 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod error;
+pub mod apps;
 pub mod dimensions;
+pub mod error;
 pub mod hdc;
-pub mod map;
-pub mod bsc;
-pub mod fhrr;
-pub mod search;
-pub mod dnvs;
-pub mod seed;
-pub mod serialize_vsa;
-pub mod setup;
-pub mod vsa;
-pub mod vsa_persist;
-pub mod primitives;
-pub mod primitives_shim;
-pub mod guddalm;
+pub mod modes;
+pub mod persist;
 pub mod prelude;
+pub mod primitives;
+pub mod search;
+pub mod seed;
+pub mod vsa;
+
+// Pre-0.1.2 module paths, kept so existing `guddalm_vsa::<module>` imports
+// still resolve after the files moved into `modes/`, `persist/` and `apps/`.
+pub use apps::{dnvs, guddalm};
+pub use modes::{bsc, fhrr, map, setup};
+pub use persist::{serialize as serialize_vsa, store as vsa_persist};
+
+/// Former home of the FHRR cartesian ⇄ phase conversions, now in
+/// [`hdc::phase_fhrr`].
+#[doc(hidden)]
+pub mod primitives_shim {
+    pub use crate::hdc::phase_fhrr::{cartesian_to_phase, phase_to_cartesian};
+}
 
 pub use hdc::item_memory::{DeterministicSymbol, ItemMemory};
 pub use hdc::level::ScalarEncoder;
 
-pub use hdc::vector::{HDVector, BinaryHDVector, Complex};
+pub use dimensions::{
+    BSC_DEFAULT_DIM, DNVS_DEFAULT_DIM, FHRR_DEFAULT_DIM, MAP_DEFAULT_DIM, MAP_HIGH_CAPACITY_DIM,
+};
+pub use error::{GuddaError, GuddaResult};
+pub use hdc::accumulator::{BinaryBundleAccumulator, BundleAccumulator};
+pub use hdc::attention::MultiHeadAttention;
+pub use hdc::autograd::{
+    backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss,
+    soft_cleanup, GradHDVector, SGDOptimizer,
+};
+pub use hdc::bundle::{selective_bundle, weighted_bundle};
+pub use hdc::cleanup::{BinaryCleanupMemory, CleanupMemory, FhrrCleanupMemory};
 pub use hdc::fhrr::FHRRVector;
 pub use hdc::ghrr::GHRRVector;
-pub use hdc::vector::{
-    dot_product_slice, cosine_similarity_slice,
-    convolve_slices, correlate_slices,
-    par_convolve_batch, par_correlate_batch, par_cosine_similarity_slice,
-    majority_from_sums,
-};
-pub use vsa::{Codebook, VsaEngine};
-pub use hdc::bundle::{weighted_bundle, selective_bundle};
-pub use hdc::sdm::{sdm_snr_threshold_bipolar, optimal_snr_hamming_radius, sdm_read_bipolar};
+pub use hdc::graph::{GhrrGraphEncoder, GraphEncoder};
+pub use hdc::phase_fhrr::{cartesian_to_phase, phase_to_cartesian};
 pub use hdc::quantize::{pack_bits, pack_bits_array64, PackedArray64};
+pub use hdc::resonator::{
+    generate_rc_codebook, resonator_search, resonator_search_auto, resonator_search_auto_acf,
+    ResonatorResult,
+};
 pub use hdc::rff::ContinuousSpaceEncoder;
-pub use hdc::cleanup::{CleanupMemory, BinaryCleanupMemory, FhrrCleanupMemory};
-pub use hdc::stream::HDStreamBuffer;
-pub use hdc::resonator::{resonator_search, resonator_search_auto, resonator_search_auto_acf, generate_rc_codebook, ResonatorResult};
-pub use hdc::attention::MultiHeadAttention;
+pub use hdc::sdm::{optimal_snr_hamming_radius, sdm_read_bipolar, sdm_snr_threshold_bipolar};
 pub use hdc::sequence::SequenceLearner;
-pub use hdc::graph::{GraphEncoder, GhrrGraphEncoder};
-pub use seed::{
-    deterministic_seed,
-    deterministic_hd_vector,
-    deterministic_binary_hd_vector,
-    deterministic_fhrr_vector,
-    deterministic_fhrr_continuous,
-    deterministic_ghrr_vector as deterministic_ghrr_vector_seed,
-};
-pub use setup::{VsaSystem, VsaMode, VsaSystemOptions, SystemVector};
-pub use vsa_persist::{
-    default_store_dir,
-    load_bundle,
-    model_bin_path,
-    model_bin_path_env,
-    save_bundle,
-    VsaPersistenceError,
-    VsaPersistentBundle,
-    VsaPersistenceResult,
-    BIN_FILENAME,
-    BIN_DIRNAME,
-};
-pub use hdc::vsa_trait::{VsaVectorRaw, VsaVector, IndexVector};
-pub use error::{GuddaError, GuddaResult};
-pub use dimensions::{
-    MAP_DEFAULT_DIM, BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, DNVS_DEFAULT_DIM,
-};
-pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence, encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges};
-pub use primitives_shim::{cartesian_to_phase, phase_to_cartesian};
-pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};
+pub use hdc::stream::HDStreamBuffer;
 #[cfg(feature = "candle")]
-pub use hdc::tensor::{to_tensor, from_tensor, to_tensor_batch, from_tensor_batch, tensor_bind, tensor_unbind, tensor_bundle, tensor_permute, tensor_cosine_similarity, tensor_similarity_loss, tensor_selective_bundle, tensor_fwht, tensor_ifwht};
+pub use hdc::tensor::{
+    from_tensor, from_tensor_batch, tensor_bind, tensor_bundle, tensor_cosine_similarity,
+    tensor_fwht, tensor_ifwht, tensor_permute, tensor_selective_bundle, tensor_similarity_loss,
+    tensor_unbind, to_tensor, to_tensor_batch,
+};
 #[cfg(feature = "candle")]
 pub use hdc::transformer::DiffVSAEncoderLayer;
+pub use hdc::vector::{
+    convolve_slices, correlate_slices, cosine_similarity_slice, dot_product_slice,
+    majority_from_sums, par_convolve_batch, par_correlate_batch, par_cosine_similarity_slice,
+};
+pub use hdc::vector::{BinaryHDVector, Complex, HDVector};
+pub use hdc::vsa_trait::{IndexVector, VsaVector, VsaVectorRaw};
+pub use primitives::{
+    bind_sequence, bundle_sequence, decode_set, encode_graph_edges, encode_ngram_sequence,
+    encode_non_commutative_edges, encode_positional_sequence, encode_set,
+};
+pub use seed::{
+    deterministic_binary_hd_vector, deterministic_fhrr_continuous, deterministic_fhrr_vector,
+    deterministic_ghrr_vector as deterministic_ghrr_vector_seed, deterministic_hd_vector,
+    deterministic_seed,
+};
+pub use setup::{SystemVector, VsaMode, VsaSystem, VsaSystemOptions};
+pub use vsa::{Codebook, VsaEngine};
+pub use vsa_persist::{
+    default_store_dir, load_bundle, model_bin_path, model_bin_path_env, save_bundle,
+    VsaPersistenceError, VsaPersistenceResult, VsaPersistentBundle, BIN_DIRNAME, BIN_FILENAME,
+};
 
 #[cfg(test)]
 mod tests {
@@ -102,7 +110,8 @@ mod tests {
         let sim = a.cosine_similarity(&unbind);
         assert!(
             sim > 0.65,
-            "MAP binding must be invertible via unbind (got sim={})", sim
+            "MAP binding must be invertible via unbind (got sim={})",
+            sim
         );
     }
 
@@ -113,7 +122,8 @@ mod tests {
         let sim = a.cosine_similarity(&bundle);
         assert!(
             sim > 0.99,
-            "bundle(a,a) must be nearly identical to a (got {})", sim
+            "bundle(a,a) must be nearly identical to a (got {})",
+            sim
         );
     }
 
@@ -124,7 +134,8 @@ mod tests {
         let sim = a.cosine_similarity(&shifted);
         assert!(
             sim.abs() < 0.1,
-            "permuted vectors should be nearly orthogonal (got {})", sim
+            "permuted vectors should be nearly orthogonal (got {})",
+            sim
         );
     }
 
@@ -186,7 +197,8 @@ mod tests {
         let diff = (sim_original - sim_packed).abs();
         assert!(
             diff < 0.01,
-            "packed similarity must approximate cosine similarity (diff = {})", diff
+            "packed similarity must approximate cosine similarity (diff = {})",
+            diff
         );
     }
 
@@ -201,7 +213,8 @@ mod tests {
         let sim_to_query = result.cosine_similarity(&query);
         assert!(
             sim_to_query > 0.3,
-            "weighted bundle must favor more similar inputs (sim = {})", sim_to_query
+            "weighted bundle must favor more similar inputs (sim = {})",
+            sim_to_query
         );
     }
 
@@ -216,6 +229,9 @@ mod tests {
         let result = selective_bundle(&query, &[k1, k2], &[v1.clone(), v2.clone()], 0.5);
         let sim_to_v1 = result.cosine_similarity(&v1);
         let sim_to_v2 = result.cosine_similarity(&v2);
-        assert!(sim_to_v1 > sim_to_v2, "selective bundle must favor value paired with similar key");
+        assert!(
+            sim_to_v1 > sim_to_v2,
+            "selective bundle must favor value paired with similar key"
+        );
     }
 }

@@ -1,0 +1,5 @@
+# Keep LF line endings in every checkout, including Windows, so the
+# checksums in RELEASES.sha256 match the files on disk everywhere.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

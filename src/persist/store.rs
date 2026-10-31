@@ -14,11 +14,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use crate::hdc::vector::HDVector;
 use crate::vsa::{Codebook, VsaEngine};
+use dirs;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
-use dirs;
 
 pub const BIN_FILENAME: &str = "codebook_episodic.bin";
 pub const BIN_DIRNAME: &str = "vsa_model_bins";
@@ -39,7 +39,9 @@ pub struct VsaPersistentBundle {
 
 impl VsaPersistentBundle {
     pub fn from_codebook(codebook: &Codebook) -> Self {
-        let saved_at = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true).to_string();
+        let saved_at = chrono::Utc::now()
+            .to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+            .to_string();
 
         Self {
             schema_version: 1,

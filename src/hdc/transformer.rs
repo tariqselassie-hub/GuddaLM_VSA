@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Differentiable VSA Transformer Layer
 //!
-//! Provides a differentiable analogue of [`HDTransformerLayer`] using the
+//! Provides a differentiable analogue of the original `HDTransformerLayer` using the
 //! candle tensor bridge.  All operations run on GPU via candle's autograd
 //! graph, enabling end-to-end training.
 //!
@@ -25,8 +25,8 @@
 //! Unlike the original `HDTransformerLayer` which binarizes and uses SDM
 //! thresholds, this layer keeps vectors continuous for differentiability.
 
-use candle_core::{Result, Tensor};
 use super::tensor::*;
+use candle_core::{Result, Tensor};
 
 /// Differentiable VSA encoder layer with multi-head attention.
 ///
@@ -50,7 +50,7 @@ impl DiffVSAEncoderLayer {
     /// selective (fewer KV pairs contribute).
     pub fn new(dim: usize, n_heads: usize, threshold: f64) -> Self {
         assert!(
-            dim % n_heads == 0,
+            dim.is_multiple_of(n_heads),
             "dim ({}) must be divisible by n_heads ({})",
             dim,
             n_heads
@@ -93,7 +93,8 @@ impl DiffVSAEncoderLayer {
         let pos_encoded = tensor_permute(input, position)?;
 
         // 2. Multi-head attention
-        let attn_out = multihead_attention(&pos_encoded, keys, values, self.n_heads, self.threshold)?;
+        let attn_out =
+            multihead_attention(&pos_encoded, keys, values, self.n_heads, self.threshold)?;
 
         // 3. Residual bundling (element-wise addition)
         tensor_bundle(input, &attn_out)
@@ -121,7 +122,7 @@ fn multihead_attention(
     n_heads: usize,
     threshold: f64,
 ) -> Result<Tensor> {
-    let dim = query.dim(0)? as usize;
+    let dim = query.dim(0)?;
     let head_dim = dim / n_heads;
 
     // Reshape query: [dim] -> [n_heads, head_dim]

@@ -14,7 +14,7 @@ use guddalm_vsa::prelude::*;
 fn main() {
     println!("=== GuddaLM VSA: Quickstart Key-Value Record Demo ===\n");
 
-    const DIM: usize = 10_000;
+    const DIM: usize = MAP_DEFAULT_DIM;
     let mut mem: ItemMemory<HDVector> = ItemMemory::new(DIM);
 
     // 1. Define fields and values
@@ -38,7 +38,10 @@ fn main() {
         record = record.bundle(&bound);
     }
 
-    println!("Record successfully encoded into {} hypervector.\n", record.dim());
+    println!(
+        "Record successfully encoded into {} hypervector.\n",
+        record.dim()
+    );
 
     // 2. Querying fields by unbinding
     println!("Querying record with keys:");
@@ -50,8 +53,10 @@ fn main() {
 
         // Auto-associative cleanup: find the closest symbol in item memory
         if let Some((recovered_sym, sim)) = mem.cleanup(&value_estimate) {
-            println!("  Key: {:<12} -> Recovered Value: {:<12} (similarity: {:.4})",
-                query_key, recovered_sym, sim);
+            println!(
+                "  Key: {:<12} -> Recovered Value: {:<12} (similarity: {:.4})",
+                query_key, recovered_sym, sim
+            );
         }
     }
 

@@ -23,24 +23,36 @@ fn main() {
     let key_hum = mem.get_or_create("sensor:humidity");
 
     // Sample reading 1: Cold & dry winter day (-5°C, 25% humidity)
-    let reading_winter = key_temp.bind(&temp_encoder.encode(-5.0))
+    let reading_winter = key_temp
+        .bind(&temp_encoder.encode(-5.0))
         .bundle(&key_hum.bind(&humidity_encoder.encode(25.0)));
 
     // Sample reading 2: Mild winter day (-3°C, 28% humidity)
-    let reading_winter_mild = key_temp.bind(&temp_encoder.encode(-3.0))
+    let reading_winter_mild = key_temp
+        .bind(&temp_encoder.encode(-3.0))
         .bundle(&key_hum.bind(&humidity_encoder.encode(28.0)));
 
     // Sample reading 3: Hot summer day (38°C, 85% humidity)
-    let reading_summer = key_temp.bind(&temp_encoder.encode(38.0))
+    let reading_summer = key_temp
+        .bind(&temp_encoder.encode(38.0))
         .bundle(&key_hum.bind(&humidity_encoder.encode(85.0)));
 
     let sim_similar = reading_winter.cosine_similarity(&reading_winter_mild);
     let sim_different = reading_winter.cosine_similarity(&reading_summer);
 
-    println!("Cosine similarity between (-5°C, 25% RH) and (-3°C, 28% RH): {:.4}", sim_similar);
-    println!("Cosine similarity between (-5°C, 25% RH) and ( 38°C, 85% RH): {:.4}", sim_different);
+    println!(
+        "Cosine similarity between (-5°C, 25% RH) and (-3°C, 28% RH): {:.4}",
+        sim_similar
+    );
+    println!(
+        "Cosine similarity between (-5°C, 25% RH) and ( 38°C, 85% RH): {:.4}",
+        sim_different
+    );
 
-    assert!(sim_similar > sim_different + 0.3, "Close sensor readings must have significantly higher similarity!");
+    assert!(
+        sim_similar > sim_different + 0.3,
+        "Close sensor readings must have significantly higher similarity!"
+    );
 
     // Query temperature from winter reading
     let query_temp = reading_winter.unbind(&key_temp);

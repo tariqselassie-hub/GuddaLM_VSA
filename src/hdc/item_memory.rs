@@ -5,18 +5,16 @@
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
-use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::hdc::fhrr::FHRRVector;
 use crate::hdc::ghrr::GHRRVector;
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::hdc::vsa_trait::{IndexVector, VsaVector};
 use crate::seed::{
-    deterministic_binary_hd_vector,
-    deterministic_fhrr_vector,
-    deterministic_ghrr_vector as deterministic_ghrr_vector_seed,
-    deterministic_hd_vector,
+    deterministic_binary_hd_vector, deterministic_fhrr_vector,
+    deterministic_ghrr_vector as deterministic_ghrr_vector_seed, deterministic_hd_vector,
 };
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Trait for generating deterministic hypervectors from a symbol string.
 pub trait DeterministicSymbol: VsaVector {
@@ -161,7 +159,11 @@ impl<V: VsaVector> ItemMemory<V> {
 
     /// Insert an explicit symbol and hypervector. Overwrites if the symbol already exists.
     pub fn insert(&mut self, symbol: impl Into<String>, vector: V) {
-        assert_eq!(vector.dim(), self.dim, "Vector dimension mismatch in ItemMemory");
+        assert_eq!(
+            vector.dim(),
+            self.dim,
+            "Vector dimension mismatch in ItemMemory"
+        );
         let sym = symbol.into();
         if let Some(&idx) = self.indices.get(&sym) {
             self.vectors[idx] = vector;
@@ -176,41 +178,27 @@ impl<V: VsaVector> ItemMemory<V> {
     /// Clean up a noisy or unbound vector by finding the symbol with maximum cosine similarity.
     ///
     /// Returns `Some((symbol_name, similarity))` or `None` if memory is empty.
-    pub fn cleanup(&self, query: &V) -> Option<(String, f64)> {
-        if self.vectors.is_empty() {
-            None
-        } else {
-            let mut best_idx = 0;
-            let mut best_sim = f64::NEG_INFINITY;
-
-            for (i, v) in self.vectors.iter().enumerate() {
-                let sim = query.cosine_similarity(v);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
-
-            Some((self.symbols[best_idx].clone(), best_sim))
-        }
+    pub fn cleanup(&self, query: &V) -> Option<(String, f64)>
+    where
+        V: Sync,
+    {
+        crate::search::best_by(self.vectors.len(), |i| {
+            query.cosine_similarity(&self.vectors[i])
+        })
+        .map(|(i, sim)| (self.symbols[i].clone(), sim))
     }
 
     /// Return the top `k` most similar symbols sorted in descending order of similarity.
-    pub fn cleanup_top_k(&self, query: &V, k: usize) -> Vec<(String, f64)> {
-        if self.vectors.is_empty() || k == 0 {
-            Vec::new()
-        } else {
-            let mut scores: Vec<(String, f64)> = self.symbols
-                .iter()
-                .zip(self.vectors.iter())
-                .map(|(s, v)| (s.clone(), query.cosine_similarity(v)))
-                .collect();
-
-            // Sort descending by similarity score
-            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-            scores.truncate(k);
-            scores
-        }
+    pub fn cleanup_top_k(&self, query: &V, k: usize) -> Vec<(String, f64)>
+    where
+        V: Sync,
+    {
+        crate::search::top_k_by(self.vectors.len(), k, |i| {
+            query.cosine_similarity(&self.vectors[i])
+        })
+        .into_iter()
+        .map(|(i, sim)| (self.symbols[i].clone(), sim))
+        .collect()
     }
 
     /// Slice of all registered symbol names.
@@ -290,7 +278,10 @@ mod tests {
             None => panic!("cleanup failed"),
         };
         assert_eq!(best, "entity:robot");
-        assert!(sim > 0.65, "similarity to correct entity must be high (got {sim})");
+        assert!(
+            sim > 0.65,
+            "similarity to correct entity must be high (got {sim})"
+        );
 
         let distractor_sim = query.cosine_similarity(&distractor);
         assert!(sim > distractor_sim + 0.4);

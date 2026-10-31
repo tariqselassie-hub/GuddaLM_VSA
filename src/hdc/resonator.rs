@@ -113,7 +113,10 @@ pub fn resonator_search_auto_acf(
 ) -> ResonatorResult {
     let as_codebooks = vec![codebook.clone(); num_copies];
     let rc_codebooks = Some(
-        as_codebooks.iter().map(|cb| generate_rc_codebook(cb, noise_rate)).collect::<Vec<_>>(),
+        as_codebooks
+            .iter()
+            .map(|cb| generate_rc_codebook(cb, noise_rate))
+            .collect::<Vec<_>>(),
     );
     resonator_search_inner(composition, &as_codebooks, rc_codebooks, max_iters, tol)
 }
@@ -133,7 +136,9 @@ pub fn generate_rc_codebook(base: &Codebook, sparsity: f64) -> Codebook {
         // Use deterministic LCG for reproducible noise
         let mut lcg_seed: u64 = 13374269;
         let mut lcg_rand = move || -> f64 {
-            lcg_seed = lcg_seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            lcg_seed = lcg_seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             lcg_seed as f64 / u64::MAX as f64
         };
 
@@ -166,7 +171,10 @@ fn resonator_search_inner(
     max_iters: usize,
     tol: f64,
 ) -> ResonatorResult {
-    assert!(!as_codebooks.is_empty(), "resonator requires at least one codebook");
+    assert!(
+        !as_codebooks.is_empty(),
+        "resonator requires at least one codebook"
+    );
     let dim = composition.dim();
     let num_factors = as_codebooks.len();
 
@@ -174,7 +182,8 @@ fn resonator_search_inner(
     for (i, cb) in as_codebooks.iter().enumerate() {
         assert_eq!(
             cb.dim, dim,
-            "codebook[{}] dim {} != composition dim {}", i, cb.dim, dim
+            "codebook[{}] dim {} != composition dim {}",
+            i, cb.dim, dim
         );
     }
 
@@ -208,9 +217,9 @@ fn resonator_search_inner(
         for i in 0..num_factors {
             // Unbind all other factors from the composition
             let mut residue = composition.clone();
-            for j in 0..num_factors {
+            for (j, estimate) in estimates.iter().enumerate() {
                 if j != i {
-                    residue = residue.unbind(&estimates[j]);
+                    residue = residue.unbind(estimate);
                 }
             }
 
@@ -323,8 +332,11 @@ mod tests {
         let composition = a.bind(b);
 
         let result = resonator_search(&composition, &[cb1, cb2], 100, 0.2);
-        assert!(result.converged || result.factors[0] == idx_a || result.factors[1] == idx_b,
-            "two-factor resonator should converge or find a correct factor (got {:?})", result.factors);
+        assert!(
+            result.converged || result.factors[0] == idx_a || result.factors[1] == idx_b,
+            "two-factor resonator should converge or find a correct factor (got {:?})",
+            result.factors
+        );
     }
 
     #[test]

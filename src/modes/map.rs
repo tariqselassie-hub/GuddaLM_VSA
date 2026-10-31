@@ -32,7 +32,7 @@ pub use crate::hdc::vector::HDVector;
 pub struct MapSetup;
 
 impl MapSetup {
-    pub const DEFAULT_DIM: usize = 4096;
+    pub const DEFAULT_DIM: usize = crate::dimensions::MAP_DEFAULT_DIM;
 
     #[inline(always)]
     pub fn random(dim: usize) -> HDVector {

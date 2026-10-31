@@ -3,9 +3,9 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "GuddaLM_VSA",
-  "documentNamespace": "https://spdx.guddalm_vsa/GuddaLM_VSA-2026-10-30",
+  "documentNamespace": "https://spdx.guddalm_vsa/GuddaLM_VSA-2026-10-31",
   "creationInfo": {
-    "created": "2026-10-30T23:39:41.125756+00:00",
+    "created": "2026-10-31T01:11:37.537263+00:00",
     "creators": [
       "Tool: guddalm_vsa-release-scripts"
     ]
@@ -47,6 +47,26 @@
       "versionInfo": "0.1.6",
       "supplier": "NOASSERTION",
       "downloadLocation": "https://crates.io/crates/android_system_properties",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "anes",
+      "SPDXID": "SPDXRef-Package-anes",
+      "versionInfo": "0.1.6",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/anes",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "anstyle",
+      "SPDXID": "SPDXRef-Package-anstyle",
+      "versionInfo": "1.0.14",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/anstyle",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "filesAnalyzed": false
@@ -142,6 +162,16 @@
       "filesAnalyzed": false
     },
     {
+      "name": "cast",
+      "SPDXID": "SPDXRef-Package-cast",
+      "versionInfo": "0.3.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/cast",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
       "name": "castaway",
       "SPDXID": "SPDXRef-Package-castaway",
       "versionInfo": "0.2.4",
@@ -182,6 +212,66 @@
       "filesAnalyzed": false
     },
     {
+      "name": "ciborium",
+      "SPDXID": "SPDXRef-Package-ciborium",
+      "versionInfo": "0.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ciborium",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ciborium-io",
+      "SPDXID": "SPDXRef-Package-ciborium-io",
+      "versionInfo": "0.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ciborium-io",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "ciborium-ll",
+      "SPDXID": "SPDXRef-Package-ciborium-ll",
+      "versionInfo": "0.2.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/ciborium-ll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "clap",
+      "SPDXID": "SPDXRef-Package-clap",
+      "versionInfo": "4.6.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/clap",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "clap_builder",
+      "SPDXID": "SPDXRef-Package-clap_builder",
+      "versionInfo": "4.6.7",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/clap_builder",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "clap_lex",
+      "SPDXID": "SPDXRef-Package-clap_lex",
+      "versionInfo": "1.1.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/clap_lex",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
       "name": "compact_str",
       "SPDXID": "SPDXRef-Package-compact_str",
       "versionInfo": "0.9.1",
@@ -207,6 +297,26 @@
       "versionInfo": "1.5.0",
       "supplier": "NOASSERTION",
       "downloadLocation": "https://crates.io/crates/crc32fast",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "criterion",
+      "SPDXID": "SPDXRef-Package-criterion",
+      "versionInfo": "0.5.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/criterion",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "criterion-plot",
+      "SPDXID": "SPDXRef-Package-criterion-plot",
+      "versionInfo": "0.5.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/criterion-plot",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "filesAnalyzed": false
@@ -652,6 +762,26 @@
       "filesAnalyzed": false
     },
     {
+      "name": "is-terminal",
+      "SPDXID": "SPDXRef-Package-is-terminal",
+      "versionInfo": "0.4.17",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/is-terminal",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "itertools",
+      "SPDXID": "SPDXRef-Package-itertools",
+      "versionInfo": "0.10.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/itertools",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
       "name": "itertools",
       "SPDXID": "SPDXRef-Package-itertools",
       "versionInfo": "0.14.0",
@@ -887,6 +1017,16 @@
       "versionInfo": "69.9.3",
       "supplier": "NOASSERTION",
       "downloadLocation": "https://crates.io/crates/onig_sys",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "oorandom",
+      "SPDXID": "SPDXRef-Package-oorandom",
+      "versionInfo": "11.1.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/oorandom",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "filesAnalyzed": false
@@ -1467,6 +1607,16 @@
       "versionInfo": "2.0.20",
       "supplier": "NOASSERTION",
       "downloadLocation": "https://crates.io/crates/thiserror-impl",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "name": "tinytemplate",
+      "SPDXID": "SPDXRef-Package-tinytemplate",
+      "versionInfo": "1.2.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://crates.io/crates/tinytemplate",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "filesAnalyzed": false

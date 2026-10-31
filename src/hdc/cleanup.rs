@@ -12,6 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use crate::hdc::fhrr::FHRRVector;
 /// Cleanup Memory — auto-associative nearest-neighbor search for HD vectors.
 ///
 /// A cleanup memory stores a set of prototype hypervectors and, given a
@@ -31,7 +32,6 @@
 /// binary, falling back to cosine similarity for real-valued vectors.
 use crate::hdc::quantize::{wordwise_xnor_similarity_array64, PackedArray64};
 use crate::hdc::vector::{BinaryHDVector, HDVector};
-use crate::hdc::fhrr::FHRRVector;
 use crate::vsa::Codebook;
 
 /// Result of a cleanup memory lookup.
@@ -64,9 +64,12 @@ impl CleanupMemory {
     /// Packed similarity is used automatically when the codebook has
     /// pre-computed bit-packed signatures.
     pub fn new(codebook: Codebook) -> Self {
-        let use_packed = !codebook.packed.is_empty()
-            && codebook.packed[0].len() == codebook.dim.div_ceil(64);
-        CleanupMemory { codebook, use_packed }
+        let use_packed =
+            !codebook.packed.is_empty() && codebook.packed[0].len() == codebook.dim.div_ceil(64);
+        CleanupMemory {
+            codebook,
+            use_packed,
+        }
     }
 
     /// Find the closest prototype to `query`.
@@ -74,28 +77,20 @@ impl CleanupMemory {
     /// Uses packed XNOR-popcount similarity when the codebook supports it,
     /// otherwise falls back to cosine similarity.
     pub fn cleanup(&self, query: &HDVector) -> CleanupResult {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
-
-        if self.use_packed && query.is_binary() {
+        let best = if self.use_packed && query.is_binary() {
             // Fast path: bit-packed similarity
-            for (i, packed) in self.codebook.packed.iter().enumerate() {
-                let sim = crate::hdc::quantize::packed_similarity(query, packed);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
+            let packed = &self.codebook.packed;
+            crate::search::best_by(packed.len(), |i| {
+                crate::hdc::quantize::packed_similarity(query, &packed[i])
+            })
         } else {
             // General path: cosine similarity
-            for (i, w) in self.codebook.weights.iter().enumerate() {
-                let sim = HDVector::cosine_similarity(query, w);
-                if sim > best_sim {
-                    best_sim = sim;
-                    best_idx = i;
-                }
-            }
-        }
+            let weights = &self.codebook.weights;
+            crate::search::best_by(weights.len(), |i| {
+                HDVector::cosine_similarity(query, &weights[i])
+            })
+        };
+        let (best_idx, best_sim) = best.unwrap_or((0, f64::NEG_INFINITY));
 
         CleanupResult {
             index: best_idx,
@@ -117,12 +112,12 @@ impl CleanupMemory {
     /// Uses `batch_similarity_array64` for maximum SIMD throughput.
     /// Panics if the codebook dimension is not 4096 or if packed data
     /// is unavailable.
-    pub fn batch_cleanup_packed4096(
-        &self,
-        queries: &[&PackedArray64],
-    ) -> Vec<CleanupResult> {
+    pub fn batch_cleanup_packed4096(&self, queries: &[&PackedArray64]) -> Vec<CleanupResult> {
         assert_eq!(self.codebook.dim, 4096, "packed4096 requires D=4096");
-        assert!(!self.codebook.packed.is_empty(), "codebook has no packed data");
+        assert!(
+            !self.codebook.packed.is_empty(),
+            "codebook has no packed data"
+        );
 
         let mut results = Vec::with_capacity(queries.len());
         for query_packed in queries {
@@ -130,7 +125,9 @@ impl CleanupMemory {
             let mut best_sim = f64::NEG_INFINITY;
 
             for (i, p) in self.codebook.packed.iter().enumerate() {
-                let sig: &PackedArray64 = p.as_slice().try_into()
+                let sig: &PackedArray64 = p
+                    .as_slice()
+                    .try_into()
                     .expect("packed signature must be 64 words");
                 let sim = wordwise_xnor_similarity_array64(query_packed, sig);
                 if sim > best_sim {
@@ -179,22 +176,12 @@ impl BinaryCleanupMemory {
 
     /// Find the closest binary prototype to `query`.
     pub fn cleanup(&self, query: &BinaryHDVector) -> (usize, f64, BinaryHDVector) {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
+        let (best_idx, best_sim) = crate::search::best_by(self.prototypes.len(), |i| {
+            query.hamming_similarity(&self.prototypes[i])
+        })
+        .unwrap_or((0, f64::NEG_INFINITY));
 
-        for (i, p) in self.prototypes.iter().enumerate() {
-            let sim = query.hamming_similarity(p);
-            if sim > best_sim {
-                best_sim = sim;
-                best_idx = i;
-            }
-        }
-
-        (
-            best_idx,
-            best_sim,
-            self.prototypes[best_idx].clone(),
-        )
+        (best_idx, best_sim, self.prototypes[best_idx].clone())
     }
 
     pub fn len(&self) -> usize {
@@ -222,22 +209,12 @@ impl FhrrCleanupMemory {
 
     /// Find the closest phase prototype to `query`.
     pub fn cleanup(&self, query: &FHRRVector) -> (usize, f64, FHRRVector) {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
+        let (best_idx, best_sim) = crate::search::best_by(self.prototypes.len(), |i| {
+            FHRRVector::cosine_similarity(query, &self.prototypes[i])
+        })
+        .unwrap_or((0, f64::NEG_INFINITY));
 
-        for (i, p) in self.prototypes.iter().enumerate() {
-            let sim = FHRRVector::cosine_similarity(query, p);
-            if sim > best_sim {
-                best_sim = sim;
-                best_idx = i;
-            }
-        }
-
-        (
-            best_idx,
-            best_sim,
-            self.prototypes[best_idx].clone(),
-        )
+        (best_idx, best_sim, self.prototypes[best_idx].clone())
     }
 
     pub fn len(&self) -> usize {
@@ -311,8 +288,8 @@ mod tests {
         let prototypes: Vec<BinaryHDVector> = (0..n).map(|_| BinaryHDVector::random(dim)).collect();
         let memory = BinaryCleanupMemory::new(prototypes.clone());
 
-        for i in 0..n {
-            let (idx, sim, _) = memory.cleanup(&prototypes[i]);
+        for (i, p) in prototypes.iter().enumerate().take(n) {
+            let (idx, sim, _) = memory.cleanup(p);
             assert_eq!(idx, i);
             assert!((sim - 1.0).abs() < 0.001);
         }

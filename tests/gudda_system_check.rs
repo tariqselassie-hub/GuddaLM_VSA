@@ -12,19 +12,19 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use guddalm_vsa::hdc::vector::{BinaryHDVector, HDVector};
+use guddalm_vsa::hdc::phase_fhrr::CartesianFhrrVector;
 use guddalm_vsa::hdc::quantize::{pack_bits, packed_similarity};
 use guddalm_vsa::hdc::resonator::resonator_search;
 use guddalm_vsa::hdc::sdm::sdm_read_bipolar;
 use guddalm_vsa::hdc::stream::{BundleAccumulator, HDStreamBuffer};
+use guddalm_vsa::hdc::vector::{BinaryHDVector, HDVector};
 use guddalm_vsa::vsa::Codebook;
-use guddalm_vsa::{
-    bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence,
-    encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges,
-    cartesian_to_phase, phase_to_cartesian,
-};
-use guddalm_vsa::hdc::phase_fhrr::CartesianFhrrVector;
 use guddalm_vsa::GHRRVector;
+use guddalm_vsa::{
+    bind_sequence, bundle_sequence, cartesian_to_phase, decode_set, encode_graph_edges,
+    encode_ngram_sequence, encode_non_commutative_edges, encode_positional_sequence, encode_set,
+    phase_to_cartesian,
+};
 
 #[derive(Default)]
 struct Summary {
@@ -56,21 +56,65 @@ macro_rules! check {
 fn system_wide_gudda_check() {
     let mut s = Summary::default();
     println!("=== VSA primitives ===");
-    check!(s, test_vsa_primitives(), "VSA primitives invertible + identity");
-    check!(s, test_binary_primitives(), "Binary self-inverse + identity");
-    check!(s, test_generic_primitives(), "Generic VSA primitives (sequence/set/positional)");
-    check!(s, test_fhrr_shim_conversions(), "FHRR Cartesian/Phase shim conversions");
-    check!(s, test_ghrr_vector_primitives(), "GHRR matrix-based primitives (bind/unbind/bundle)");
-    check!(s, test_expanded_primitives(), "Expanded VSA primitives (N-gram/directed-graph/non-commutative)");
+    check!(
+        s,
+        test_vsa_primitives(),
+        "VSA primitives invertible + identity"
+    );
+    check!(
+        s,
+        test_binary_primitives(),
+        "Binary self-inverse + identity"
+    );
+    check!(
+        s,
+        test_generic_primitives(),
+        "Generic VSA primitives (sequence/set/positional)"
+    );
+    check!(
+        s,
+        test_fhrr_shim_conversions(),
+        "FHRR Cartesian/Phase shim conversions"
+    );
+    check!(
+        s,
+        test_ghrr_vector_primitives(),
+        "GHRR matrix-based primitives (bind/unbind/bundle)"
+    );
+    check!(
+        s,
+        test_expanded_primitives(),
+        "Expanded VSA primitives (N-gram/directed-graph/non-commutative)"
+    );
     println!("=== Cache / chunked scaling ===");
-    check!(s, test_chunked_cache_is_better_or_equal(), "chunked better-or-equal vs single");
+    check!(
+        s,
+        test_chunked_cache_is_better_or_equal(),
+        "chunked better-or-equal vs single"
+    );
     println!("=== Structural ===");
-    check!(s, test_cleanup_memory(), "cleanup memory inverted + prototype");
+    check!(
+        s,
+        test_cleanup_memory(),
+        "cleanup memory inverted + prototype"
+    );
     check!(s, test_resonator_two_factor(), "resonator two-factor");
-    check!(s, test_sdm_read_favors_similar(), "SDM read favors similar keys");
-    check!(s, test_packed_similarity_approximates_cosine(), "packed similarity approximates cosine");
+    check!(
+        s,
+        test_sdm_read_favors_similar(),
+        "SDM read favors similar keys"
+    );
+    check!(
+        s,
+        test_packed_similarity_approximates_cosine(),
+        "packed similarity approximates cosine"
+    );
     println!("=== Baseline ===");
-    check!(s, test_baseline_loss_window(), "baseline loss bounds in training helpers");
+    check!(
+        s,
+        test_baseline_loss_window(),
+        "baseline loss bounds in training helpers"
+    );
     println!("=== Summary: {} passed, {} failed ===", s.passed, s.failed);
     assert_eq!(s.failed, 0, "system check failed");
 }
@@ -182,7 +226,10 @@ fn test_sdm_read_favors_similar() -> Result<(), String> {
     let sim1 = out.cosine_similarity(&v1);
     let sim2 = out.cosine_similarity(&v2);
     if sim1 <= sim2 {
-        return Err(format!("SDM read biased wrong: v1={:.4} v2={:.4}", sim1, sim2));
+        return Err(format!(
+            "SDM read biased wrong: v1={:.4} v2={:.4}",
+            sim1, sim2
+        ));
     }
     Ok(())
 }
@@ -194,7 +241,10 @@ fn test_packed_similarity_approximates_cosine() -> Result<(), String> {
     let packed = pack_bits(&a);
     let approx = packed_similarity(&b, &packed);
     if (orig - approx).abs() > 0.01 {
-        return Err(format!("packed drift: orig={:.4} approx={:.4}", orig, approx));
+        return Err(format!(
+            "packed drift: orig={:.4} approx={:.4}",
+            orig, approx
+        ));
     }
     Ok(())
 }
@@ -203,7 +253,8 @@ fn test_baseline_loss_window() -> Result<(), String> {
     let v = HDVector::random(256);
     let loss = 1.0 - v.cosine_similarity(&v);
     let ppl = loss.exp();
-    if !((ppl - 1.0).abs() < 1e-9) {
+    // Written to fail on NaN as well as on a real deviation.
+    if ppl.is_nan() || (ppl - 1.0).abs() >= 1e-9 {
         return Err(format!("perplexity baseline violated: ppl={}", ppl));
     }
     Ok(())
@@ -265,7 +316,8 @@ impl ChunkedCache {
 
         let len = self.chunks[last].len();
         if len == self.chunks[last].capacity() || len == 0 {
-            self.chunks.push(HDStreamBuffer::new(self.dim, 1.max(self.chunk_size)));
+            self.chunks
+                .push(HDStreamBuffer::new(self.dim, 1.max(self.chunk_size)));
             self.key_sums.push(HDVector::zeros(self.dim));
         }
 
@@ -293,12 +345,13 @@ impl ChunkedCache {
                 best_i = i;
             }
         }
-        self.chunks
-            .get(best_i)
-            .map_or_else(|| HDVector::zeros(self.dim), |c| {
+        self.chunks.get(best_i).map_or_else(
+            || HDVector::zeros(self.dim),
+            |c| {
                 let state = c.bundle_all();
                 state.unbind(q).binarize()
-            })
+            },
+        )
     }
 }
 
@@ -328,12 +381,15 @@ fn test_generic_primitives() -> Result<(), String> {
     let val1 = HDVector::random(dim);
     let val2 = HDVector::random(dim);
     let set = encode_set(&[(k1.clone(), val1.clone()), (k2.clone(), val2.clone())]);
-    
+
     let decoded = decode_set(&set, &k1);
     let sim1 = decoded.cosine_similarity(&val1);
     let sim2 = decoded.cosine_similarity(&val2);
     if sim1 <= sim2 {
-        return Err(format!("encode/decode set failed: sim_val1={:.4} sim_val2={:.4}", sim1, sim2));
+        return Err(format!(
+            "encode/decode set failed: sim_val1={:.4} sim_val2={:.4}",
+            sim1, sim2
+        ));
     }
 
     // Test encode_positional_sequence
@@ -343,7 +399,10 @@ fn test_generic_primitives() -> Result<(), String> {
     let sim_seq0 = query0.cosine_similarity(&v1);
     let sim_seq1 = query1.cosine_similarity(&v2);
     if sim_seq0 < 0.3 || sim_seq1 < 0.3 {
-        return Err(format!("encode_positional_sequence failed: sim0={:.4} sim1={:.4}", sim_seq0, sim_seq1));
+        return Err(format!(
+            "encode_positional_sequence failed: sim0={:.4} sim1={:.4}",
+            sim_seq0, sim_seq1
+        ));
     }
 
     Ok(())
@@ -353,25 +412,28 @@ fn test_fhrr_shim_conversions() -> Result<(), String> {
     let dim = 128;
     // Create random CartesianFhrrVector
     let cart = CartesianFhrrVector::random_unit(dim, 42);
-    
+
     // Convert to phase representation
     let phase = cartesian_to_phase(&cart);
     if phase.phases.len() != dim {
         return Err("cartesian_to_phase dimension mismatch".into());
     }
-    
+
     // Convert back to cartesian representation
     let cart_back = phase_to_cartesian(&phase);
     if cart_back.dim() != dim {
         return Err("phase_to_cartesian dimension mismatch".into());
     }
-    
+
     // Check similarity between original and roundtrip
     let sim = cart.similarity(&cart_back);
     if (sim - 1.0).abs() > 1e-5 {
-        return Err(format!("FHRR cartesian/phase roundtrip failed: sim={:.6}", sim));
+        return Err(format!(
+            "FHRR cartesian/phase roundtrip failed: sim={:.6}",
+            sim
+        ));
     }
-    
+
     Ok(())
 }
 
@@ -379,7 +441,7 @@ fn test_ghrr_vector_primitives() -> Result<(), String> {
     let dim = 64;
     let a = GHRRVector::random(dim);
     let b = GHRRVector::random(dim);
-    
+
     // Bind and unbind must recover the factor
     let bound = a.bind(&b);
     let unbind = bound.unbind(&b);
@@ -387,22 +449,25 @@ fn test_ghrr_vector_primitives() -> Result<(), String> {
     if sim < 0.85 {
         return Err(format!("GHRR bind/unbind sim={:.4}", sim));
     }
-    
+
     // Bundling must retain similarity to both components
     let bundled = a.bundle(&b);
     let sim_a = bundled.cosine_similarity(&a);
     let sim_b = bundled.cosine_similarity(&b);
     if sim_a < 0.2 || sim_b < 0.2 {
-        return Err(format!("GHRR bundle similarity too low: sim_a={:.4} sim_b={:.4}", sim_a, sim_b));
+        return Err(format!(
+            "GHRR bundle similarity too low: sim_a={:.4} sim_b={:.4}",
+            sim_a, sim_b
+        ));
     }
-    
+
     // Test generic primitives on GHRR
     let g_seq = bind_sequence(&[a.clone(), b.clone()]);
     let g_expected = a.bind(&b);
     if g_seq.cosine_similarity(&g_expected) < 0.99 {
         return Err("GHRR bind_sequence failed".into());
     }
-    
+
     Ok(())
 }
 
@@ -411,14 +476,14 @@ fn test_expanded_primitives() -> Result<(), String> {
     let v1 = HDVector::random(dim);
     let v2 = HDVector::random(dim);
     let v3 = HDVector::random(dim);
-    
+
     // Test N-gram sequence encoding
     let ngram = encode_ngram_sequence(&[v1.clone(), v2.clone(), v3.clone()], 3);
     let expected_ngram = v1.bind(&v2.permute(1)).bind(&v3.permute(2));
     if ngram.cosine_similarity(&expected_ngram) < 0.99 {
         return Err("encode_ngram_sequence failed".into());
     }
-    
+
     // Test directed graph edge encoding
     let source_marker = HDVector::random(dim);
     let sink_marker = HDVector::random(dim);
@@ -427,7 +492,7 @@ fn test_expanded_primitives() -> Result<(), String> {
     if graph.cosine_similarity(&expected_graph) < 0.99 {
         return Err("encode_graph_edges failed".into());
     }
-    
+
     // Test non-commutative edge encoding with GHRRVector
     let g1 = GHRRVector::random(dim);
     let g2 = GHRRVector::random(dim);
@@ -436,6 +501,6 @@ fn test_expanded_primitives() -> Result<(), String> {
     if g_graph.cosine_similarity(&g_expected) < 0.99 {
         return Err("encode_non_commutative_edges failed with GHRRVector".into());
     }
-    
+
     Ok(())
 }

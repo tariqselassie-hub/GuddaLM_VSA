@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use crate::hdc::fhrr::FHRRVector;
-use crate::hdc::vector::{majority_from_sums, BinaryHDVector, HDVector};
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 use rayon::prelude::*;
 
 /// MAP bundling: sum all vectors then apply majority-rule threshold to bipolar.
@@ -93,7 +93,9 @@ pub fn fhrr_weighted_bundle(vectors: &[(FHRRVector, f64)]) -> FHRRVector {
             sum_im[d] += weight * v.phases()[d].sin();
         }
     }
-    let phases: Vec<f64> = sum_re.iter().zip(sum_im.iter())
+    let phases: Vec<f64> = sum_re
+        .iter()
+        .zip(sum_im.iter())
         .map(|(&re, &im)| im.atan2(re).rem_euclid(two_pi))
         .collect();
     FHRRVector::from_phases(&phases)
@@ -108,19 +110,16 @@ pub fn bsc_selective_bundle(
 ) -> BinaryHDVector {
     assert_eq!(keys.len(), values.len());
     let dim = query.dim();
-    let mut sums = vec![0i64; dim];
+    let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(dim);
 
     for (k, v) in keys.iter().zip(values.iter()) {
         let sim = query.hamming_similarity(k);
         if sim > threshold {
-            for i in 0..dim {
-                let bit = (v.words()[i / 64] >> (i % 64)) & 1;
-                sums[i] += if bit == 1 { 1 } else { -1 };
-            }
+            acc.add(v);
         }
     }
 
-    majority_from_sums(&sums, dim)
+    acc.binarize()
 }
 
 /// Parallel weighted MAP bundling using rayon.
@@ -149,12 +148,62 @@ pub fn par_weighted_bundle(vectors: &[(HDVector, f64)]) -> HDVector {
         })
         .collect();
 
-    let data = partials.into_iter().reduce(|mut a, b| {
-        for (d, val) in a.iter_mut().zip(b.iter()) {
-            *d += val;
-        }
-        a
-    }).expect("partials cannot be empty since vectors is non-empty");
+    let data = partials
+        .into_iter()
+        .reduce(|mut a, b| {
+            for (d, val) in a.iter_mut().zip(b.iter()) {
+                *d += val;
+            }
+            a
+        })
+        .expect("partials cannot be empty since vectors is non-empty");
+
+    HDVector::from_slice(&data).binarize()
+}
+
+/// Parallel selective bundle using rayon.
+///
+/// Similarity computation and weighted accumulation for each key-value
+/// pair runs in parallel.
+pub fn par_selective_bundle(
+    query: &HDVector,
+    keys: &[HDVector],
+    values: &[HDVector],
+    threshold: f64,
+) -> HDVector {
+    assert_eq!(keys.len(), values.len());
+    let dim = query.dim();
+
+    let partials: Vec<Vec<f64>> = keys
+        .par_iter()
+        .zip(values.par_iter())
+        .filter_map(|(k, v)| {
+            let sim = query.cosine_similarity(k);
+            if sim > threshold {
+                let mut local = vec![0.0; dim];
+                for (d, val) in local.iter_mut().zip(v.data().iter()) {
+                    *d += sim * val;
+                }
+                Some(local)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if partials.is_empty() {
+        return HDVector::zeros(dim);
+    }
+
+    let data = partials
+        .into_iter()
+        .reduce(|mut a, b| {
+            for (d, val) in a.iter_mut().zip(b.iter()) {
+                *d += val;
+            }
+            a
+        })
+        .expect("partials cannot be empty since empty case is handled above");
 
     HDVector::from_slice(&data).binarize()
 }
@@ -173,7 +222,7 @@ mod tests {
     #[test]
     fn test_bundle_vectors_single() {
         let v = HDVector::random(256);
-        let result = bundle_vectors(&[v.clone()]);
+        let result = bundle_vectors(std::slice::from_ref(&v));
         assert_eq!(result.dim(), 256);
     }
 
@@ -182,7 +231,10 @@ mod tests {
         let v = HDVector::random(256);
         let result = bundle_vectors(&[v]);
         for &x in result.data() {
-            assert!((x - 1.0).abs() < 1e-12 || (x + 1.0).abs() < 1e-12, "must be bipolar");
+            assert!(
+                (x - 1.0).abs() < 1e-12 || (x + 1.0).abs() < 1e-12,
+                "must be bipolar"
+            );
         }
     }
 
@@ -209,7 +261,7 @@ mod tests {
     #[test]
     fn test_bsc_bundle_single() {
         let v = BinaryHDVector::random(256);
-        let result = bsc_bundle(&[v.clone()]);
+        let result = bsc_bundle(std::slice::from_ref(&v));
         assert_eq!(result, v);
     }
 
@@ -259,47 +311,4 @@ mod tests {
         let result = fhrr_weighted_bundle(&[]);
         assert_eq!(result.dim(), 0);
     }
-}
-
-/// Parallel selective bundle using rayon.
-///
-/// Similarity computation and weighted accumulation for each key-value
-/// pair runs in parallel.
-pub fn par_selective_bundle(
-    query: &HDVector,
-    keys: &[HDVector],
-    values: &[HDVector],
-    threshold: f64,
-) -> HDVector {
-    assert_eq!(keys.len(), values.len());
-    let dim = query.dim();
-
-    let partials: Vec<Vec<f64>> = keys.par_iter()
-        .zip(values.par_iter())
-        .filter_map(|(k, v)| {
-            let sim = query.cosine_similarity(k);
-            if sim > threshold {
-                let mut local = vec![0.0; dim];
-                for (d, val) in local.iter_mut().zip(v.data().iter()) {
-                    *d += sim * val;
-                }
-                Some(local)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if partials.is_empty() {
-        return HDVector::zeros(dim);
-    }
-
-    let data = partials.into_iter().reduce(|mut a, b| {
-        for (d, val) in a.iter_mut().zip(b.iter()) {
-            *d += val;
-        }
-        a
-    }).expect("partials cannot be empty since empty case is handled above");
-
-    HDVector::from_slice(&data).binarize()
 }

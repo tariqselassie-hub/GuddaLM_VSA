@@ -14,8 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! DNVS Encoder — HDVector (MAP) implementation
 
-use crate::hdc::vector::HDVector;
 use crate::dnvs::config::{DnvsConfig, DnvsMode};
+use crate::hdc::vector::HDVector;
 
 /// DNVS encoder for HDVector (MAP representation)
 pub struct DnvsEncoder {
@@ -28,10 +28,22 @@ pub struct DnvsEncoder {
 
 impl DnvsEncoder {
     /// Create a new encoder with the given config and precomputed vectors
-    pub fn new(config: DnvsConfig, position_vectors: Vec<HDVector>, level_vectors: Vec<HDVector>) -> Self {
-        assert_eq!(position_vectors.len(), config.dim, "position vectors must match dimension");
+    pub fn new(
+        config: DnvsConfig,
+        position_vectors: Vec<HDVector>,
+        level_vectors: Vec<HDVector>,
+    ) -> Self {
+        assert_eq!(
+            position_vectors.len(),
+            config.dim,
+            "position vectors must match dimension"
+        );
         assert_eq!(level_vectors.len(), config.n_levels);
-        Self { config, position_vectors, level_vectors }
+        Self {
+            config,
+            position_vectors,
+            level_vectors,
+        }
     }
 
     /// Build encoder from a config using a closure to generate vectors

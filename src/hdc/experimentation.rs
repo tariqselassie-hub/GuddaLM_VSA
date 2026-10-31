@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use crate::hdc::vector::{HDVector, BinaryHDVector};
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 
 #[derive(Clone)]
 pub struct SenojianHybrid {
@@ -59,8 +59,8 @@ impl SenojianHybrid {
     }
 }
 
-use serde::{Serialize, Deserialize};
 use crate::hdc::phase_fhrr::CartesianFhrrVector;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SenojianCross {
@@ -115,7 +115,11 @@ impl SenojianCross {
 
         let mut map_accum = vec![0.0; vectors[0].dim()];
         for m in maps {
-            map_accum = map_accum.iter().zip(m.data()).map(|(a, b)| *a + *b).collect();
+            map_accum = map_accum
+                .iter()
+                .zip(m.data())
+                .map(|(a, b)| *a + *b)
+                .collect();
         }
 
         Self {
@@ -135,7 +139,11 @@ impl SenojianCross {
         for (v, w) in vectors {
             let map_data = v.map.data();
             let bsc_words = v.bsc.words();
-            map_accum = map_accum.iter().zip(map_data).map(|(a, b)| *a + b * w).collect();
+            map_accum = map_accum
+                .iter()
+                .zip(map_data)
+                .map(|(a, b)| *a + b * w)
+                .collect();
             for (idx, word) in bsc_words.iter().enumerate() {
                 let delta = if *word == 0 { -*w } else { *w };
                 bsc_accum[idx] += delta;
@@ -151,7 +159,10 @@ impl SenojianCross {
 
         Self {
             map: HDVector::from_slice(&map_accum),
-            bsc: BinaryHDVector { dim, words: bsc_words },
+            bsc: BinaryHDVector {
+                dim,
+                words: bsc_words,
+            },
         }
     }
 
@@ -176,64 +187,31 @@ impl SenojianCross {
     pub fn bind(&self, other: &Self) -> Self {
         let dim = self.dim();
         let n_words = dim.div_ceil(64);
-        let mut new_map = vec![0.0; dim];
-        let mut new_bsc = vec![0u64; n_words];
-
         let map_a = self.map.data();
         let map_b = other.map.data();
         let bsc_a = self.bsc.words();
         let bsc_b = other.bsc.words();
 
-        if dim >= 64 && (cfg!(target_arch = "x86_64") && is_x86_feature_detected!("avx2")) {
-            unsafe {
-                use core::arch::x86_64::*;
-                for chunk in 0..n_words {
-                    let mut xor_val = bsc_a[chunk] ^ bsc_b[chunk];
-                    let base = chunk * 64;
-                    if base < dim {
-                        for i in (base..dim.min(base + 64)).step_by(4) {
-                            let vec = _mm256_loadu_pd(map_b.as_ptr().add(i));
-                            let mask = _mm256_movemask_pd(vec) as u64;
-                            xor_val ^= mask << (i - base);
-                        }
-                    }
-                    new_bsc[chunk] = xor_val;
-                }
-                for d in 0..dim {
-                    let a = *map_a.get_unchecked(d);
-                    let b = *map_b.get_unchecked(d);
-                    let m_val = a * b;
-                    let chunk_b = d / 64;
-                    let offset_b = d % 64;
-                    let bit_b = (*bsc_b.get_unchecked(chunk_b) >> offset_b) & 1;
-                    let flip_mask = ((bit_b ^ 1)) << 63;
-                    *new_map.get_unchecked_mut(d) = f64::from_bits(m_val.to_bits() ^ flip_mask);
-                }
-            }
-        } else {
-            let mut xor_val = bsc_a[0] ^ bsc_b[0];
-            for d in 0..dim {
-                let m_val = map_a[d] * map_b[d];
+        // MAP half: element-wise product, sign-flipped wherever b's BSC bit is 0.
+        let new_map: Vec<f64> = map_a
+            .iter()
+            .zip(map_b.iter())
+            .enumerate()
+            .map(|(d, (&a, &b))| {
                 let bit_b = (bsc_b[d / 64] >> (d % 64)) & 1;
-                let sign_bit = (map_b[d].to_bits() >> 63) & 1;
-                xor_val ^= sign_bit << (d % 64);
-                let flip_mask = ((bit_b ^ 1)) << 63;
-                new_map[d] = f64::from_bits(m_val.to_bits() ^ flip_mask);
-                if d % 64 == 63 {
-                    new_bsc[d / 64] = xor_val;
-                    if (d / 64) + 1 < n_words {
-                        xor_val = bsc_a[d / 64 + 1] ^ bsc_b[d / 64 + 1];
-                    }
-                }
-            }
-            if (dim - 1) % 64 != 63 {
-                new_bsc[(dim - 1) / 64] = xor_val;
-            }
-        }
+                f64::from_bits((a * b).to_bits() ^ ((bit_b ^ 1) << 63))
+            })
+            .collect();
+
+        // BSC half: a XOR b XOR the sign bits of b's MAP half.
+        let new_bsc = sign_xor_words(bsc_a, bsc_b, map_b, n_words);
 
         Self {
             map: HDVector::from_slice(&new_map),
-            bsc: BinaryHDVector { dim, words: new_bsc },
+            bsc: BinaryHDVector {
+                dim,
+                words: new_bsc,
+            },
         }
     }
 
@@ -306,9 +284,94 @@ impl SenojianComplex {
     }
 }
 
+/// `bsc_a[w] ^ bsc_b[w] ^ signbits(map_b[64w .. 64w+64])` for each word `w`.
+fn sign_xor_words(bsc_a: &[u64], bsc_b: &[u64], map_b: &[f64], n_words: usize) -> Vec<u64> {
+    #[cfg(target_arch = "x86_64")]
+    {
+        if is_x86_feature_detected!("avx2") {
+            // SAFETY: AVX2 support was just checked at runtime.
+            return unsafe { sign_xor_words_avx2(bsc_a, bsc_b, map_b, n_words) };
+        }
+    }
+    sign_xor_words_scalar(bsc_a, bsc_b, map_b, n_words)
+}
+
+fn sign_xor_words_scalar(bsc_a: &[u64], bsc_b: &[u64], map_b: &[f64], n_words: usize) -> Vec<u64> {
+    let dim = map_b.len();
+    bsc_a
+        .iter()
+        .zip(bsc_b.iter())
+        .take(n_words)
+        .enumerate()
+        .map(|(w, (&a, &b))| {
+            let base = w * 64;
+            let mut x = a ^ b;
+            for (offset, v) in map_b[base..dim.min(base + 64)].iter().enumerate() {
+                x ^= (v.to_bits() >> 63) << offset;
+            }
+            x
+        })
+        .collect()
+}
+
+/// AVX2 version of [`sign_xor_words_scalar`]: packs four sign bits per load
+/// with `movemask`, and finishes any partial group with scalar code so it
+/// never reads past the end of `map_b`.
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "avx2")]
+unsafe fn sign_xor_words_avx2(
+    bsc_a: &[u64],
+    bsc_b: &[u64],
+    map_b: &[f64],
+    n_words: usize,
+) -> Vec<u64> {
+    use std::arch::x86_64::{_mm256_loadu_pd, _mm256_movemask_pd};
+    let dim = map_b.len();
+    let mut out = Vec::with_capacity(n_words);
+    for (w, (&a, &b)) in bsc_a.iter().zip(bsc_b.iter()).take(n_words).enumerate() {
+        let base = w * 64;
+        let end = dim.min(base + 64);
+        let mut x = a ^ b;
+        let mut i = base;
+        while i + 4 <= end {
+            // SAFETY: i + 4 <= end <= map_b.len(), so the 4-lane load is in bounds.
+            let lanes = _mm256_loadu_pd(map_b.as_ptr().add(i));
+            x ^= (_mm256_movemask_pd(lanes) as u64) << (i - base);
+            i += 4;
+        }
+        for (offset, v) in map_b[i..end].iter().enumerate() {
+            x ^= (v.to_bits() >> 63) << (i - base + offset);
+        }
+        out.push(x);
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sign_xor_words_matches_reference_at_awkward_dims() {
+        // Lengths that are not multiples of 4 or 64 exercise the scalar tail.
+        for &dim in &[1usize, 3, 63, 64, 65, 130, 1023, 4096] {
+            let n_words = dim.div_ceil(64);
+            let a = BinaryHDVector::random(dim);
+            let b = BinaryHDVector::random(dim);
+            let map_b = HDVector::random(dim);
+            let mut expected = vec![0u64; n_words];
+            for (w, e) in expected.iter_mut().enumerate() {
+                *e = a.words()[w] ^ b.words()[w];
+            }
+            for (d, v) in map_b.data().iter().enumerate() {
+                expected[d / 64] ^= (v.to_bits() >> 63) << (d % 64);
+            }
+            let scalar = sign_xor_words_scalar(a.words(), b.words(), map_b.data(), n_words);
+            assert_eq!(scalar, expected, "scalar, dim={dim}");
+            let dispatched = sign_xor_words(a.words(), b.words(), map_b.data(), n_words);
+            assert_eq!(dispatched, expected, "dispatched, dim={dim}");
+        }
+    }
 
     #[test]
     fn test_senojian_cross_bind_properties() {
@@ -327,8 +390,16 @@ mod tests {
         let sim_a = bound.similarity(&a);
         let sim_b = bound.similarity(&b);
 
-        assert!((sim_a - 0.25).abs() < 0.1, "Bound vector should be roughly orthogonal to a (expected ~0.25, got {})", sim_a);
-        assert!((sim_b - 0.25).abs() < 0.1, "Bound vector should be roughly orthogonal to b (expected ~0.25, got {})", sim_b);
+        assert!(
+            (sim_a - 0.25).abs() < 0.1,
+            "Bound vector should be roughly orthogonal to a (expected ~0.25, got {})",
+            sim_a
+        );
+        assert!(
+            (sim_b - 0.25).abs() < 0.1,
+            "Bound vector should be roughly orthogonal to b (expected ~0.25, got {})",
+            sim_b
+        );
     }
 
     #[test]
