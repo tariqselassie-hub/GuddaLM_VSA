@@ -15,7 +15,7 @@
 //! ```
 //! use guddalm_vsa::prelude::*;
 //!
-//! let mut mem: ItemMemory<HDVector> = ItemMemory::new(10000);
+//! let mut mem: ItemMemory<HDVector> = ItemMemory::new(MAP_DEFAULT_DIM);
 //! let token_a = mem.get_or_create("apple");
 //! let token_b = mem.get_or_create("fruit");
 //! let bound = token_a.bind(&token_b);
@@ -26,6 +26,11 @@
 //! ```
 
 pub use crate::error::{GuddaError, GuddaResult};
+
+// Default dimensions
+pub use crate::dimensions::{
+    BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, MAP_DEFAULT_DIM, MAP_HIGH_CAPACITY_DIM,
+};
 
 // Vector representations
 pub use crate::hdc::vector::{BinaryHDVector, Complex, HDVector};

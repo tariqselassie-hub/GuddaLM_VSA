@@ -16,13 +16,26 @@
 //!
 //! | Representation | Constant | Default | Rationale |
 //! |---|---|---|---|
-//! | MAP (bipolar) | [`MAP_DEFAULT_DIM`] | 4096 | FFT bind sweet spot; matches cleanup packed4096 |
+//! | MAP (bipolar) | [`MAP_DEFAULT_DIM`] | 4096 | Perfect recall up to ~100 bundled key-value pairs; matches cleanup packed4096 |
+//! | MAP (bipolar) | [`MAP_HIGH_CAPACITY_DIM`] | 8192 | ~200 bundled pairs at >99% recall, for 2× the time and memory |
 //! | BSC (binary) | [`BSC_DEFAULT_DIM`] | 4096 | Same capacity target as MAP |
 //! | FHRR (phase) | [`FHRR_DEFAULT_DIM`] | 1024 | Higher bundling capacity per dim; cheaper complex ops |
 //! | DNVS (spatial) | [`DNVS_DEFAULT_DIM`] | 10000 | One position vector per pixel index in MNIST-scale inputs |
 
 /// Default dimension for MAP / bipolar hypervectors.
 pub const MAP_DEFAULT_DIM: usize = 4096;
+
+/// MAP dimension for records that bundle more than ~100 key-value pairs.
+///
+/// Measured recall when unbinding from a single bundled record
+/// (1000-symbol cleanup memory):
+///
+/// | pairs | 4096 | 8192 |
+/// |---|---|---|
+/// | 100 | 100% | 100% |
+/// | 150 | 98.9% | 100% |
+/// | 200 | 91.6% | 99.8% |
+pub const MAP_HIGH_CAPACITY_DIM: usize = 8192;
 
 /// Default dimension for binary spatter coding (BSC).
 pub const BSC_DEFAULT_DIM: usize = 4096;

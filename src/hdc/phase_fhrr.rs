@@ -191,3 +191,20 @@ impl PhaseFhrrVector {
         Self { phases: permuted }
     }
 }
+
+// ── Cartesian ⇄ phase conversions (formerly `primitives_shim`) ──
+
+/// Convert a `CartesianFhrrVector` into a `PhaseFhrrVector` by calculating the phase angles ($\theta = \text{atan2}(im, re)$).
+pub fn cartesian_to_phase(v: &CartesianFhrrVector) -> PhaseFhrrVector {
+    let phases = Zip::from(&v.re)
+        .and(&v.im)
+        .map_collect(|&re, &im| im.atan2(re));
+    PhaseFhrrVector::new(phases)
+}
+
+/// Convert a `PhaseFhrrVector` into a `CartesianFhrrVector` by mapping phase angle $\theta$ to complex unit circle ($e^{i\theta} = \cos(\theta) + i\sin(\theta)$).
+pub fn phase_to_cartesian(v: &PhaseFhrrVector) -> CartesianFhrrVector {
+    let re = v.phases.mapv(|p| p.cos());
+    let im = v.phases.mapv(|p| p.sin());
+    CartesianFhrrVector::new(re, im)
+}

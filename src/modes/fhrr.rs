@@ -23,7 +23,7 @@ pub use crate::hdc::fhrr::FHRRVector;
 pub struct FhrrSetup;
 
 impl FhrrSetup {
-    pub const DEFAULT_DIM: usize = 1024;
+    pub const DEFAULT_DIM: usize = crate::dimensions::FHRR_DEFAULT_DIM;
 
     #[inline(always)]
     pub fn random(dim: usize) -> FHRRVector {

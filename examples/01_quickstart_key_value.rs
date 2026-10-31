@@ -14,7 +14,7 @@ use guddalm_vsa::prelude::*;
 fn main() {
     println!("=== GuddaLM VSA: Quickstart Key-Value Record Demo ===\n");
 
-    const DIM: usize = 10_000;
+    const DIM: usize = MAP_DEFAULT_DIM;
     let mut mem: ItemMemory<HDVector> = ItemMemory::new(DIM);
 
     // 1. Define fields and values

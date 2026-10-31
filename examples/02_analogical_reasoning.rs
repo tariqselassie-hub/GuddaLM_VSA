@@ -18,7 +18,7 @@ use guddalm_vsa::prelude::*;
 fn main() {
     println!("=== GuddaLM VSA: Analogical Reasoning Demo ===\n");
 
-    const DIM: usize = 10_000;
+    const DIM: usize = MAP_DEFAULT_DIM;
     let mut mem: ItemMemory<HDVector> = ItemMemory::new(DIM);
 
     // Roles

@@ -15,20 +15,27 @@
 pub mod error;
 pub mod dimensions;
 pub mod hdc;
-pub mod map;
-pub mod bsc;
-pub mod fhrr;
-pub mod search;
-pub mod dnvs;
 pub mod seed;
-pub mod serialize_vsa;
-pub mod setup;
 pub mod vsa;
-pub mod vsa_persist;
 pub mod primitives;
-pub mod primitives_shim;
-pub mod guddalm;
+pub mod search;
+pub mod modes;
+pub mod persist;
+pub mod apps;
 pub mod prelude;
+
+// Pre-0.1.2 module paths, kept so existing `guddalm_vsa::<module>` imports
+// still resolve after the files moved into `modes/`, `persist/` and `apps/`.
+pub use modes::{bsc, fhrr, map, setup};
+pub use persist::{serialize as serialize_vsa, store as vsa_persist};
+pub use apps::{dnvs, guddalm};
+
+/// Former home of the FHRR cartesian ⇄ phase conversions, now in
+/// [`hdc::phase_fhrr`].
+#[doc(hidden)]
+pub mod primitives_shim {
+    pub use crate::hdc::phase_fhrr::{cartesian_to_phase, phase_to_cartesian};
+}
 
 pub use hdc::item_memory::{DeterministicSymbol, ItemMemory};
 pub use hdc::level::ScalarEncoder;
@@ -78,10 +85,10 @@ pub use vsa_persist::{
 pub use hdc::vsa_trait::{VsaVectorRaw, VsaVector, IndexVector};
 pub use error::{GuddaError, GuddaResult};
 pub use dimensions::{
-    MAP_DEFAULT_DIM, BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, DNVS_DEFAULT_DIM,
+    MAP_DEFAULT_DIM, MAP_HIGH_CAPACITY_DIM, BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, DNVS_DEFAULT_DIM,
 };
 pub use primitives::{bind_sequence, bundle_sequence, encode_set, decode_set, encode_positional_sequence, encode_ngram_sequence, encode_graph_edges, encode_non_commutative_edges};
-pub use primitives_shim::{cartesian_to_phase, phase_to_cartesian};
+pub use hdc::phase_fhrr::{cartesian_to_phase, phase_to_cartesian};
 pub use hdc::autograd::{GradHDVector, backward, diff_bind, diff_bundle, diff_bundle_many, diff_permute, similarity_loss, SGDOptimizer, soft_cleanup};
 #[cfg(feature = "candle")]
 pub use hdc::tensor::{to_tensor, from_tensor, to_tensor_batch, from_tensor_batch, tensor_bind, tensor_unbind, tensor_bundle, tensor_permute, tensor_cosine_similarity, tensor_similarity_loss, tensor_selective_bundle, tensor_fwht, tensor_ifwht};

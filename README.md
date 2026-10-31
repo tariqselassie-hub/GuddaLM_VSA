@@ -21,8 +21,8 @@ Encode and query a key-value record in 10 lines:
 use guddalm_vsa::prelude::*;
 
 fn main() {
-    // 1. Initialize ItemMemory for symbolic tokens (10,000 dimensions)
-    let mut mem: ItemMemory<HDVector> = ItemMemory::new(10_000);
+    // 1. Initialize ItemMemory for symbolic tokens (4096 dimensions, the MAP default)
+    let mut mem: ItemMemory<HDVector> = ItemMemory::new(MAP_DEFAULT_DIM);
 
     let country = mem.get_or_create("country");
     let usa = mem.get_or_create("USA");
