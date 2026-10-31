@@ -308,6 +308,14 @@ impl GHRRVector {
         }
     }
 
+    /// Bundle many vectors at once: sum every block, then orthonormalize a
+    /// single time, so every input carries equal weight. Folding `bundle`
+    /// pairwise instead re-normalizes after each step, which down-weights
+    /// earlier inputs.
+    pub fn bundle_all(vectors: &[GHRRVector]) -> GHRRVector {
+        GHRRVector::bundle_weighted(vectors, &vec![1.0; vectors.len()])
+    }
+
     /// Weighted bundling of multiple GHRR vectors.
     pub fn bundle_weighted(vectors: &[GHRRVector], weights: &[f64]) -> GHRRVector {
         if vectors.is_empty() {

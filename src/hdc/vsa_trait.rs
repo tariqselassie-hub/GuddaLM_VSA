@@ -73,11 +73,16 @@ pub trait VsaVector: Clone + Sized {
     /// Bundle a whole slice in one superposition, so every input carries
     /// equal weight. Panics on an empty slice.
     ///
-    /// The default folds [`bundle`](Self::bundle) pairwise. MAP and BSC
-    /// override it with the streaming accumulators: for MAP the result is the
-    /// same sum without the per-step allocations, and for BSC it is a true
-    /// majority vote instead of a pairwise fold that halves the weight of
-    /// earlier inputs at every step.
+    /// The default folds [`bundle`](Self::bundle) pairwise, which only suits
+    /// types whose `bundle` is a plain sum. Every built-in type overrides it:
+    ///
+    /// - MAP: the same sum, built with one accumulator instead of a new
+    ///   vector per step
+    /// - BSC / `IndexVector`: a true per-bit majority vote
+    /// - FHRR / GHRR: sum everything, then normalize once
+    ///
+    /// For BSC, FHRR and GHRR a pairwise fold re-thresholds or re-normalizes
+    /// after every step, which halves the weight of earlier inputs each time.
     fn bundle_many(vectors: &[Self]) -> Self {
         let (first, rest) = vectors
             .split_first()
@@ -273,6 +278,11 @@ impl VsaVector for FHRRVector {
         FHRRVector::bundle(self, other)
     }
 
+    fn bundle_many(vectors: &[Self]) -> Self {
+        assert!(!vectors.is_empty(), "bundle_many: empty vector slice");
+        FHRRVector::bundle_all(vectors)
+    }
+
     #[inline(always)]
     fn permute(&self, shift: usize) -> Self {
         FHRRVector::permute(self, shift)
@@ -320,6 +330,11 @@ impl VsaVector for GHRRVector {
     #[inline(always)]
     fn bundle(&self, other: &Self) -> Self {
         GHRRVector::bundle(self, other)
+    }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        assert!(!vectors.is_empty(), "bundle_many: empty vector slice");
+        GHRRVector::bundle_all(vectors)
     }
 
     #[inline(always)]

@@ -46,13 +46,8 @@ pub fn encode_set<V: VsaVector>(pairs: &[(V, V)]) -> V {
     if pairs.is_empty() {
         return V::zero(0);
     }
-    let dim = pairs[0].0.dim();
-    let mut result = V::zero(dim);
-    for (k, v) in pairs {
-        let bound = k.bind(v);
-        result = result.bundle(&bound);
-    }
-    result
+    let bound: Vec<V> = pairs.iter().map(|(k, v)| k.bind(v)).collect();
+    V::bundle_many(&bound)
 }
 
 /// Decode a value from a composite representation given its key: unbind(set, key)
@@ -65,13 +60,12 @@ pub fn encode_positional_sequence<V: VsaVector>(vectors: &[V]) -> V {
     if vectors.is_empty() {
         return V::zero(0);
     }
-    let dim = vectors[0].dim();
-    let mut result = V::zero(dim);
-    for (i, v) in vectors.iter().enumerate() {
-        let permuted = v.permute(i);
-        result = result.bundle(&permuted);
-    }
-    result
+    let permuted: Vec<V> = vectors
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v.permute(i))
+        .collect();
+    V::bundle_many(&permuted)
 }
 
 /// Encode a sequence of vectors using a sliding N-gram window:
@@ -85,23 +79,16 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
         return bind_sequence(vectors);
     }
 
-    // First window
-    let mut first_window = vectors[0].clone();
-    for (j, v) in vectors.iter().enumerate().take(n).skip(1) {
-        let permuted = v.permute(j);
-        first_window = first_window.bind(&permuted);
-    }
-
-    let mut result = first_window;
-    for i in 1..=(vectors.len() - n) {
-        let mut window_bound = vectors[i].clone();
-        for j in 1..n {
-            let permuted = vectors[i + j].permute(j);
-            window_bound = window_bound.bind(&permuted);
-        }
-        result = result.bundle(&window_bound);
-    }
-    result
+    let windows: Vec<V> = vectors
+        .windows(n)
+        .map(|w| {
+            w.iter()
+                .enumerate()
+                .skip(1)
+                .fold(w[0].clone(), |acc, (j, v)| acc.bind(&v.permute(j)))
+        })
+        .collect();
+    V::bundle_many(&windows)
 }
 
 /// Encode a set of directed graph edges using role-filler binding: ⊕_(u, v) ( source_marker ⊗ u ⊕ sink_marker ⊗ v )
@@ -110,15 +97,13 @@ pub fn encode_graph_edges<V: VsaVector>(edges: &[(V, V)], source_marker: &V, sin
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0]
-        .0
-        .bind(source_marker)
-        .bundle(&edges[0].1.bind(sink_marker));
-    for (u, v) in &edges[1..] {
-        let edge = u.bind(source_marker).bundle(&v.bind(sink_marker));
-        result = result.bundle(&edge);
-    }
-    result
+    // Every role-filler term goes into one superposition, rather than
+    // bundling each edge's pair first and then folding edges together.
+    let terms: Vec<V> = edges
+        .iter()
+        .flat_map(|(u, v)| [u.bind(source_marker), v.bind(sink_marker)])
+        .collect();
+    V::bundle_many(&terms)
 }
 
 /// Encode a set of directed edges using non-commutative binding (such as GHRR): ⊕_(u, v) ( u ⊗ v )
@@ -126,18 +111,15 @@ pub fn encode_non_commutative_edges<V: VsaVector>(edges: &[(V, V)]) -> V {
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0].0.bind(&edges[0].1);
-    for (u, v) in &edges[1..] {
-        let edge = u.bind(v);
-        result = result.bundle(&edge);
-    }
-    result
+    let bound: Vec<V> = edges.iter().map(|(u, v)| u.bind(v)).collect();
+    V::bundle_many(&bound)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::hdc::fhrr::FHRRVector;
+    use crate::hdc::ghrr::GHRRVector;
     use crate::hdc::vector::{BinaryHDVector, HDVector};
     use crate::hdc::vsa_trait::IndexVector;
 
@@ -180,13 +162,122 @@ mod tests {
     }
 
     #[test]
-    fn bundle_sequence_single_input_and_default_fold() {
+    fn bundle_sequence_single_input_and_phase_types() {
         let a = BinaryHDVector::random(256);
         assert_eq!(bundle_sequence(std::slice::from_ref(&a)), a);
-        // FHRR keeps the trait's default pairwise fold.
+        // FHRR and GHRR sum everything and normalize once.
         let fs: Vec<FHRRVector> = (0..3).map(|_| FHRRVector::random(64)).collect();
-        let expected = fs[0].bundle(&fs[1]).bundle(&fs[2]);
-        assert_eq!(bundle_sequence(&fs).phases(), expected.phases());
+        assert_eq!(
+            bundle_sequence(&fs).phases(),
+            FHRRVector::bundle_all(&fs).phases()
+        );
+        let gs: Vec<GHRRVector> = (0..3).map(|_| GHRRVector::random(16)).collect();
+        let (got, want) = (bundle_sequence(&gs), GHRRVector::bundle_all(&gs));
+        assert!(got
+            .data
+            .iter()
+            .zip(want.data.iter())
+            .all(|(a, b)| a.re == b.re && a.im == b.im));
+    }
+
+    #[test]
+    fn encoders_match_old_sum_for_map() {
+        // MAP bundling is a plain sum, so the one-shot encoders must equal
+        // the old fold that started from a zero vector.
+        let dim = 512;
+        let ks: Vec<HDVector> = (0..6).map(|_| HDVector::random(dim)).collect();
+        let vs: Vec<HDVector> = (0..6).map(|_| HDVector::random(dim)).collect();
+        let pairs: Vec<(HDVector, HDVector)> = ks.iter().cloned().zip(vs.iter().cloned()).collect();
+        let close = |a: &HDVector, b: &HDVector| {
+            a.data()
+                .iter()
+                .zip(b.data().iter())
+                .all(|(x, y)| (x - y).abs() < 1e-9)
+        };
+
+        let old_set = pairs
+            .iter()
+            .fold(HDVector::zeros(dim), |acc, (k, v)| acc.bundle(&k.bind(v)));
+        assert!(close(&encode_set(&pairs), &old_set));
+
+        let old_seq = ks
+            .iter()
+            .enumerate()
+            .fold(HDVector::zeros(dim), |acc, (i, v)| {
+                acc.bundle(&v.permute(i))
+            });
+        assert!(close(&encode_positional_sequence(&ks), &old_seq));
+
+        let (src, snk) = (HDVector::random(dim), HDVector::random(dim));
+        let old_edges = pairs.iter().fold(HDVector::zeros(dim), |acc, (u, v)| {
+            acc.bundle(&u.bind(&src).bundle(&v.bind(&snk)))
+        });
+        assert!(close(&encode_graph_edges(&pairs, &src, &snk), &old_edges));
+
+        let old_nc = pairs
+            .iter()
+            .fold(HDVector::zeros(dim), |acc, (u, v)| acc.bundle(&u.bind(v)));
+        assert!(close(&encode_non_commutative_edges(&pairs), &old_nc));
+    }
+
+    #[test]
+    fn encoders_bundle_in_one_step() {
+        let dim = 1000;
+        let ks: Vec<BinaryHDVector> = (0..7).map(|_| BinaryHDVector::random(dim)).collect();
+        let vs: Vec<BinaryHDVector> = (0..7).map(|_| BinaryHDVector::random(dim)).collect();
+        let pairs: Vec<(BinaryHDVector, BinaryHDVector)> =
+            ks.iter().cloned().zip(vs.iter().cloned()).collect();
+
+        let bound: Vec<BinaryHDVector> = pairs.iter().map(|(k, v)| k.bind(v)).collect();
+        assert_eq!(
+            encode_set(&pairs),
+            BinaryHDVector::majority_bundle_all(&bound)
+        );
+
+        let permuted: Vec<BinaryHDVector> =
+            ks.iter().enumerate().map(|(i, v)| v.permute(i)).collect();
+        assert_eq!(
+            encode_positional_sequence(&ks),
+            BinaryHDVector::majority_bundle_all(&permuted)
+        );
+
+        let fs: Vec<FHRRVector> = (0..5).map(|_| FHRRVector::random(128)).collect();
+        let fpairs: Vec<(FHRRVector, FHRRVector)> =
+            fs.iter().cloned().zip(fs.iter().rev().cloned()).collect();
+        let fbound: Vec<FHRRVector> = fpairs.iter().map(|(k, v)| k.bind(v)).collect();
+        assert_eq!(
+            encode_set(&fpairs).phases(),
+            FHRRVector::bundle_all(&fbound).phases()
+        );
+    }
+
+    #[test]
+    fn ngram_sequence_bundles_every_window() {
+        let dim = 512;
+        let vs: Vec<HDVector> = (0..6).map(|_| HDVector::random(dim)).collect();
+        let window = |i: usize| {
+            vs[i]
+                .bind(&vs[i + 1].permute(1))
+                .bind(&vs[i + 2].permute(2))
+        };
+        let expected = (1..4).fold(window(0), |acc, i| acc.bundle(&window(i)));
+        let got = encode_ngram_sequence(&vs, 3);
+        for (x, y) in got.data().iter().zip(expected.data().iter()) {
+            assert!((x - y).abs() < 1e-9);
+        }
+        // Fewer vectors than n falls back to binding them all.
+        assert_eq!(encode_ngram_sequence(&vs[..2], 3), bind_sequence(&vs[..2]));
+    }
+
+    #[test]
+    fn empty_inputs_return_empty_vectors() {
+        let none: Vec<(HDVector, HDVector)> = Vec::new();
+        assert_eq!(encode_set(&none).dim(), 0);
+        assert_eq!(encode_positional_sequence::<HDVector>(&[]).dim(), 0);
+        assert_eq!(encode_ngram_sequence::<HDVector>(&[], 3).dim(), 0);
+        let m = HDVector::random(8);
+        assert_eq!(encode_graph_edges(&none, &m, &m).dim(), 0);
+        assert_eq!(encode_non_commutative_edges(&none).dim(), 0);
     }
 
     #[test]
