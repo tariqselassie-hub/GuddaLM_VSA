@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Representation entry points: one module per VSA mode (MAP, BSC, FHRR)
 //! plus [`setup`] for choosing between them at runtime.
-pub mod map;
 pub mod bsc;
 pub mod fhrr;
+pub mod map;
 pub mod setup;

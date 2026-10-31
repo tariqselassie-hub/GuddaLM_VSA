@@ -93,7 +93,9 @@ pub fn fhrr_weighted_bundle(vectors: &[(FHRRVector, f64)]) -> FHRRVector {
             sum_im[d] += weight * v.phases()[d].sin();
         }
     }
-    let phases: Vec<f64> = sum_re.iter().zip(sum_im.iter())
+    let phases: Vec<f64> = sum_re
+        .iter()
+        .zip(sum_im.iter())
         .map(|(&re, &im)| im.atan2(re).rem_euclid(two_pi))
         .collect();
     FHRRVector::from_phases(&phases)
@@ -146,12 +148,15 @@ pub fn par_weighted_bundle(vectors: &[(HDVector, f64)]) -> HDVector {
         })
         .collect();
 
-    let data = partials.into_iter().reduce(|mut a, b| {
-        for (d, val) in a.iter_mut().zip(b.iter()) {
-            *d += val;
-        }
-        a
-    }).expect("partials cannot be empty since vectors is non-empty");
+    let data = partials
+        .into_iter()
+        .reduce(|mut a, b| {
+            for (d, val) in a.iter_mut().zip(b.iter()) {
+                *d += val;
+            }
+            a
+        })
+        .expect("partials cannot be empty since vectors is non-empty");
 
     HDVector::from_slice(&data).binarize()
 }
@@ -169,7 +174,8 @@ pub fn par_selective_bundle(
     assert_eq!(keys.len(), values.len());
     let dim = query.dim();
 
-    let partials: Vec<Vec<f64>> = keys.par_iter()
+    let partials: Vec<Vec<f64>> = keys
+        .par_iter()
         .zip(values.par_iter())
         .filter_map(|(k, v)| {
             let sim = query.cosine_similarity(k);
@@ -189,12 +195,15 @@ pub fn par_selective_bundle(
         return HDVector::zeros(dim);
     }
 
-    let data = partials.into_iter().reduce(|mut a, b| {
-        for (d, val) in a.iter_mut().zip(b.iter()) {
-            *d += val;
-        }
-        a
-    }).expect("partials cannot be empty since empty case is handled above");
+    let data = partials
+        .into_iter()
+        .reduce(|mut a, b| {
+            for (d, val) in a.iter_mut().zip(b.iter()) {
+                *d += val;
+            }
+            a
+        })
+        .expect("partials cannot be empty since empty case is handled above");
 
     HDVector::from_slice(&data).binarize()
 }
@@ -222,7 +231,10 @@ mod tests {
         let v = HDVector::random(256);
         let result = bundle_vectors(&[v]);
         for &x in result.data() {
-            assert!((x - 1.0).abs() < 1e-12 || (x + 1.0).abs() < 1e-12, "must be bipolar");
+            assert!(
+                (x - 1.0).abs() < 1e-12 || (x + 1.0).abs() < 1e-12,
+                "must be bipolar"
+            );
         }
     }
 

@@ -33,23 +33,25 @@ pub use crate::dimensions::{
 };
 
 // Vector representations
-pub use crate::hdc::vector::{BinaryHDVector, Complex, HDVector};
 pub use crate::hdc::fhrr::FHRRVector;
 pub use crate::hdc::ghrr::GHRRVector;
+pub use crate::hdc::vector::{BinaryHDVector, Complex, HDVector};
 pub use crate::hdc::vsa_trait::{IndexVector, VsaVector, VsaVectorRaw};
 
 // Associative symbol & item memories
+pub use crate::hdc::cleanup::{
+    BinaryCleanupMemory, CleanupMemory, CleanupResult, FhrrCleanupMemory,
+};
 pub use crate::hdc::item_memory::{DeterministicSymbol, ItemMemory};
 pub use crate::vsa::{Codebook, VsaEngine};
-pub use crate::hdc::cleanup::{BinaryCleanupMemory, CleanupMemory, CleanupResult, FhrrCleanupMemory};
 
 // Streaming bundlers
 pub use crate::hdc::accumulator::{BinaryBundleAccumulator, BundleAccumulator};
 
 // Resonator factorization
 pub use crate::hdc::resonator::{
-    generate_rc_codebook, resonator_search, resonator_search_auto,
-    resonator_search_auto_acf, ResonatorResult,
+    generate_rc_codebook, resonator_search, resonator_search_auto, resonator_search_auto_acf,
+    ResonatorResult,
 };
 
 // Continuous & spatial encoders
@@ -58,14 +60,13 @@ pub use crate::hdc::rff::ContinuousSpaceEncoder;
 
 // Algebraic primitives
 pub use crate::primitives::{
-    bind_sequence, bundle_sequence, decode_set, encode_graph_edges,
-    encode_ngram_sequence, encode_non_commutative_edges,
-    encode_positional_sequence, encode_set,
+    bind_sequence, bundle_sequence, decode_set, encode_graph_edges, encode_ngram_sequence,
+    encode_non_commutative_edges, encode_positional_sequence, encode_set,
 };
 
 // Deterministic seed generation
 pub use crate::seed::{
     deterministic_binary_hd_vector, deterministic_fhrr_vector,
-    deterministic_ghrr_vector as deterministic_ghrr_vector_seed,
-    deterministic_hd_vector, deterministic_seed,
+    deterministic_ghrr_vector as deterministic_ghrr_vector_seed, deterministic_hd_vector,
+    deterministic_seed,
 };

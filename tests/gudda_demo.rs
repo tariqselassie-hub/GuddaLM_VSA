@@ -12,13 +12,13 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use guddalm_vsa::hdc::vector::{BinaryHDVector, HDVector};
+use guddalm_vsa::fhrr::FhrrSetup;
 use guddalm_vsa::hdc::quantize::{pack_bits, packed_similarity};
 use guddalm_vsa::hdc::resonator::resonator_search;
 use guddalm_vsa::hdc::sdm::sdm_read_bipolar;
 use guddalm_vsa::hdc::stream::HDStreamBuffer;
+use guddalm_vsa::hdc::vector::{BinaryHDVector, HDVector};
 use guddalm_vsa::map::MapSetup;
-use guddalm_vsa::fhrr::FhrrSetup;
 use guddalm_vsa::vsa::Codebook;
 
 #[test]

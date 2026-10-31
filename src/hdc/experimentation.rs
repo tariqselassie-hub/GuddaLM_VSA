@@ -12,7 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use crate::hdc::vector::{HDVector, BinaryHDVector};
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 
 #[derive(Clone)]
 pub struct SenojianHybrid {
@@ -59,8 +59,8 @@ impl SenojianHybrid {
     }
 }
 
-use serde::{Serialize, Deserialize};
 use crate::hdc::phase_fhrr::CartesianFhrrVector;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SenojianCross {
@@ -115,7 +115,11 @@ impl SenojianCross {
 
         let mut map_accum = vec![0.0; vectors[0].dim()];
         for m in maps {
-            map_accum = map_accum.iter().zip(m.data()).map(|(a, b)| *a + *b).collect();
+            map_accum = map_accum
+                .iter()
+                .zip(m.data())
+                .map(|(a, b)| *a + *b)
+                .collect();
         }
 
         Self {
@@ -135,7 +139,11 @@ impl SenojianCross {
         for (v, w) in vectors {
             let map_data = v.map.data();
             let bsc_words = v.bsc.words();
-            map_accum = map_accum.iter().zip(map_data).map(|(a, b)| *a + b * w).collect();
+            map_accum = map_accum
+                .iter()
+                .zip(map_data)
+                .map(|(a, b)| *a + b * w)
+                .collect();
             for (idx, word) in bsc_words.iter().enumerate() {
                 let delta = if *word == 0 { -*w } else { *w };
                 bsc_accum[idx] += delta;
@@ -151,7 +159,10 @@ impl SenojianCross {
 
         Self {
             map: HDVector::from_slice(&map_accum),
-            bsc: BinaryHDVector { dim, words: bsc_words },
+            bsc: BinaryHDVector {
+                dim,
+                words: bsc_words,
+            },
         }
     }
 
@@ -233,7 +244,10 @@ impl SenojianCross {
 
         Self {
             map: HDVector::from_slice(&new_map),
-            bsc: BinaryHDVector { dim, words: new_bsc },
+            bsc: BinaryHDVector {
+                dim,
+                words: new_bsc,
+            },
         }
     }
 
@@ -327,8 +341,16 @@ mod tests {
         let sim_a = bound.similarity(&a);
         let sim_b = bound.similarity(&b);
 
-        assert!((sim_a - 0.25).abs() < 0.1, "Bound vector should be roughly orthogonal to a (expected ~0.25, got {})", sim_a);
-        assert!((sim_b - 0.25).abs() < 0.1, "Bound vector should be roughly orthogonal to b (expected ~0.25, got {})", sim_b);
+        assert!(
+            (sim_a - 0.25).abs() < 0.1,
+            "Bound vector should be roughly orthogonal to a (expected ~0.25, got {})",
+            sim_a
+        );
+        assert!(
+            (sim_b - 0.25).abs() < 0.1,
+            "Bound vector should be roughly orthogonal to b (expected ~0.25, got {})",
+            sim_b
+        );
     }
 
     #[test]

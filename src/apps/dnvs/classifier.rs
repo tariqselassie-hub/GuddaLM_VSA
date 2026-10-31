@@ -14,10 +14,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! DNVS Classifier — Complete pipeline for VSA-based classification (HDVector)
 
-use crate::hdc::vector::HDVector;
 use crate::dnvs::config::DnvsConfig;
 use crate::dnvs::encoder::DnvsEncoder;
 use crate::dnvs::retrain::DnvsRetrainer;
+use crate::hdc::vector::HDVector;
 
 /// Complete DNVS classifier (HDVector-specific)
 pub struct DnvsClassifier {
@@ -29,7 +29,11 @@ pub struct DnvsClassifier {
 impl DnvsClassifier {
     /// Create a new classifier from config, encoder, and retrainer
     pub fn new(config: DnvsConfig, encoder: DnvsEncoder, retrainer: DnvsRetrainer) -> Self {
-        Self { config, encoder, retrainer }
+        Self {
+            config,
+            encoder,
+            retrainer,
+        }
     }
 
     /// Create from config with vector generators
@@ -41,12 +45,15 @@ impl DnvsClassifier {
         let encoder = DnvsEncoder::from_config(config.clone(), &mut gen_position, &mut gen_level);
         let prototypes = vec![HDVector::zeros(config.dim); config.n_classes()];
         let retrainer = DnvsRetrainer::new(config.clone(), prototypes);
-        Self { config, encoder, retrainer }
+        Self {
+            config,
+            encoder,
+            retrainer,
+        }
     }
 
     /// Train on labeled data
-    pub fn train(&mut self, train_data: &[&[f32]], train_labels: &[usize])
-    {
+    pub fn train(&mut self, train_data: &[&[f32]], train_labels: &[usize]) {
         // Replace retrainer with one initialized from encoded training evidence.
         self.retrainer = DnvsRetrainer::from_encoder(
             self.config.clone(),

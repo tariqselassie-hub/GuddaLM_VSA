@@ -101,7 +101,13 @@ fn bench_bundle_100(c: &mut Criterion) {
         })
     });
     group.bench_function("bsc_pairwise", |b| {
-        b.iter(|| black_box(bsc[1..].iter().fold(bsc[0].clone(), |acc, v| acc.majority_bundle(v))))
+        b.iter(|| {
+            black_box(
+                bsc[1..]
+                    .iter()
+                    .fold(bsc[0].clone(), |acc, v| acc.majority_bundle(v)),
+            )
+        })
     });
     group.bench_function("bsc_majority_bundle_all", |b| {
         b.iter(|| black_box(BinaryHDVector::majority_bundle_all(&bsc)))
@@ -116,5 +122,13 @@ fn bench_bundle_100(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_bundle_100, bench_bind, bench_similarity, bench_binary, bench_search, bench_item_memory);
+criterion_group!(
+    benches,
+    bench_bundle_100,
+    bench_bind,
+    bench_similarity,
+    bench_binary,
+    bench_search,
+    bench_item_memory
+);
 criterion_main!(benches);

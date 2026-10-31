@@ -124,7 +124,8 @@ pub fn quantize_to_nbit_slice(data: &[f64], bits: u32) -> Vec<u64> {
             let low_bits = 64 - bit_off;
             words[word_idx] |= (unsigned & ((1u64 << low_bits) - 1)) << bit_off;
             if word_idx + 1 < n_words {
-                words[word_idx + 1] |= (unsigned >> low_bits) & ((1u64 << (bits as usize - low_bits)) - 1);
+                words[word_idx + 1] |=
+                    (unsigned >> low_bits) & ((1u64 << (bits as usize - low_bits)) - 1);
             }
         }
         bit_cursor += bits as usize;
@@ -179,11 +180,7 @@ pub fn packed_similarity(vector: &HDVector, packed: &[u64]) -> f64 {
 }
 
 /// Batch similarity comparison for arbitrary dimensions, packing query only once.
-pub fn batch_similarity(
-    vector: &HDVector,
-    signatures: &[Vec<u64>],
-    results: &mut [f64],
-) {
+pub fn batch_similarity(vector: &HDVector, signatures: &[Vec<u64>], results: &mut [f64]) {
     let dim = vector.dim();
     let query_bits = pack_bits(vector);
     for (i, sig) in signatures.iter().enumerate() {
@@ -217,10 +214,10 @@ pub fn packed_similarity_array64(vector: &HDVector, packed: &PackedArray64) -> f
 #[target_feature(enable = "avx2")]
 unsafe fn wordwise_xnor_similarity_avx2(a_words: &[u64], b_words: &[u64], dim: usize) -> f64 {
     use std::arch::x86_64::*;
-    
+
     let lookup = _mm256_setr_epi8(
-        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
+        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3,
+        3, 4,
     );
     let low_mask = _mm256_set1_epi8(0x0f);
     let zero = _mm256_setzero_si256();
@@ -266,10 +263,10 @@ unsafe fn wordwise_xnor_similarity_avx2(a_words: &[u64], b_words: &[u64], dim: u
 #[target_feature(enable = "avx2")]
 unsafe fn wordwise_xnor_similarity_array64_avx2(a: &PackedArray64, b: &PackedArray64) -> f64 {
     use std::arch::x86_64::*;
-    
+
     let lookup = _mm256_setr_epi8(
-        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
+        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3,
+        3, 4,
     );
     let low_mask = _mm256_set1_epi8(0x0f);
     let zero = _mm256_setzero_si256();
@@ -369,23 +366,17 @@ pub fn batch_similarity_array64(
 
 /// Parallel batch similarity: same as `batch_similarity` but uses rayon
 /// to distribute comparisons across threads.
-pub fn par_batch_similarity(
-    vector: &HDVector,
-    signatures: &[Vec<u64>],
-    results: &mut [f64],
-) {
+pub fn par_batch_similarity(vector: &HDVector, signatures: &[Vec<u64>], results: &mut [f64]) {
     let dim = vector.dim();
     let query_bits = pack_bits(vector);
-    results.par_iter_mut()
-        .enumerate()
-        .for_each(|(i, res)| {
-            let diff_bits: u64 = query_bits
-                .iter()
-                .zip(signatures[i].iter())
-                .map(|(a, b)| (a ^ b).count_ones() as u64)
-                .sum();
-            *res = (dim as f64 - 2.0 * diff_bits as f64) / dim as f64;
-        });
+    results.par_iter_mut().enumerate().for_each(|(i, res)| {
+        let diff_bits: u64 = query_bits
+            .iter()
+            .zip(signatures[i].iter())
+            .map(|(a, b)| (a ^ b).count_ones() as u64)
+            .sum();
+        *res = (dim as f64 - 2.0 * diff_bits as f64) / dim as f64;
+    });
 }
 
 /// Parallel batch similarity for D=4096 fixed-size arrays.
@@ -394,7 +385,8 @@ pub fn par_batch_similarity_array64(
     signatures: &[PackedArray64],
     results: &mut [f64],
 ) {
-    results.par_iter_mut()
+    results
+        .par_iter_mut()
         .zip(signatures.par_iter())
         .for_each(|(res, sig)| {
             *res = wordwise_xnor_similarity_array64(query, sig);
@@ -404,15 +396,14 @@ pub fn par_batch_similarity_array64(
 /// Parallel pack bits: pack multiple bipolar vectors into bit-packed
 /// representations using rayon.
 pub fn par_pack_bits(vectors: &[HDVector]) -> Vec<Vec<u64>> {
-    vectors.par_iter()
-        .map(pack_bits)
-        .collect()
+    vectors.par_iter().map(pack_bits).collect()
 }
 
 /// Parallel unpack bits: unpack multiple bit-packed representations
 /// into bipolar HDVectors using rayon.
 pub fn par_unpack_bits(packed: &[Vec<u64>], dim: usize) -> Vec<HDVector> {
-    packed.par_iter()
+    packed
+        .par_iter()
         .map(|words| unpack_bits(words, dim))
         .collect()
 }

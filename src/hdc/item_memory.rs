@@ -5,18 +5,16 @@
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
-use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::hdc::fhrr::FHRRVector;
 use crate::hdc::ghrr::GHRRVector;
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 use crate::hdc::vsa_trait::{IndexVector, VsaVector};
 use crate::seed::{
-    deterministic_binary_hd_vector,
-    deterministic_fhrr_vector,
-    deterministic_ghrr_vector as deterministic_ghrr_vector_seed,
-    deterministic_hd_vector,
+    deterministic_binary_hd_vector, deterministic_fhrr_vector,
+    deterministic_ghrr_vector as deterministic_ghrr_vector_seed, deterministic_hd_vector,
 };
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Trait for generating deterministic hypervectors from a symbol string.
 pub trait DeterministicSymbol: VsaVector {
@@ -161,7 +159,11 @@ impl<V: VsaVector> ItemMemory<V> {
 
     /// Insert an explicit symbol and hypervector. Overwrites if the symbol already exists.
     pub fn insert(&mut self, symbol: impl Into<String>, vector: V) {
-        assert_eq!(vector.dim(), self.dim, "Vector dimension mismatch in ItemMemory");
+        assert_eq!(
+            vector.dim(),
+            self.dim,
+            "Vector dimension mismatch in ItemMemory"
+        );
         let sym = symbol.into();
         if let Some(&idx) = self.indices.get(&sym) {
             self.vectors[idx] = vector;
@@ -180,8 +182,10 @@ impl<V: VsaVector> ItemMemory<V> {
     where
         V: Sync,
     {
-        crate::search::best_by(self.vectors.len(), |i| query.cosine_similarity(&self.vectors[i]))
-            .map(|(i, sim)| (self.symbols[i].clone(), sim))
+        crate::search::best_by(self.vectors.len(), |i| {
+            query.cosine_similarity(&self.vectors[i])
+        })
+        .map(|(i, sim)| (self.symbols[i].clone(), sim))
     }
 
     /// Return the top `k` most similar symbols sorted in descending order of similarity.
@@ -189,10 +193,12 @@ impl<V: VsaVector> ItemMemory<V> {
     where
         V: Sync,
     {
-        crate::search::top_k_by(self.vectors.len(), k, |i| query.cosine_similarity(&self.vectors[i]))
-            .into_iter()
-            .map(|(i, sim)| (self.symbols[i].clone(), sim))
-            .collect()
+        crate::search::top_k_by(self.vectors.len(), k, |i| {
+            query.cosine_similarity(&self.vectors[i])
+        })
+        .into_iter()
+        .map(|(i, sim)| (self.symbols[i].clone(), sim))
+        .collect()
     }
 
     /// Slice of all registered symbol names.
@@ -272,7 +278,10 @@ mod tests {
             None => panic!("cleanup failed"),
         };
         assert_eq!(best, "entity:robot");
-        assert!(sim > 0.65, "similarity to correct entity must be high (got {sim})");
+        assert!(
+            sim > 0.65,
+            "similarity to correct entity must be high (got {sim})"
+        );
 
         let distractor_sim = query.cosine_similarity(&distractor);
         assert!(sim > distractor_sim + 0.4);

@@ -12,9 +12,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use serde::{Serialize, Deserialize};
 use crate::hdc::quantize::pack_bits;
 use crate::hdc::vector::HDVector;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct VsaEngine {
@@ -29,7 +29,9 @@ impl VsaEngine {
         // LCG (Linear Congruential Generator) to maintain 100% dependency-free offline builds
         let mut seed: u64 = 13374269;
         let mut lcg_rand = move || {
-            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             seed
         };
 
@@ -39,23 +41,29 @@ impl VsaEngine {
             let j = (lcg_rand() as usize) % (i + 1);
             perm_forward.swap(i, j);
         }
-        
+
         // Generate the exact mathematical inverse mapping
         let mut perm_inverse = vec![0; dim];
         for (i, &target) in perm_forward.iter().enumerate() {
             perm_inverse[target] = i;
         }
-        
-        Self { perm_forward, perm_inverse, dim }
+
+        Self {
+            perm_forward,
+            perm_inverse,
+            dim,
+        }
     }
 
     // ➡️ HIGH-ENTROPY FORWARD SHUFFLE (Used in train_rust.rs)
     pub fn permute(&self, v: &HDVector, steps: usize) -> HDVector {
         assert_eq!(self.dim, v.dim());
-        if steps == 0 { return v.clone(); }
+        if steps == 0 {
+            return v.clone();
+        }
         let mut current = v.data().to_vec();
         let mut next = vec![0.0; self.dim];
-        
+
         for _ in 0..steps {
             for i in 0..self.dim {
                 next[self.perm_forward[i]] = current[i];
@@ -69,7 +77,9 @@ impl VsaEngine {
     /// The slice must have length == self.dim.
     pub fn permute_data(&self, data: &mut [f64], steps: usize) {
         assert_eq!(self.dim, data.len());
-        if steps == 0 { return; }
+        if steps == 0 {
+            return;
+        }
         let mut scratch = vec![0.0; self.dim];
         for _ in 0..steps {
             for i in 0..self.dim {
@@ -82,10 +92,12 @@ impl VsaEngine {
     // ↩️ EXACT INVERSE UNPERMUTE (Used in generate.rs)
     pub fn unpermute(&self, v: &HDVector, steps: usize) -> HDVector {
         assert_eq!(self.dim, v.dim());
-        if steps == 0 { return v.clone(); }
+        if steps == 0 {
+            return v.clone();
+        }
         let mut current = v.data().to_vec();
         let mut next = vec![0.0; self.dim];
-        
+
         for _ in 0..steps {
             for i in 0..self.dim {
                 next[self.perm_inverse[i]] = current[i];
@@ -111,7 +123,13 @@ impl Codebook {
         let weights = vec![HDVector::zeros(dim); vocab_size];
         let packed = vec![vec![0u64; dim.div_ceil(64)]; vocab_size];
         let engine = VsaEngine::new(dim);
-        Self { weights, vocab_size, dim, engine, packed }
+        Self {
+            weights,
+            vocab_size,
+            dim,
+            engine,
+            packed,
+        }
     }
 
     /// Create a codebook with random bipolar (±1) prototype vectors.
@@ -122,7 +140,13 @@ impl Codebook {
         let engine = VsaEngine::new(dim);
         let weights: Vec<HDVector> = (0..vocab_size).map(|_| HDVector::random(dim)).collect();
         let packed: Vec<Vec<u64>> = weights.iter().map(pack_bits).collect();
-        Self { weights, vocab_size, dim, engine, packed }
+        Self {
+            weights,
+            vocab_size,
+            dim,
+            engine,
+            packed,
+        }
     }
 }
 
@@ -142,12 +166,15 @@ mod tests {
     fn test_vsa_engine_invertibility() {
         let engine = VsaEngine::new(256);
         let original = HDVector::random(256);
-        
+
         let permuted = engine.permute(&original, 3);
         let recovered = engine.unpermute(&permuted, 3);
-        
+
         let sim = original.cosine_similarity(&recovered);
-        assert!((sim - 1.0).abs() < 1e-9, "Unpermute must recover the exact original vector");
+        assert!(
+            (sim - 1.0).abs() < 1e-9,
+            "Unpermute must recover the exact original vector"
+        );
     }
 
     #[test]
@@ -155,15 +182,15 @@ mod tests {
         let engine = VsaEngine::new(128);
         let mut data: Vec<f64> = (0..128).map(|i| i as f64).collect();
         let original_data = data.clone();
-        
+
         engine.permute_data(&mut data, 2);
         assert_ne!(data, original_data, "Data must be permuted");
-        
+
         // Recover using unpermute
         let vec_version = HDVector::from_slice_with_binary(&data, false);
         let recovered_vec = engine.unpermute(&vec_version, 2);
         let recovered_data = recovered_vec.data();
-        
+
         for (i, &x) in recovered_data.iter().enumerate() {
             assert!((x - i as f64).abs() < 1e-9);
         }
@@ -179,4 +206,3 @@ mod tests {
         assert_eq!(codebook.packed[0].len(), 512_usize.div_ceil(64));
     }
 }
-

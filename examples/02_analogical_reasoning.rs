@@ -39,10 +39,14 @@ fn main() {
 
     // Build holistic country representations:
     // USA = (capital * Washington) + (currency * Dollar)
-    let usa = role_capital.bind(&washington).bundle(&role_currency.bind(&dollar));
+    let usa = role_capital
+        .bind(&washington)
+        .bundle(&role_currency.bind(&dollar));
 
     // Mexico = (capital * MexicoCity) + (currency * Peso)
-    let mexico = role_capital.bind(&mexico_city).bundle(&role_currency.bind(&peso));
+    let mexico = role_capital
+        .bind(&mexico_city)
+        .bundle(&role_currency.bind(&peso));
 
     println!("Constructed holistic USA and Mexico country representations.");
 
@@ -54,7 +58,10 @@ fn main() {
         Some(res) => res,
         None => panic!("Failed to clean up Mexico currency"),
     };
-    println!("1. Currency of Mexico: {} (sim: {:.4})", match_curr, sim_curr);
+    println!(
+        "1. Currency of Mexico: {} (sim: {:.4})",
+        match_curr, sim_curr
+    );
     assert_eq!(match_curr, "entity:Peso");
 
     // Proportional Analogy Question:

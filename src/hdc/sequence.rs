@@ -312,7 +312,10 @@ mod tests {
         // ngram of different order should differ
         let different = encode_ngram(&[a, c, b]);
         let sim = encoded.cosine_similarity(&different);
-        assert!(sim < 0.3, "different n-gram orders must yield different vectors");
+        assert!(
+            sim < 0.3,
+            "different n-gram orders must yield different vectors"
+        );
     }
 
     #[test]
@@ -324,7 +327,10 @@ mod tests {
         let cont_a = HDVector::random(dim);
         let cont_b = HDVector::random(dim);
 
-        let continuations = vec![(similar_ctx, cont_a.clone()), (dissimilar_ctx, cont_b.clone())];
+        let continuations = vec![
+            (similar_ctx, cont_a.clone()),
+            (dissimilar_ctx, cont_b.clone()),
+        ];
         let prediction = predict_from_context(&ctx, &continuations);
 
         let sim_to_a = prediction.cosine_similarity(&cont_a);

@@ -22,18 +22,18 @@
 //       for representation={BSC, MAP, FHRR}, chunk sizes=[1,4,16,64].
 //   - lookup_param_count: dense vs VSA parameter compression
 use guddalm_vsa::{
+    dimensions::{BSC_DEFAULT_DIM, FHRR_DEFAULT_DIM, MAP_DEFAULT_DIM},
+    hdc::cleanup::{BinaryCleanupMemory, CleanupMemory, FhrrCleanupMemory},
     hdc::fhrr::FHRRVector,
     hdc::vector::HDVector,
     hdc::vsa_trait::VsaVector,
-    hdc::cleanup::{CleanupMemory, BinaryCleanupMemory, FhrrCleanupMemory},
-    dimensions::{BSC_DEFAULT_DIM, MAP_DEFAULT_DIM, FHRR_DEFAULT_DIM},
-    IndexVector,
-    vsa::{Codebook, VsaEngine},
     seed::{deterministic_fhrr_vector, deterministic_hd_vector},
+    vsa::{Codebook, VsaEngine},
+    IndexVector,
 };
-use std::time::Instant;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
+use std::time::Instant;
 
 /// Base seed for every suite, recorded in the report. All random inputs
 /// derive from it, so two runs of the same build produce the same values
@@ -42,19 +42,37 @@ const SEED: u64 = 42;
 use serde::Serialize;
 
 #[derive(Serialize)]
-struct Report { generated_at: String, seed: u64, suites: Vec<Suite> }
+struct Report {
+    generated_at: String,
+    seed: u64,
+    suites: Vec<Suite>,
+}
 #[derive(Serialize)]
-struct Suite { name: &'static str, axes: Vec<Axis> }
+struct Suite {
+    name: &'static str,
+    axes: Vec<Axis>,
+}
 #[derive(Serialize)]
-struct Axis { label: String, value: serde_json::Value, unit: &'static str, notes: String }
+struct Axis {
+    label: String,
+    value: serde_json::Value,
+    unit: &'static str,
+    notes: String,
+}
 
-fn utc_now() -> String { chrono::Utc::now().to_rfc3339() }
+fn utc_now() -> String {
+    chrono::Utc::now().to_rfc3339()
+}
 
 fn random_vec(rng: &mut StdRng, dim: usize) -> Vec<f64> {
-    (0..dim).map(|_| if rng.gen_bool(0.5) { 1.0 } else { -1.0 }).collect()
+    (0..dim)
+        .map(|_| if rng.gen_bool(0.5) { 1.0 } else { -1.0 })
+        .collect()
 }
 #[allow(dead_code)]
-fn dot(a: &[f64], b: &[f64]) -> f64 { a.iter().zip(b).map(|(x, y)| x * y).sum() }
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b).map(|(x, y)| x * y).sum()
+}
 #[allow(dead_code)]
 fn cosine(a: &[f64], b: &[f64]) -> f64 {
     let na = a.iter().map(|x| x * x).sum::<f64>().sqrt();
@@ -74,7 +92,13 @@ fn relational_suite() -> Vec<Axis> {
     let role_a: Vec<f64> = random_vec(&mut rng, dim);
     let role_b: Vec<f64> = random_vec(&mut rng, dim);
     let mut pairs = Vec::with_capacity(n_pairs);
-    for i in 0..n_objects { for j in 0..n_objects { if i != j { pairs.push((i, j, if i < j { 1u32 } else { 0u32 })); } } }
+    for i in 0..n_objects {
+        for j in 0..n_objects {
+            if i != j {
+                pairs.push((i, j, if i < j { 1u32 } else { 0u32 }));
+            }
+        }
+    }
     pairs.shuffle(&mut rng);
     let split = (n_pairs as f32 * 0.4).round() as usize;
     let train = &pairs[..split];
@@ -84,28 +108,65 @@ fn relational_suite() -> Vec<Axis> {
     let mut pos: Vec<Vec<f64>> = vec![vec![0.0; dim]; 2];
     let mut pos_counts = [0usize; 2];
     for &(i, j, lbl) in train {
-        let bound: Vec<f64> = objects[i].iter().zip(&objects[j]).map(|(a,b)| a*b).collect();
-        let bundled: Vec<f64> = bound.iter().zip(&role_a).zip(&role_b).map(|((v,a),b)| v*(a+b)).collect();
+        let bound: Vec<f64> = objects[i]
+            .iter()
+            .zip(&objects[j])
+            .map(|(a, b)| a * b)
+            .collect();
+        let bundled: Vec<f64> = bound
+            .iter()
+            .zip(&role_a)
+            .zip(&role_b)
+            .map(|((v, a), b)| v * (a + b))
+            .collect();
         let c = lbl as usize;
-        for d in 0..dim { pos[c][d] += bundled[d]; }
+        for d in 0..dim {
+            pos[c][d] += bundled[d];
+        }
         pos_counts[c] += 1;
     }
-    for (p, &n) in pos.iter_mut().zip(pos_counts.iter()) { if n > 0 { for x in p.iter_mut() { *x /= n as f64; } } }
+    for (p, &n) in pos.iter_mut().zip(pos_counts.iter()) {
+        if n > 0 {
+            for x in p.iter_mut() {
+                *x /= n as f64;
+            }
+        }
+    }
     let train_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
     let t0 = Instant::now();
     let mut vsa_correct = 0usize;
     for &(i, j, lbl) in test {
-        let bound: Vec<f64> = objects[i].iter().zip(&objects[j]).map(|(a,b)| a*b).collect();
-        let bundled: Vec<f64> = bound.iter().zip(&role_a).zip(&role_b).map(|((v,a),b)| v*(a+b)).collect();
+        let bound: Vec<f64> = objects[i]
+            .iter()
+            .zip(&objects[j])
+            .map(|(a, b)| a * b)
+            .collect();
+        let bundled: Vec<f64> = bound
+            .iter()
+            .zip(&role_a)
+            .zip(&role_b)
+            .map(|((v, a), b)| v * (a + b))
+            .collect();
         let (mut best, mut best_sim) = (0usize, -2.0);
         for (c, p) in pos.iter().enumerate() {
-            let mut s = 0.0; let mut na2 = 0.0; let mut nb2 = 0.0;
-            for (&x, &y) in bundled.iter().zip(p.iter()) { s += x*y; na2 += x*x; nb2 += y*y; }
-            let sim = s / ((na2*nb2).sqrt().max(1e-12));
-            if sim > best_sim { best_sim = sim; best = c; }
+            let mut s = 0.0;
+            let mut na2 = 0.0;
+            let mut nb2 = 0.0;
+            for (&x, &y) in bundled.iter().zip(p.iter()) {
+                s += x * y;
+                na2 += x * x;
+                nb2 += y * y;
+            }
+            let sim = s / ((na2 * nb2).sqrt().max(1e-12));
+            if sim > best_sim {
+                best_sim = sim;
+                best = c;
+            }
         }
-        if best == lbl as usize { vsa_correct += 1; }
+        if best == lbl as usize {
+            vsa_correct += 1;
+        }
     }
     let infer_ms = t0.elapsed().as_secs_f64() * 1000.0;
     let vsa_acc = vsa_correct as f64 / test.len().max(1) as f64;
@@ -113,18 +174,50 @@ fn relational_suite() -> Vec<Axis> {
     let t0 = Instant::now();
     let mut cos_correct = 0usize;
     for &(i, j, lbl) in test {
-        let mut s = 0.0; let mut na2 = 0.0; let mut nb2 = 0.0;
-        for (&x, &y) in objects[i].iter().zip(objects[j].iter()) { s += x*y; na2 += x*x; nb2 += y*y; }
-        let pred = if s / ((na2*nb2).sqrt().max(1e-12)) > 0.0 { 1 } else { 0 };
-        if pred == lbl as usize { cos_correct += 1; }
+        let mut s = 0.0;
+        let mut na2 = 0.0;
+        let mut nb2 = 0.0;
+        for (&x, &y) in objects[i].iter().zip(objects[j].iter()) {
+            s += x * y;
+            na2 += x * x;
+            nb2 += y * y;
+        }
+        let pred = if s / ((na2 * nb2).sqrt().max(1e-12)) > 0.0 {
+            1
+        } else {
+            0
+        };
+        if pred == lbl as usize {
+            cos_correct += 1;
+        }
     }
     let baseline_ms = t0.elapsed().as_secs_f64() * 1000.0;
     let baseline_acc = cos_correct as f64 / test.len().max(1) as f64;
 
-    out.push(Axis { label: "relational.resolve_acc".into(), value: serde_json::json!(vsa_acc), unit: "ratio", notes: "RESOLVE-style binding classifier".into() });
-    out.push(Axis { label: "relational.baseline_acc".into(), value: serde_json::json!(baseline_acc), unit: "ratio", notes: "Naive cosine similarity".into() });
-    out.push(Axis { label: "relational.train_ms".into(), value: serde_json::json!(train_ms + baseline_ms), unit: "ms", notes: "Combined train latency".into() });
-    out.push(Axis { label: "relational.infer_ms".into(), value: serde_json::json!(infer_ms), unit: "ms", notes: "VSA inference latency".into() });
+    out.push(Axis {
+        label: "relational.resolve_acc".into(),
+        value: serde_json::json!(vsa_acc),
+        unit: "ratio",
+        notes: "RESOLVE-style binding classifier".into(),
+    });
+    out.push(Axis {
+        label: "relational.baseline_acc".into(),
+        value: serde_json::json!(baseline_acc),
+        unit: "ratio",
+        notes: "Naive cosine similarity".into(),
+    });
+    out.push(Axis {
+        label: "relational.train_ms".into(),
+        value: serde_json::json!(train_ms + baseline_ms),
+        unit: "ms",
+        notes: "Combined train latency".into(),
+    });
+    out.push(Axis {
+        label: "relational.infer_ms".into(),
+        value: serde_json::json!(infer_ms),
+        unit: "ms",
+        notes: "VSA inference latency".into(),
+    });
     out
 }
 
@@ -139,7 +232,10 @@ fn memory_suite() -> Vec<Axis> {
     out
 }
 
-fn compute_repair_distribution(chunked_sims: &[f64], repaired_sims: &[f64]) -> (usize, usize, usize, f64, f64) {
+fn compute_repair_distribution(
+    chunked_sims: &[f64],
+    repaired_sims: &[f64],
+) -> (usize, usize, usize, f64, f64) {
     if chunked_sims.is_empty() || chunked_sims.len() != repaired_sims.len() {
         return (0, 0, 0, 0.0, 0.0);
     }
@@ -189,7 +285,8 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
         let mut exact_sum = 0.0;
         let mut exact_count = 0usize;
         // The value codebook is fixed for this n, so build the cleanup memory once.
-        let mem = BinaryCleanupMemory::new(kvs.iter().map(|(_, v2)| v2.clone().into_inner()).collect());
+        let mem =
+            BinaryCleanupMemory::new(kvs.iter().map(|(_, v2)| v2.clone().into_inner()).collect());
         for (k, v) in kvs.iter() {
             let bound = k.bind(v);
             let cand = bound.unbind(k);
@@ -203,7 +300,11 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                 exact_sum += sim2 - sim;
             }
         }
-        let exact_fidelity = if exact_count > 0 { exact_sum / exact_count as f64 } else { -2.0 };
+        let exact_fidelity = if exact_count > 0 {
+            exact_sum / exact_count as f64
+        } else {
+            -2.0
+        };
 
         for &chunk_size in chunk_sizes {
             let n_chunks = n.div_ceil(chunk_size);
@@ -219,7 +320,9 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             let mut repaired_sum = 0.0;
             let mut fidelity_count = 0usize;
             for idxs in chunk_idxs.iter().take(n_chunks) {
-                if idxs.is_empty() { continue; }
+                if idxs.is_empty() {
+                    continue;
+                }
                 let mut frag = IndexVector::zero(dim);
                 for &idx in idxs {
                     let (k, v) = &kvs[idx];
@@ -241,9 +344,18 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     fidelity_count += 1;
                 }
             }
-            let chunked_fidelity = if fidelity_count > 0 { chunked_sum / fidelity_count as f64 } else { -2.0 };
-            let repaired_fidelity = if fidelity_count > 0 { repaired_sum / fidelity_count as f64 } else { -2.0 };
-            let (improved, worsened, no_change, rate, median_lift) = compute_repair_distribution(&chunked_sims, &repaired_sims);
+            let chunked_fidelity = if fidelity_count > 0 {
+                chunked_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let repaired_fidelity = if fidelity_count > 0 {
+                repaired_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let (improved, worsened, no_change, rate, median_lift) =
+                compute_repair_distribution(&chunked_sims, &repaired_sims);
             let infer_ms = 0.0;
 
             out.push(Axis {
@@ -263,7 +375,10 @@ fn memory_bsc(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "params_per_chunk": dim
                 }),
                 unit: "composite",
-                notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
+                notes: format!(
+                    "{} rep chunk_size={} full repair distribution",
+                    rep, chunk_size
+                ),
             });
         }
     }
@@ -282,7 +397,13 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             kvs.push((k, v));
         }
         let codebook = kvs.iter().map(|(_, v)| v.clone()).collect::<Vec<_>>();
-        let codebook = Codebook { weights: codebook, vocab_size: kvs.len(), dim, engine: VsaEngine::new(dim), packed: Vec::new() };
+        let codebook = Codebook {
+            weights: codebook,
+            vocab_size: kvs.len(),
+            dim,
+            engine: VsaEngine::new(dim),
+            packed: Vec::new(),
+        };
 
         let mut exact_sum = 0.0;
         let mut exact_count = 0usize;
@@ -296,9 +417,15 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             exact_count += 1;
             let result = mem.cleanup(&cand);
             let sim2 = HDVector::cosine_similarity(&result.prototype, v);
-            if sim2 > sim { exact_sum += sim2 - sim; }
+            if sim2 > sim {
+                exact_sum += sim2 - sim;
+            }
         }
-        let exact_fidelity = if exact_count > 0 { exact_sum / exact_count as f64 } else { -2.0 };
+        let exact_fidelity = if exact_count > 0 {
+            exact_sum / exact_count as f64
+        } else {
+            -2.0
+        };
 
         for &chunk_size in chunk_sizes {
             let n_chunks = n.div_ceil(chunk_size);
@@ -314,7 +441,9 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             let mut repaired_sum = 0.0;
             let mut fidelity_count = 0usize;
             for idxs in chunk_idxs.iter().take(n_chunks) {
-                if idxs.is_empty() { continue; }
+                if idxs.is_empty() {
+                    continue;
+                }
                 let mut frag = HDVector::zeros(dim);
                 for &idx in idxs {
                     let (k, v) = &kvs[idx];
@@ -335,9 +464,18 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     fidelity_count += 1;
                 }
             }
-            let chunked_fidelity = if fidelity_count > 0 { chunked_sum / fidelity_count as f64 } else { -2.0 };
-            let repaired_fidelity = if fidelity_count > 0 { repaired_sum / fidelity_count as f64 } else { -2.0 };
-            let (improved, worsened, no_change, rate, median_lift) = compute_repair_distribution(&chunked_sims, &repaired_sims);
+            let chunked_fidelity = if fidelity_count > 0 {
+                chunked_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let repaired_fidelity = if fidelity_count > 0 {
+                repaired_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let (improved, worsened, no_change, rate, median_lift) =
+                compute_repair_distribution(&chunked_sims, &repaired_sims);
             let infer_ms = 0.0;
 
             out.push(Axis {
@@ -357,7 +495,10 @@ fn memory_map(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "params_per_chunk": dim
                 }),
                 unit: "composite",
-                notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
+                notes: format!(
+                    "{} rep chunk_size={} full repair distribution",
+                    rep, chunk_size
+                ),
             });
         }
     }
@@ -388,9 +529,15 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             exact_count += 1;
             let (_, _, proto) = mem.cleanup(&cand);
             let sim2 = FHRRVector::cosine_similarity(&proto, v);
-            if sim2 > sim { exact_sum += sim2 - sim; }
+            if sim2 > sim {
+                exact_sum += sim2 - sim;
+            }
         }
-        let exact_fidelity = if exact_count > 0 { exact_sum / exact_count as f64 } else { -2.0 };
+        let exact_fidelity = if exact_count > 0 {
+            exact_sum / exact_count as f64
+        } else {
+            -2.0
+        };
 
         for &chunk_size in chunk_sizes {
             let n_chunks = n.div_ceil(chunk_size);
@@ -406,7 +553,9 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
             let mut repaired_sum = 0.0;
             let mut fidelity_count = 0usize;
             for idxs in chunk_idxs.iter().take(n_chunks) {
-                if idxs.is_empty() { continue; }
+                if idxs.is_empty() {
+                    continue;
+                }
                 let mut frag = FHRRVector::zeros(dim);
                 for &idx in idxs {
                     let (k, v) = &kvs[idx];
@@ -427,9 +576,18 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     fidelity_count += 1;
                 }
             }
-            let chunked_fidelity = if fidelity_count > 0 { chunked_sum / fidelity_count as f64 } else { -2.0 };
-            let repaired_fidelity = if fidelity_count > 0 { repaired_sum / fidelity_count as f64 } else { -2.0 };
-            let (improved, worsened, no_change, rate, median_lift) = compute_repair_distribution(&chunked_sims, &repaired_sims);
+            let chunked_fidelity = if fidelity_count > 0 {
+                chunked_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let repaired_fidelity = if fidelity_count > 0 {
+                repaired_sum / fidelity_count as f64
+            } else {
+                -2.0
+            };
+            let (improved, worsened, no_change, rate, median_lift) =
+                compute_repair_distribution(&chunked_sims, &repaired_sims);
             let infer_ms = 0.0;
 
             out.push(Axis {
@@ -449,7 +607,10 @@ fn memory_fhrr(ns: &[usize], chunk_sizes: &[usize]) -> Vec<Axis> {
                     "params_per_chunk": dim
                 }),
                 unit: "composite",
-                notes: format!("{} rep chunk_size={} full repair distribution", rep, chunk_size),
+                notes: format!(
+                    "{} rep chunk_size={} full repair distribution",
+                    rep, chunk_size
+                ),
             });
         }
     }
@@ -465,9 +626,24 @@ fn lookup_count_suite() -> Vec<Axis> {
         let dense_params = v * emb_dim;
         let vsa_params = emb_dim;
         let reduction = 100.0 * (1.0 - vsa_params as f64 / dense_params as f64);
-        out.push(Axis { label: format!("lookup.vocab_{}_param_reduction_pct", v), value: serde_json::json!(reduction), unit: "percent", notes: "Parameter reduction using shared VSA embedding matrix".into() });
-        out.push(Axis { label: format!("lookup.vocab_{}_dense_params", v), value: serde_json::json!(dense_params), unit: "params", notes: "Dense embedding table parameter count".into() });
-        out.push(Axis { label: format!("lookup.vocab_{}_vsa_params", v), value: serde_json::json!(vsa_params), unit: "params", notes: "VSA fixed-codebook storage count".into() });
+        out.push(Axis {
+            label: format!("lookup.vocab_{}_param_reduction_pct", v),
+            value: serde_json::json!(reduction),
+            unit: "percent",
+            notes: "Parameter reduction using shared VSA embedding matrix".into(),
+        });
+        out.push(Axis {
+            label: format!("lookup.vocab_{}_dense_params", v),
+            value: serde_json::json!(dense_params),
+            unit: "params",
+            notes: "Dense embedding table parameter count".into(),
+        });
+        out.push(Axis {
+            label: format!("lookup.vocab_{}_vsa_params", v),
+            value: serde_json::json!(vsa_params),
+            unit: "params",
+            notes: "VSA fixed-codebook storage count".into(),
+        });
     }
     out
 }
@@ -485,22 +661,30 @@ fn noma_nc_suite() -> Vec<Axis> {
         let mut v_i = Vec::with_capacity(d);
         let mut k_i = Vec::with_capacity(d);
         for idx in 0..d {
-            v_i.push(IndexVector::from_key(seed, &format!("noma:v:{}:{}", d, idx), dim));
-            k_i.push(IndexVector::from_key(seed, &format!("noma:k:{}:{}", d, idx), dim));
+            v_i.push(IndexVector::from_key(
+                seed,
+                &format!("noma:v:{}:{}", d, idx),
+                dim,
+            ));
+            k_i.push(IndexVector::from_key(
+                seed,
+                &format!("noma:k:{}:{}", d, idx),
+                dim,
+            ));
         }
-        
+
         let mut s = IndexVector::zero(dim);
         for idx in 0..d {
             s = s.bundle(&v_i[idx].bind(&k_i[idx]));
         }
-        
+
         let mut sum_fidelity = 0.0;
         for idx in 0..d {
             let cand = s.unbind(&k_i[idx]);
             sum_fidelity += cand.similarity_to(&v_i[idx]);
         }
         let avg_fidelity = sum_fidelity / d as f64;
-        
+
         out.push(Axis {
             label: format!("noma_nc.bsc_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
@@ -515,22 +699,30 @@ fn noma_nc_suite() -> Vec<Axis> {
         let mut v_i = Vec::with_capacity(d);
         let mut k_i = Vec::with_capacity(d);
         for idx in 0..d {
-            v_i.push(deterministic_hd_vector(seed, &format!("noma:v:{}:{}", d, idx), dim));
-            k_i.push(deterministic_hd_vector(seed, &format!("noma:k:{}:{}", d, idx), dim));
+            v_i.push(deterministic_hd_vector(
+                seed,
+                &format!("noma:v:{}:{}", d, idx),
+                dim,
+            ));
+            k_i.push(deterministic_hd_vector(
+                seed,
+                &format!("noma:k:{}:{}", d, idx),
+                dim,
+            ));
         }
-        
+
         let mut s = HDVector::zeros(dim);
         for idx in 0..d {
             s = s.bundle(&v_i[idx].bind(&k_i[idx]));
         }
-        
+
         let mut sum_fidelity = 0.0;
         for idx in 0..d {
             let cand = s.unbind(&k_i[idx]);
             sum_fidelity += HDVector::cosine_similarity(&cand, &v_i[idx]);
         }
         let avg_fidelity = sum_fidelity / d as f64;
-        
+
         out.push(Axis {
             label: format!("noma_nc.map_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
@@ -545,22 +737,30 @@ fn noma_nc_suite() -> Vec<Axis> {
         let mut v_i = Vec::with_capacity(d);
         let mut k_i = Vec::with_capacity(d);
         for idx in 0..d {
-            v_i.push(deterministic_fhrr_vector(seed, &format!("noma:v:{}:{}", d, idx), dim));
-            k_i.push(deterministic_fhrr_vector(seed, &format!("noma:k:{}:{}", d, idx), dim));
+            v_i.push(deterministic_fhrr_vector(
+                seed,
+                &format!("noma:v:{}:{}", d, idx),
+                dim,
+            ));
+            k_i.push(deterministic_fhrr_vector(
+                seed,
+                &format!("noma:k:{}:{}", d, idx),
+                dim,
+            ));
         }
-        
+
         let mut s = FHRRVector::zeros(dim);
         for idx in 0..d {
             s = s.bundle(&v_i[idx].bind(&k_i[idx]));
         }
-        
+
         let mut sum_fidelity = 0.0;
         for idx in 0..d {
             let cand = s.unbind(&k_i[idx]);
             sum_fidelity += FHRRVector::cosine_similarity(&cand, &v_i[idx]);
         }
         let avg_fidelity = sum_fidelity / d as f64;
-        
+
         out.push(Axis {
             label: format!("noma_nc.fhrr_devices_{}", d),
             value: serde_json::json!(avg_fidelity),
@@ -577,10 +777,22 @@ fn main() {
         generated_at: utc_now(),
         seed: SEED,
         suites: vec![
-            Suite { name: "relational_ordering", axes: relational_suite() },
-            Suite { name: "memory_superposition", axes: memory_suite() },
-            Suite { name: "lookup_param_count", axes: lookup_count_suite() },
-            Suite { name: "noma_nc_parallel_inference", axes: noma_nc_suite() },
+            Suite {
+                name: "relational_ordering",
+                axes: relational_suite(),
+            },
+            Suite {
+                name: "memory_superposition",
+                axes: memory_suite(),
+            },
+            Suite {
+                name: "lookup_param_count",
+                axes: lookup_count_suite(),
+            },
+            Suite {
+                name: "noma_nc_parallel_inference",
+                axes: noma_nc_suite(),
+            },
         ],
     };
     let _ = std::fs::create_dir_all("bench_results");

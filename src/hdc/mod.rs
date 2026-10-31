@@ -12,29 +12,29 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod vector;
 pub mod accumulator;
-pub mod experimentation;
-pub mod rff;
-pub mod bundle;
+pub mod attention;
+pub mod autograd;
 pub mod bind;
-pub mod permute;
-pub mod quantize;
-pub mod sdm;
+pub mod bundle;
+pub mod cleanup;
+pub mod experimentation;
 pub mod fhrr;
 pub mod ghrr;
-pub mod stream;
-pub mod resonator;
-pub mod cleanup;
-pub mod attention;
-pub mod sequence;
 pub mod graph;
-pub mod autograd;
-pub mod vsa_trait;
+pub mod item_memory;
+pub mod level;
+pub mod permute;
+pub mod phase_fhrr;
+pub mod quantize;
+pub mod resonator;
+pub mod rff;
+pub mod sdm;
+pub mod sequence;
+pub mod stream;
 #[cfg(feature = "candle")]
 pub mod tensor;
 #[cfg(feature = "candle")]
 pub mod transformer;
-pub mod phase_fhrr;
-pub mod item_memory;
-pub mod level;
+pub mod vector;
+pub mod vsa_trait;

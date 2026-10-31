@@ -30,7 +30,7 @@
 //! // Every input stays recognisable in the bundle.
 //! assert!(items.iter().all(|v| bundle.bipolar_similarity(v) > 0.15));
 //! ```
-use crate::hdc::vector::{BinaryHDVector, HDVector, majority_from_sums};
+use crate::hdc::vector::{majority_from_sums, BinaryHDVector, HDVector};
 
 /// Streaming accumulator for MAP (bipolar) bundling.
 ///
@@ -358,7 +358,9 @@ mod tests {
         let mut acc = BinaryBundleAccumulator::new(dim);
         acc.extend(&vs);
         let bundle = acc.binarize();
-        let pairwise = vs[1..].iter().fold(vs[0].clone(), |a, b| a.majority_bundle(b));
+        let pairwise = vs[1..]
+            .iter()
+            .fold(vs[0].clone(), |a, b| a.majority_bundle(b));
         // The first input survives the accumulator but is washed out pairwise.
         assert!(bundle.bipolar_similarity(&vs[0]) > 0.1);
         assert!(pairwise.bipolar_similarity(&vs[0]).abs() < 0.05);

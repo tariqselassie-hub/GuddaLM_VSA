@@ -13,14 +13,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use rayon::prelude::*;
 use serde::de::{self, Visitor};
 use serde::ser::SerializeStruct;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::sync::Arc;
-use std::sync::OnceLock;
 use std::sync::Mutex;
-use rayon::prelude::*;
+use std::sync::OnceLock;
 static VSA_ENGINES: OnceLock<Mutex<Vec<Arc<crate::vsa::VsaEngine>>>> = OnceLock::new();
 
 /// Shared permutation engine for `dim`. Engines are built once per dimension
@@ -51,7 +51,7 @@ impl Complex {
             im: self.im + other.im,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn sub(self, other: Self) -> Self {
         Complex {
@@ -59,7 +59,7 @@ impl Complex {
             im: self.im - other.im,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn mul(self, other: Self) -> Self {
         Complex {
@@ -67,7 +67,7 @@ impl Complex {
             im: self.re * other.im + self.im * other.re,
         }
     }
-    
+
     #[inline(always)]
     pub(crate) fn conj(self) -> Self {
         Complex {
@@ -167,7 +167,10 @@ impl<'de> serde::Deserialize<'de> for HDVector {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "lowercase")]
-        enum Field { Dim, Data }
+        enum Field {
+            Dim,
+            Data,
+        }
 
         struct HDVectorVisitor;
         impl<'de> Visitor<'de> for HDVectorVisitor {
@@ -176,22 +179,38 @@ impl<'de> serde::Deserialize<'de> for HDVector {
                 formatter.write_str("struct HDVector")
             }
             fn visit_seq<V: de::SeqAccess<'de>>(self, mut seq: V) -> Result<HDVector, V::Error> {
-                let dim = seq.next_element::<usize>()?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let data = seq.next_element::<Vec<f64>>()?.ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                let dim = seq
+                    .next_element::<usize>()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let data = seq
+                    .next_element::<Vec<f64>>()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                Ok(HDVector {
+                    dim,
+                    data: Arc::new(data),
+                    is_binary: false,
+                })
             }
             fn visit_map<M: de::MapAccess<'de>>(self, mut map: M) -> Result<HDVector, M::Error> {
                 let mut dim = None;
                 let mut data = None;
                 while let Some(key) = map.next_key::<Field>()? {
                     match key {
-                        Field::Dim => { dim = Some(map.next_value()?); }
-                        Field::Data => { data = Some(map.next_value()?); }
+                        Field::Dim => {
+                            dim = Some(map.next_value()?);
+                        }
+                        Field::Data => {
+                            data = Some(map.next_value()?);
+                        }
                     }
                 }
                 let dim = dim.ok_or_else(|| de::Error::missing_field("dim"))?;
                 let data = data.ok_or_else(|| de::Error::missing_field("data"))?;
-                Ok(HDVector { dim, data: Arc::new(data), is_binary: false })
+                Ok(HDVector {
+                    dim,
+                    data: Arc::new(data),
+                    is_binary: false,
+                })
             }
         }
         deserializer.deserialize_struct("HDVector", &["dim", "data"], HDVectorVisitor)
@@ -334,8 +353,14 @@ impl HDVector {
         // dimension index.  This ensures reproducibility while maintaining
         // the ~50/50 split that random tie-breaking provides.
         let tie_dash = |i: usize| -> f64 {
-            let h = (i as u64).wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-            if (h >> 63) & 1 == 0 { 1.0 } else { -1.0 }
+            let h = (i as u64)
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            if (h >> 63) & 1 == 0 {
+                1.0
+            } else {
+                -1.0
+            }
         };
         let data: Vec<f64> = self
             .data
@@ -419,24 +444,24 @@ impl Eq for HDVector {}
 #[target_feature(enable = "avx2", enable = "fma")]
 unsafe fn dot_product_slice_avx2(a: &[f64], b: &[f64]) -> f64 {
     use std::arch::x86_64::*;
-    
+
     let len = a.len().min(b.len());
     let chunks = len / 4;
     let mut sum_vec = _mm256_setzero_pd();
-    
+
     let a_ptr = a.as_ptr();
     let b_ptr = b.as_ptr();
-    
+
     for i in 0..chunks {
         let va = _mm256_loadu_pd(a_ptr.add(i * 4));
         let vb = _mm256_loadu_pd(b_ptr.add(i * 4));
         sum_vec = _mm256_fmadd_pd(va, vb, sum_vec);
     }
-    
+
     let mut temp = [0.0; 4];
     _mm256_storeu_pd(temp.as_mut_ptr(), sum_vec);
     let mut dot = temp[0] + temp[1] + temp[2] + temp[3];
-    
+
     for i in (chunks * 4)..len {
         dot += a[i] * b[i];
     }
@@ -518,7 +543,12 @@ pub fn bipolar_cosine_similarity_slice(a: &[f64], b: &[f64]) -> f64 {
 pub fn bipolar_cosine_similarity(a: &HDVector, b: &HDVector) -> f64 {
     assert_eq!(a.dim(), b.dim());
     let dim = a.dim() as f64;
-    let dot = a.data().iter().zip(b.data().iter()).map(|(x, y)| x * y).sum::<f64>();
+    let dot = a
+        .data()
+        .iter()
+        .zip(b.data().iter())
+        .map(|(x, y)| x * y)
+        .sum::<f64>();
     (dot / dim).clamp(-1.0, 1.0)
 }
 
@@ -585,10 +615,7 @@ impl BinaryHDVector {
                 word_idx += 1;
             }
         }
-        let mut v = BinaryHDVector {
-            dim,
-            words,
-        };
+        let mut v = BinaryHDVector { dim, words };
         v.clear_phantom_bits();
         v
     }
@@ -776,7 +803,7 @@ impl BinaryHDVector {
         }
 
         let n_words = self.words.len();
-        
+
         // Fast path for dimensions that are multiples of 64
         if self.dim.is_multiple_of(64) {
             let word_shift = bit_shift / 64;
@@ -810,17 +837,17 @@ impl BinaryHDVector {
         let mut dst = bit_shift;
         let mut dst_word_idx = dst / 64;
         let mut dst_bit_idx = dst % 64;
-        
+
         for _ in 0..self.dim {
             let src_bit = (self.words[src_word_idx] >> src_bit_idx) & 1;
             new_words[dst_word_idx] |= src_bit << dst_bit_idx;
-            
+
             src_bit_idx += 1;
             if src_bit_idx == 64 {
                 src_bit_idx = 0;
                 src_word_idx += 1;
             }
-            
+
             dst += 1;
             if dst == self.dim {
                 dst = 0;
@@ -926,22 +953,19 @@ impl Eq for BinaryHDVector {}
 /// Parallel batch convolution: convolve a single vector against multiple
 /// others using rayon.
 pub fn par_convolve_batch(a: &[f64], batch: &[&[f64]]) -> Vec<Vec<f64>> {
-    batch.par_iter()
-        .map(|b| convolve_slices(a, b))
-        .collect()
+    batch.par_iter().map(|b| convolve_slices(a, b)).collect()
 }
 
 /// Parallel batch correlation: correlate a single vector against multiple
 /// others using rayon.
 pub fn par_correlate_batch(a: &[f64], batch: &[&[f64]]) -> Vec<Vec<f64>> {
-    batch.par_iter()
-        .map(|b| correlate_slices(a, b))
-        .collect()
+    batch.par_iter().map(|b| correlate_slices(a, b)).collect()
 }
 
 /// Parallel cosine similarity: compute similarities between pairs of slices.
 pub fn par_cosine_similarity_slice(a: &[f64], batch: &[&[f64]]) -> Vec<f64> {
-    batch.par_iter()
+    batch
+        .par_iter()
         .map(|b| cosine_similarity_slice(a, b))
         .collect()
 }
@@ -954,10 +978,10 @@ mod tests {
     fn test_dot_product_slice_avx2_equivalence() {
         let a = vec![1.5, -2.0, 3.25, 4.0, -0.5, 0.25, 9.75, 11.1];
         let b = vec![0.5, 4.0, -2.0, 1.5, 8.0, -6.0, 1.25, 0.1];
-        
+
         let expected = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f64>();
         let actual = dot_product_slice(&a, &b);
-        
+
         assert!((expected - actual).abs() < 1e-10);
     }
 
@@ -968,7 +992,11 @@ mod tests {
             .map(|i| {
                 (0..n)
                     .map(|j| {
-                        let k = if correlate { (j + n - i) % n } else { (i + n - j) % n };
+                        let k = if correlate {
+                            (j + n - i) % n
+                        } else {
+                            (i + n - j) % n
+                        };
                         a[j] * b[k]
                     })
                     .sum()
@@ -986,7 +1014,10 @@ mod tests {
                 let expected = direct_circular(a.data(), b.data(), correlate);
                 let actual = fft_circular(a.data(), b.data(), correlate);
                 for (e, x) in expected.iter().zip(actual.iter()) {
-                    assert!((e - x).abs() < 1e-8, "n={n} correlate={correlate}: {e} vs {x}");
+                    assert!(
+                        (e - x).abs() < 1e-8,
+                        "n={n} correlate={correlate}: {e} vs {x}"
+                    );
                 }
             }
         }

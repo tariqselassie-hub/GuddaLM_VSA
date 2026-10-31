@@ -60,7 +60,8 @@ impl ContinuousSpaceEncoder {
 
         let mut rng = thread_rng();
         let std_dev = 1.0 / bandwidth;
-        let normal_dist = Normal::new(0.0, std_dev).expect("std_dev > 0 guaranteed by bandwidth assertion");
+        let normal_dist =
+            Normal::new(0.0, std_dev).expect("std_dev > 0 guaranteed by bandwidth assertion");
 
         let half_dims = dimensions / 2;
         let mut proj = Array2::zeros((half_dims, 2));
@@ -336,8 +337,12 @@ mod tests {
         let wide = ContinuousSpaceEncoder::new(10000, 2.0);
         let d = 0.2;
         let p = (d, d);
-        let sim_narrow = narrow.encode_coordinate(0.0, 0.0).dot(&narrow.encode_coordinate(p.0, p.1));
-        let sim_wide = wide.encode_coordinate(0.0, 0.0).dot(&wide.encode_coordinate(p.0, p.1));
+        let sim_narrow = narrow
+            .encode_coordinate(0.0, 0.0)
+            .dot(&narrow.encode_coordinate(p.0, p.1));
+        let sim_wide = wide
+            .encode_coordinate(0.0, 0.0)
+            .dot(&wide.encode_coordinate(p.0, p.1));
         // bandwidth = RBF σ; larger σ → wider kernel → slower decay → higher similarity
         assert!(
             sim_wide > sim_narrow + 0.05,

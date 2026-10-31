@@ -112,11 +112,7 @@ pub fn sdm_mem_threshold_binary(dim: usize) -> f64 {
 /// fall within the optimal SNR radius. This mirrors softmax attention by
 /// weighting values exponentially by their proximity to the query, but
 /// uses only bitwise operations and a pre-calibrated threshold.
-pub fn sdm_read_bipolar(
-    query: &HDVector,
-    keys: &[HDVector],
-    values: &[HDVector],
-) -> HDVector {
+pub fn sdm_read_bipolar(query: &HDVector, keys: &[HDVector], values: &[HDVector]) -> HDVector {
     let dim = query.dim();
     let threshold = sdm_snr_threshold_bipolar(dim);
     let mut data = vec![0.0; dim];
@@ -182,8 +178,16 @@ mod tests {
         let dim = 10000;
         let bip = sdm_snr_threshold_bipolar(dim);
         let bin = sdm_snr_threshold_binary(dim);
-        assert!(bip > -1.0 && bip < 1.0, "bipolar threshold out of range: {}", bip);
-        assert!(bin > 0.0 && bin < 1.0, "binary threshold out of range: {}", bin);
+        assert!(
+            bip > -1.0 && bip < 1.0,
+            "bipolar threshold out of range: {}",
+            bip
+        );
+        assert!(
+            bin > 0.0 && bin < 1.0,
+            "binary threshold out of range: {}",
+            bin
+        );
     }
 
     #[test]

@@ -94,7 +94,10 @@ mod tests {
         let p1 = positional_encode(&v, 1);
         let p2 = positional_encode(&v, 2);
         let sim = p1.cosine_similarity(&p2);
-        assert!(sim < 0.9, "different positions should produce different vectors (sim={sim})");
+        assert!(
+            sim < 0.9,
+            "different positions should produce different vectors (sim={sim})"
+        );
     }
 
     #[test]

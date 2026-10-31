@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::collections::VecDeque;
 use crate::hdc::vector::{BinaryHDVector, HDVector};
+use std::collections::VecDeque;
 
 // The streaming bundlers moved to `hdc::accumulator`; re-exported here so
 // existing `hdc::stream::BundleAccumulator` paths keep working.
@@ -67,7 +67,8 @@ impl RunningSimilarity {
             return 0.0;
         }
         let mean = self.mean();
-        let variance: f64 = self.window.iter().map(|&s| (s - mean).powi(2)).sum::<f64>() / (n - 1) as f64;
+        let variance: f64 =
+            self.window.iter().map(|&s| (s - mean).powi(2)).sum::<f64>() / (n - 1) as f64;
         variance.sqrt()
     }
 

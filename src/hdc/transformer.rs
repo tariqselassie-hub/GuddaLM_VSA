@@ -25,8 +25,8 @@
 //! Unlike the original `HDTransformerLayer` which binarizes and uses SDM
 //! thresholds, this layer keeps vectors continuous for differentiability.
 
-use candle_core::{Result, Tensor};
 use super::tensor::*;
+use candle_core::{Result, Tensor};
 
 /// Differentiable VSA encoder layer with multi-head attention.
 ///
@@ -93,7 +93,8 @@ impl DiffVSAEncoderLayer {
         let pos_encoded = tensor_permute(input, position)?;
 
         // 2. Multi-head attention
-        let attn_out = multihead_attention(&pos_encoded, keys, values, self.n_heads, self.threshold)?;
+        let attn_out =
+            multihead_attention(&pos_encoded, keys, values, self.n_heads, self.threshold)?;
 
         // 3. Residual bundling (element-wise addition)
         tensor_bundle(input, &attn_out)

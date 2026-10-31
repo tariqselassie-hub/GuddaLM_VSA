@@ -63,7 +63,10 @@ pub fn to_tensor_batch(vectors: &[HDVector], device: &Device) -> candle_core::Re
         return Tensor::from_slice(&[] as &[f64], (0usize, 0usize), device);
     }
     let dim = vectors[0].dim();
-    let flat: Vec<f64> = vectors.iter().flat_map(|v| v.data().iter().copied()).collect();
+    let flat: Vec<f64> = vectors
+        .iter()
+        .flat_map(|v| v.data().iter().copied())
+        .collect();
     Tensor::from_slice(&flat, (vectors.len(), dim), device)
 }
 
@@ -77,7 +80,10 @@ pub fn from_tensor_batch(t: &Tensor) -> candle_core::Result<Vec<HDVector>> {
     let shape = t.shape();
     let dims = shape.dims();
     if dims.len() != 2 {
-        candle_core::bail!("from_tensor_batch expects a 2-D tensor, got shape {:?}", dims);
+        candle_core::bail!(
+            "from_tensor_batch expects a 2-D tensor, got shape {:?}",
+            dims
+        );
     }
     let dim = dims[1];
     let data: Vec<f64> = t.flatten_all()?.to_vec1()?;
@@ -352,7 +358,8 @@ mod tests {
             let result_hd = v.permute(steps);
             assert_eq!(
                 result_tensor, result_hd,
-                "tensor_permute({}) must match HDVector::permute", steps
+                "tensor_permute({}) must match HDVector::permute",
+                steps
             );
         }
     }
@@ -382,7 +389,8 @@ mod tests {
         assert!(
             (sim_ab_val - sim_hd).abs() < 1e-12,
             "tensor cosine similarity must match HDVector (got {} vs {})",
-            sim_ab_val, sim_hd
+            sim_ab_val,
+            sim_hd
         );
     }
 
@@ -412,7 +420,8 @@ mod tests {
         assert!(
             sim_to_v1 > sim_to_v2,
             "selective bundle must favor value paired with similar key ({} vs {})",
-            sim_to_v1, sim_to_v2
+            sim_to_v1,
+            sim_to_v2
         );
     }
 
@@ -421,7 +430,9 @@ mod tests {
         let dim = 1024;
         let device = test_device();
 
-        let data: Vec<f64> = (0..dim).map(|i| if i % 2 == 0 { 1.0 } else { -1.0 }).collect();
+        let data: Vec<f64> = (0..dim)
+            .map(|i| if i % 2 == 0 { 1.0 } else { -1.0 })
+            .collect();
         let t = Tensor::from_slice(&data, dim, &device).unwrap();
 
         let result_tensor = tensor_fwht(&t).unwrap();
@@ -497,7 +508,9 @@ mod tests {
         let dim = 1024;
         let device = test_device();
 
-        let data: Vec<f64> = (0..dim).map(|i| if i % 2 == 0 { 1.0 } else { -1.0 }).collect();
+        let data: Vec<f64> = (0..dim)
+            .map(|i| if i % 2 == 0 { 1.0 } else { -1.0 })
+            .collect();
         let t = Tensor::from_slice(&data, dim, &device).unwrap();
 
         let result = tensor_fwht(&t).unwrap();

@@ -12,6 +12,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use crate::hdc::ghrr::GHRRVector;
 /// Graph Encoding with Hyperdimensional Vectors.
 ///
 /// This module provides tools for encoding graph structures (nodes and edges)
@@ -47,7 +48,6 @@
 /// - **Subgraph isomorphism**: compare graph vectors via cosine
 ///   similarity — structurally similar graphs yield higher similarity.
 use crate::hdc::vector::HDVector;
-use crate::hdc::ghrr::GHRRVector;
 /// MAP-based graph encoder for directed graphs.
 ///
 /// Each node is assigned a unique random HD vector (role). Edges are
@@ -64,19 +64,13 @@ impl GraphEncoder {
     /// Create a new graph encoder with `num_nodes` random role vectors.
     pub fn new(num_nodes: usize, dim: usize) -> Self {
         let node_roles: Vec<HDVector> = (0..num_nodes).map(|_| HDVector::random(dim)).collect();
-        GraphEncoder {
-            node_roles,
-            dim,
-        }
+        GraphEncoder { node_roles, dim }
     }
 
     /// Create a graph encoder from pre-existing role vectors.
     pub fn from_roles(node_roles: Vec<HDVector>) -> Self {
         let dim = node_roles[0].dim();
-        GraphEncoder {
-            node_roles,
-            dim,
-        }
+        GraphEncoder { node_roles, dim }
     }
 
     pub fn dim(&self) -> usize {
@@ -90,12 +84,7 @@ impl GraphEncoder {
     /// Encode a single directed edge: `source --relation--> target`.
     ///
     /// Returns `bind(role[source], bind(relation, role[target]))`.
-    pub fn encode_edge(
-        &self,
-        source: usize,
-        relation: &HDVector,
-        target: usize,
-    ) -> HDVector {
+    pub fn encode_edge(&self, source: usize, relation: &HDVector, target: usize) -> HDVector {
         let s_role = &self.node_roles[source];
         let t_role = &self.node_roles[target];
         let bound_rt = relation.bind(t_role);
@@ -108,10 +97,7 @@ impl GraphEncoder {
     /// HDVector. All edge vectors are bundled into a single graph vector.
     ///
     /// The result is binarized for noise robustness.
-    pub fn encode_graph(
-        &self,
-        edges: &[(usize, HDVector, usize)],
-    ) -> HDVector {
+    pub fn encode_graph(&self, edges: &[(usize, HDVector, usize)]) -> HDVector {
         if edges.is_empty() {
             return HDVector::zeros(self.dim);
         }
@@ -204,13 +190,12 @@ impl GraphEncoder {
 ///
 /// Position-dependent permutation breaks MAP binding's commutativity,
 /// ensuring that `0→1→2` and `0→2→1` produce distinct path vectors.
-pub fn encode_path(
-    encoder: &GraphEncoder,
-    nodes: &[usize],
-    relations: &[HDVector],
-) -> HDVector {
-    assert_eq!(nodes.len(), relations.len() + 1,
-        "path needs one more node than relations: N nodes, N-1 edges");
+pub fn encode_path(encoder: &GraphEncoder, nodes: &[usize], relations: &[HDVector]) -> HDVector {
+    assert_eq!(
+        nodes.len(),
+        relations.len() + 1,
+        "path needs one more node than relations: N nodes, N-1 edges"
+    );
 
     let mut combined = encoder.node_roles[nodes[0]].clone();
     for i in 0..relations.len() {
@@ -264,19 +249,18 @@ impl GhrrGraphEncoder {
         GhrrGraphEncoder { node_roles, dim }
     }
 
-    pub fn dim(&self) -> usize { self.dim }
-    pub fn num_nodes(&self) -> usize { self.node_roles.len() }
+    pub fn dim(&self) -> usize {
+        self.dim
+    }
+    pub fn num_nodes(&self) -> usize {
+        self.node_roles.len()
+    }
 
     /// Encode a single directed edge: `source --relation--> target`.
     ///
     /// Returns `bind(role[source], bind(relation, role[target]))`.
     /// For GHRR this equals: source ⊛ rel ⊛ target  (associative).
-    pub fn encode_edge(
-        &self,
-        source: usize,
-        relation: &GHRRVector,
-        target: usize,
-    ) -> GHRRVector {
+    pub fn encode_edge(&self, source: usize, relation: &GHRRVector, target: usize) -> GHRRVector {
         let s = &self.node_roles[source];
         let t = &self.node_roles[target];
         s.bind(&relation.bind(t))
@@ -286,10 +270,7 @@ impl GhrrGraphEncoder {
     ///
     /// All edge vectors are **bundled** (superposed), not chained.
     /// The result is projected back onto the unitary group.
-    pub fn encode_graph(
-        &self,
-        edges: &[(usize, GHRRVector, usize)],
-    ) -> GHRRVector {
+    pub fn encode_graph(&self, edges: &[(usize, GHRRVector, usize)]) -> GHRRVector {
         if edges.is_empty() {
             return GHRRVector::identity(self.dim);
         }
@@ -421,7 +402,10 @@ mod tests {
         let graph = encoder.encode_graph_unary(&adjacency, &rel);
 
         let sim = GraphEncoder::structural_similarity(&graph, &graph);
-        assert!((sim - 1.0).abs() < 0.001, "graph must be identical to itself");
+        assert!(
+            (sim - 1.0).abs() < 0.001,
+            "graph must be identical to itself"
+        );
     }
 
     #[test]

@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use ndarray::{Array1, Zip};
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::TAU;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CartesianFhrrVector {
-    pub re: Array1<f32>,  // real components
-    pub im: Array1<f32>,  // imaginary components
+    pub re: Array1<f32>, // real components
+    pub im: Array1<f32>, // imaginary components
 }
 
 impl CartesianFhrrVector {
@@ -131,7 +131,9 @@ impl PhaseFhrrVector {
     pub fn random(dim: usize, seed: u64) -> Self {
         let mut rng = StdRng::seed_from_u64(seed);
         let phases: Vec<f32> = (0..dim).map(|_| rng.gen_range(0.0..TAU)).collect();
-        Self { phases: Array1::from_vec(phases) }
+        Self {
+            phases: Array1::from_vec(phases),
+        }
     }
 
     pub fn bind(&self, other: &Self) -> Self {
@@ -183,11 +185,20 @@ impl PhaseFhrrVector {
         let mut permuted = Array1::zeros(self.phases.raw_dim());
         let shift_offset = ((shift % len as isize) + len as isize) as usize % len;
         if shift_offset == 0 {
-            return Self { phases: self.phases.clone() };
+            return Self {
+                phases: self.phases.clone(),
+            };
         }
-        let (left, right) = self.phases.view().split_at(ndarray::Axis(0), len - shift_offset);
-        permuted.slice_mut(ndarray::s![..shift_offset]).assign(&right);
-        permuted.slice_mut(ndarray::s![shift_offset..]).assign(&left);
+        let (left, right) = self
+            .phases
+            .view()
+            .split_at(ndarray::Axis(0), len - shift_offset);
+        permuted
+            .slice_mut(ndarray::s![..shift_offset])
+            .assign(&right);
+        permuted
+            .slice_mut(ndarray::s![shift_offset..])
+            .assign(&left);
         Self { phases: permuted }
     }
 }

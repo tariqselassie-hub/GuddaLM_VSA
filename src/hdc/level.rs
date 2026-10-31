@@ -5,11 +5,11 @@
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
+use crate::hdc::fhrr::FHRRVector;
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
-use crate::hdc::vector::{BinaryHDVector, HDVector};
-use crate::hdc::fhrr::FHRRVector;
 
 /// Continuous Scalar and Level Hypervector Encoder.
 ///
@@ -126,12 +126,14 @@ impl ScalarEncoder {
     /// Preserves exact continuous translational symmetry: $\theta_k = x \cdot \theta_{0, k}$.
     pub fn encode_fractional(&self, value: f64) -> FHRRVector {
         let normalized = (value - self.min_val) / (self.max_val - self.min_val);
-        let phases: Vec<f64> = self.base_phases
+        let phases: Vec<f64> = self
+            .base_phases
             .iter()
             .map(|&p0| {
                 let p = p0 * normalized * std::f64::consts::PI;
                 // Wrap into [-pi, pi]
-                (p + std::f64::consts::PI).rem_euclid(2.0 * std::f64::consts::PI) - std::f64::consts::PI
+                (p + std::f64::consts::PI).rem_euclid(2.0 * std::f64::consts::PI)
+                    - std::f64::consts::PI
             })
             .collect();
         FHRRVector::from_phases(&phases)
@@ -212,8 +214,14 @@ mod tests {
         let sim_10_30 = v10.cosine_similarity(&v30);
         let sim_10_90 = v10.cosine_similarity(&v90);
 
-        assert!(sim_10_20 > sim_10_30, "sim(10,20)={sim_10_20} must exceed sim(10,30)={sim_10_30}");
-        assert!(sim_10_30 > sim_10_90, "sim(10,30)={sim_10_30} must exceed sim(10,90)={sim_10_90}");
+        assert!(
+            sim_10_20 > sim_10_30,
+            "sim(10,20)={sim_10_20} must exceed sim(10,30)={sim_10_30}"
+        );
+        assert!(
+            sim_10_30 > sim_10_90,
+            "sim(10,30)={sim_10_30} must exceed sim(10,90)={sim_10_90}"
+        );
     }
 
     #[test]
@@ -223,7 +231,10 @@ mod tests {
         let encoded = encoder.encode(original_val);
 
         let decoded = encoder.decode_approx(&encoded);
-        assert!((decoded - original_val).abs() <= 1.0, "Decoded value {decoded} must be within 1 unit of {original_val}");
+        assert!(
+            (decoded - original_val).abs() <= 1.0,
+            "Decoded value {decoded} must be within 1 unit of {original_val}"
+        );
     }
 
     #[test]
@@ -236,6 +247,9 @@ mod tests {
         let sim_1_2 = f_1.cosine_similarity(&f_2);
         let sim_1_9 = f_1.cosine_similarity(&f_9);
 
-        assert!(sim_1_2 > sim_1_9, "fractional encoding must preserve proximity: {sim_1_2} > {sim_1_9}");
+        assert!(
+            sim_1_2 > sim_1_9,
+            "fractional encoding must preserve proximity: {sim_1_2} > {sim_1_9}"
+        );
     }
 }

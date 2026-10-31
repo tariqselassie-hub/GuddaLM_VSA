@@ -24,15 +24,15 @@
 //! The "Dynamic" component applies iterative retraining with adaptive margins
 //! to push misclassified samples away from wrong prototypes and toward correct ones.
 
+pub mod classifier;
 pub mod config;
 pub mod encoder;
 pub mod retrain;
-pub mod classifier;
 
+pub use classifier::DnvsClassifier;
 pub use config::{DnvsConfig, DnvsMode};
 pub use encoder::DnvsEncoder;
 pub use retrain::DnvsRetrainer;
-pub use classifier::DnvsClassifier;
 
 #[cfg(test)]
 mod tests {
@@ -55,13 +55,7 @@ mod tests {
 
     fn pattern_signal(dim: usize, class: usize, n_classes: usize) -> Vec<f32> {
         (0..dim)
-            .map(|i| {
-                if i % n_classes == class {
-                    0.9
-                } else {
-                    0.0
-                }
-            })
+            .map(|i| if i % n_classes == class { 0.9 } else { 0.0 })
             .collect()
     }
 
@@ -119,7 +113,10 @@ mod tests {
         let (pre_acc, _) = classifier.evaluate(&train, &labels);
         classifier.train(&train, &labels);
         let (post_acc, _) = classifier.evaluate(&train, &labels);
-        assert!(post_acc >= 1.0 - 1e-9, "toy training accuracy dropped after retrain: pre={pre_acc}, post={post_acc}");
+        assert!(
+            post_acc >= 1.0 - 1e-9,
+            "toy training accuracy dropped after retrain: pre={pre_acc}, post={post_acc}"
+        );
         assert_eq!(classifier.prototypes().len(), 3);
     }
 }

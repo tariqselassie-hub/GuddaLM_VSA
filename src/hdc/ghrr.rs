@@ -54,10 +54,22 @@ impl GHRRVector {
             let cos_t = theta.cos();
             let sin_t = theta.sin();
 
-            let u00 = Complex { re: cos_t * (psi + phi1).cos(), im: cos_t * (psi + phi1).sin() };
-            let u01 = Complex { re: sin_t * (psi + phi2).cos(), im: sin_t * (psi + phi2).sin() };
-            let u10 = Complex { re: -sin_t * (psi - phi2).cos(), im: -sin_t * (psi - phi2).sin() };
-            let u11 = Complex { re: cos_t * (psi - phi1).cos(), im: cos_t * (psi - phi1).sin() };
+            let u00 = Complex {
+                re: cos_t * (psi + phi1).cos(),
+                im: cos_t * (psi + phi1).sin(),
+            };
+            let u01 = Complex {
+                re: sin_t * (psi + phi2).cos(),
+                im: sin_t * (psi + phi2).sin(),
+            };
+            let u10 = Complex {
+                re: -sin_t * (psi - phi2).cos(),
+                im: -sin_t * (psi - phi2).sin(),
+            };
+            let u11 = Complex {
+                re: cos_t * (psi - phi1).cos(),
+                im: cos_t * (psi - phi1).sin(),
+            };
 
             data.push(u00);
             data.push(u01);
@@ -116,7 +128,10 @@ impl GHRRVector {
 
             data.extend_from_slice(&[c00, c01, c10, c11]);
         }
-        GHRRVector { dim: self.dim, data }
+        GHRRVector {
+            dim: self.dim,
+            data,
+        }
     }
 
     /// Inverse: block-wise conjugate transpose.
@@ -136,7 +151,10 @@ impl GHRRVector {
                 a_chunk[3].conj(),
             ]);
         }
-        GHRRVector { dim: self.dim, data }
+        GHRRVector {
+            dim: self.dim,
+            data,
+        }
     }
 
     /// Cosine similarity: normalized real trace of matrix product.
@@ -183,7 +201,10 @@ impl GHRRVector {
             let dst_off = j * 4;
             data[dst_off..dst_off + 4].copy_from_slice(&self.data[src_off..src_off + 4]);
         }
-        GHRRVector { dim: self.dim, data }
+        GHRRVector {
+            dim: self.dim,
+            data,
+        }
     }
 
     /// Neutral element for binding (identity blocks).
@@ -194,11 +215,27 @@ impl GHRRVector {
     /// Gram-Schmidt orthonormalization for a 2x2 matrix block
     fn orthonormalize_block(block: &[Complex]) -> [Complex; 4] {
         // Row 1: v1 = [block[0], block[1]]
-        let n1_sq = block[0].re * block[0].re + block[0].im * block[0].im
-                  + block[1].re * block[1].re + block[1].im * block[1].im;
+        let n1_sq = block[0].re * block[0].re
+            + block[0].im * block[0].im
+            + block[1].re * block[1].re
+            + block[1].im * block[1].im;
         let n1 = n1_sq.sqrt();
-        let u00 = if n1 > 1e-9 { Complex { re: block[0].re / n1, im: block[0].im / n1 } } else { Complex { re: 1.0, im: 0.0 } };
-        let u01 = if n1 > 1e-9 { Complex { re: block[1].re / n1, im: block[1].im / n1 } } else { Complex { re: 0.0, im: 0.0 } };
+        let u00 = if n1 > 1e-9 {
+            Complex {
+                re: block[0].re / n1,
+                im: block[0].im / n1,
+            }
+        } else {
+            Complex { re: 1.0, im: 0.0 }
+        };
+        let u01 = if n1 > 1e-9 {
+            Complex {
+                re: block[1].re / n1,
+                im: block[1].im / n1,
+            }
+        } else {
+            Complex { re: 0.0, im: 0.0 }
+        };
 
         // Row 2: v2 = [block[2], block[3]]
         // Project v2 onto u1: dot = v2 . u1*
@@ -209,11 +246,30 @@ impl GHRRVector {
         let v2_1 = block[3].sub(dot.mul(u01));
 
         // Normalize v2_orth
-        let n2_sq = v2_0.re * v2_0.re + v2_0.im * v2_0.im
-                  + v2_1.re * v2_1.re + v2_1.im * v2_1.im;
+        let n2_sq = v2_0.re * v2_0.re + v2_0.im * v2_0.im + v2_1.re * v2_1.re + v2_1.im * v2_1.im;
         let n2 = n2_sq.sqrt();
-        let u10 = if n2 > 1e-9 { Complex { re: v2_0.re / n2, im: v2_0.im / n2 } } else { Complex { re: -u01.re, im: u01.im } };
-        let u11 = if n2 > 1e-9 { Complex { re: v2_1.re / n2, im: v2_1.im / n2 } } else { Complex { re: u00.re, im: -u00.im } };
+        let u10 = if n2 > 1e-9 {
+            Complex {
+                re: v2_0.re / n2,
+                im: v2_0.im / n2,
+            }
+        } else {
+            Complex {
+                re: -u01.re,
+                im: u01.im,
+            }
+        };
+        let u11 = if n2 > 1e-9 {
+            Complex {
+                re: v2_1.re / n2,
+                im: v2_1.im / n2,
+            }
+        } else {
+            Complex {
+                re: u00.re,
+                im: -u00.im,
+            }
+        };
 
         [u00, u01, u10, u11]
     }
@@ -225,7 +281,10 @@ impl GHRRVector {
             let orth = Self::orthonormalize_block(chunk);
             data.extend_from_slice(&orth);
         }
-        GHRRVector { dim: self.dim, data }
+        GHRRVector {
+            dim: self.dim,
+            data,
+        }
     }
 
     /// Bundle two GHRR vectors: block-wise matrix addition followed by unitary projection.
@@ -243,7 +302,10 @@ impl GHRRVector {
             let orth = Self::orthonormalize_block(&raw_block);
             data.extend_from_slice(&orth);
         }
-        GHRRVector { dim: self.dim, data }
+        GHRRVector {
+            dim: self.dim,
+            data,
+        }
     }
 
     /// Weighted bundling of multiple GHRR vectors.
@@ -287,7 +349,10 @@ impl GHRRVector {
         for &p in phases {
             let cos_p = p.cos();
             let sin_p = p.sin();
-            let val = Complex { re: cos_p, im: sin_p };
+            let val = Complex {
+                re: cos_p,
+                im: sin_p,
+            };
             let val_conj = val.conj();
 
             data.push(val);
@@ -321,7 +386,10 @@ mod tests {
         let bound = a.bind(&b);
         let recovered = bound.unbind(&b);
         let sim = a.cosine_similarity(&recovered);
-        assert!(sim > 0.85, "GHRR unbind should recover bind partner (sim={sim})");
+        assert!(
+            sim > 0.85,
+            "GHRR unbind should recover bind partner (sim={sim})"
+        );
     }
 
     #[test]
@@ -332,7 +400,10 @@ mod tests {
         let ab = a.bind(&b);
         let ba = b.bind(&a);
         let sim = ab.cosine_similarity(&ba);
-        assert!(sim.abs() < 0.5, "GHRR bind should break commutativity (sim={sim})");
+        assert!(
+            sim.abs() < 0.5,
+            "GHRR bind should break commutativity (sim={sim})"
+        );
     }
 
     #[test]
@@ -352,7 +423,10 @@ mod tests {
         let v = GHRRVector::random(dim);
         let bound = id.bind(&v);
         let sim = bound.cosine_similarity(&v);
-        assert!(sim > 0.99, "identity bind should preserve vector (sim={sim})");
+        assert!(
+            sim > 0.99,
+            "identity bind should preserve vector (sim={sim})"
+        );
     }
 
     #[test]
@@ -373,4 +447,3 @@ mod tests {
         assert_eq!(bin.dim(), 128);
     }
 }
-

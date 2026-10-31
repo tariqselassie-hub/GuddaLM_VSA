@@ -98,13 +98,12 @@ impl MultiHeadAttention {
     ///
     /// ## Returns
     /// A single HDVector representing the multi-head attention output.
-    pub fn forward(
-        &self,
-        query: &HDVector,
-        keys: &[HDVector],
-        values: &[HDVector],
-    ) -> HDVector {
-        assert_eq!(keys.len(), values.len(), "keys and values must have same length");
+    pub fn forward(&self, query: &HDVector, keys: &[HDVector], values: &[HDVector]) -> HDVector {
+        assert_eq!(
+            keys.len(),
+            values.len(),
+            "keys and values must have same length"
+        );
         let mut output = HDVector::zeros(self.dim);
 
         for head in 0..self.num_heads {
@@ -115,10 +114,7 @@ impl MultiHeadAttention {
             let q_proj = self.engine.permute(query, step);
 
             // Project keys and values (in bulk)
-            let k_proj: Vec<HDVector> = keys
-                .iter()
-                .map(|k| self.engine.permute(k, step))
-                .collect();
+            let k_proj: Vec<HDVector> = keys.iter().map(|k| self.engine.permute(k, step)).collect();
             let v_proj: Vec<HDVector> = values
                 .iter()
                 .map(|v| self.engine.permute(v, step))
@@ -149,9 +145,7 @@ impl MultiHeadAttention {
         let k_proj_per_head: Vec<Vec<HDVector>> = (0..self.num_heads)
             .map(|head| {
                 let step = head + 1;
-                keys.iter()
-                    .map(|k| self.engine.permute(k, step))
-                    .collect()
+                keys.iter().map(|k| self.engine.permute(k, step)).collect()
             })
             .collect();
 
@@ -172,8 +166,12 @@ impl MultiHeadAttention {
                 for head in 0..self.num_heads {
                     let step = head + 1;
                     let q_proj = self.engine.permute(query, step);
-                    let head_out_proj =
-                        selective_bundle(&q_proj, &k_proj_per_head[head], &v_proj_per_head[head], self.thresholds[head]);
+                    let head_out_proj = selective_bundle(
+                        &q_proj,
+                        &k_proj_per_head[head],
+                        &v_proj_per_head[head],
+                        self.thresholds[head],
+                    );
                     let head_out = self.engine.unpermute(&head_out_proj, step);
                     output = output.bundle(&head_out);
                 }
@@ -188,11 +186,7 @@ impl MultiHeadAttention {
 /// Equivalent to `selective_bundle` with the SDM-optimal SNR threshold
 /// for the given dimension. This is the VSA analog of single-head
 /// dot-product attention.
-pub fn attention(
-    query: &HDVector,
-    keys: &[HDVector],
-    values: &[HDVector],
-) -> HDVector {
+pub fn attention(query: &HDVector, keys: &[HDVector], values: &[HDVector]) -> HDVector {
     let threshold = sdm_snr_threshold_bipolar(query.dim());
     selective_bundle(query, keys, values, threshold)
 }

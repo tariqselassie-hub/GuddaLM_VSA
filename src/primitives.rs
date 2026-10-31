@@ -84,14 +84,14 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
         // Fallback to binding whatever we have
         return bind_sequence(vectors);
     }
-    
+
     // First window
     let mut first_window = vectors[0].clone();
     for (j, v) in vectors.iter().enumerate().take(n).skip(1) {
         let permuted = v.permute(j);
         first_window = first_window.bind(&permuted);
     }
-    
+
     let mut result = first_window;
     for i in 1..=(vectors.len() - n) {
         let mut window_bound = vectors[i].clone();
@@ -106,15 +106,14 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
 
 /// Encode a set of directed graph edges using role-filler binding: ⊕_(u, v) ( source_marker ⊗ u ⊕ sink_marker ⊗ v )
 /// This is the classic commutative VSA representation for graphs.
-pub fn encode_graph_edges<V: VsaVector>(
-    edges: &[(V, V)],
-    source_marker: &V,
-    sink_marker: &V,
-) -> V {
+pub fn encode_graph_edges<V: VsaVector>(edges: &[(V, V)], source_marker: &V, sink_marker: &V) -> V {
     if edges.is_empty() {
         return V::zero(0);
     }
-    let mut result = edges[0].0.bind(source_marker).bundle(&edges[0].1.bind(sink_marker));
+    let mut result = edges[0]
+        .0
+        .bind(source_marker)
+        .bundle(&edges[0].1.bind(sink_marker));
     for (u, v) in &edges[1..] {
         let edge = u.bind(source_marker).bundle(&v.bind(sink_marker));
         result = result.bundle(&edge);
@@ -155,7 +154,10 @@ mod tests {
     #[test]
     fn bundle_sequence_bsc_is_exact_majority() {
         let vs: Vec<BinaryHDVector> = (0..7).map(|_| BinaryHDVector::random(1000)).collect();
-        assert_eq!(bundle_sequence(&vs), BinaryHDVector::majority_bundle_all(&vs));
+        assert_eq!(
+            bundle_sequence(&vs),
+            BinaryHDVector::majority_bundle_all(&vs)
+        );
     }
 
     #[test]
@@ -171,7 +173,10 @@ mod tests {
     fn bundle_sequence_index_vector_matches_bsc() {
         let raw: Vec<BinaryHDVector> = (0..5).map(|_| BinaryHDVector::random(512)).collect();
         let wrapped: Vec<IndexVector> = raw.iter().cloned().map(IndexVector::new).collect();
-        assert_eq!(bundle_sequence(&wrapped).into_inner(), bundle_sequence(&raw));
+        assert_eq!(
+            bundle_sequence(&wrapped).into_inner(),
+            bundle_sequence(&raw)
+        );
     }
 
     #[test]
