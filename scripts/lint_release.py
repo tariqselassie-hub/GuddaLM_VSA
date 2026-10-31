@@ -66,6 +66,11 @@ if sha.exists():
         if target.exists():
             actual = hashlib.sha256(target.read_bytes()).hexdigest()
             check(f"sha256 matches: {rel}", actual == expected, f"expected={expected} actual={actual}")
+    # Every Rust source/test file must be listed, so a new file can't slip
+    # in unchecksummed. Listed paths use POSIX separators.
+    for path in sorted((ROOT / "src").rglob("*.rs")) + sorted((ROOT / "tests").rglob("*.rs")):
+        rel = path.relative_to(ROOT).as_posix()
+        check(f"listed in RELEASES.sha256: {rel}", rel in lookup, "run scripts/generate_compliance.py")
 
 if errors:
     print("release lint FAILED")

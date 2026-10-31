@@ -130,7 +130,8 @@ files.extend(sorted((root / "tests").rglob("*.rs")))
 
 lines = ["# Release checksums", ""]
 for path in files:
-    rel = path.relative_to(root)
+    # POSIX separators so the file is identical whichever OS generates it.
+    rel = path.relative_to(root).as_posix()
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     lines.append(f"{digest} *{rel}")
 (root / "RELEASES.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")

@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Differentiable VSA Transformer Layer
 //!
-//! Provides a differentiable analogue of [`HDTransformerLayer`] using the
+//! Provides a differentiable analogue of the original `HDTransformerLayer` using the
 //! candle tensor bridge.  All operations run on GPU via candle's autograd
 //! graph, enabling end-to-end training.
 //!

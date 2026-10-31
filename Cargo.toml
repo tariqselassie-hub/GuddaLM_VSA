@@ -2,6 +2,7 @@
 name = "guddalm_vsa"
 version = "0.1.1"
 edition = "2021"
+rust-version = "1.87"
 description = "Core VSA/HDC engine and algebraic primitives"
 license = "AGPL-3.0-only"
 documentation = "https://docs.rs/guddalm_vsa"
