@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod vector;
+pub mod accumulator;
 pub mod experimentation;
 pub mod rff;
 pub mod bundle;

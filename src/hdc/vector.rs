@@ -45,11 +45,6 @@ pub struct Complex {
 
 impl Complex {
     #[inline(always)]
-    pub(crate) fn zero() -> Self {
-        Complex { re: 0.0, im: 0.0 }
-    }
-    
-    #[inline(always)]
     pub(crate) fn add(self, other: Self) -> Self {
         Complex {
             re: self.re + other.re,
@@ -237,6 +232,15 @@ impl HDVector {
             dim: slice.len(),
             data: Arc::new(slice.to_vec()),
             is_binary,
+        }
+    }
+
+    /// Take ownership of `data` without copying it.
+    pub fn from_vec(data: Vec<f64>) -> Self {
+        HDVector {
+            dim: data.len(),
+            data: Arc::new(data),
+            is_binary: false,
         }
     }
 

@@ -38,6 +38,9 @@ pub use crate::hdc::item_memory::{DeterministicSymbol, ItemMemory};
 pub use crate::vsa::{Codebook, VsaEngine};
 pub use crate::hdc::cleanup::{BinaryCleanupMemory, CleanupMemory, CleanupResult, FhrrCleanupMemory};
 
+// Streaming bundlers
+pub use crate::hdc::accumulator::{BinaryBundleAccumulator, BundleAccumulator};
+
 // Resonator factorization
 pub use crate::hdc::resonator::{
     generate_rc_codebook, resonator_search, resonator_search_auto,

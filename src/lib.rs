@@ -44,6 +44,7 @@ pub use hdc::vector::{
 };
 pub use vsa::{Codebook, VsaEngine};
 pub use hdc::bundle::{weighted_bundle, selective_bundle};
+pub use hdc::accumulator::{BundleAccumulator, BinaryBundleAccumulator};
 pub use hdc::sdm::{sdm_snr_threshold_bipolar, optimal_snr_hamming_radius, sdm_read_bipolar};
 pub use hdc::quantize::{pack_bits, pack_bits_array64, PackedArray64};
 pub use hdc::rff::ContinuousSpaceEncoder;

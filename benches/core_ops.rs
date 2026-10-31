@@ -85,5 +85,29 @@ fn bench_item_memory(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_bind, bench_similarity, bench_binary, bench_search, bench_item_memory);
+fn bench_bundle_100(c: &mut Criterion) {
+    let mut group = c.benchmark_group("bundle_100");
+    let dim = 4096;
+    let map: Vec<HDVector> = (0..100).map(|_| HDVector::random(dim)).collect();
+    let bsc: Vec<BinaryHDVector> = (0..100).map(|_| BinaryHDVector::random(dim)).collect();
+    group.bench_function("map_pairwise", |b| b.iter(|| black_box(bundle_sequence(&map))));
+    group.bench_function("map_accumulator", |b| {
+        b.iter(|| {
+            let mut acc = BundleAccumulator::new(dim);
+            acc.extend(&map);
+            black_box(acc.into_vector())
+        })
+    });
+    group.bench_function("bsc_pairwise", |b| b.iter(|| black_box(bundle_sequence(&bsc))));
+    group.bench_function("bsc_accumulator", |b| {
+        b.iter(|| {
+            let mut acc = BinaryBundleAccumulator::new(dim);
+            acc.extend(&bsc);
+            black_box(acc.binarize())
+        })
+    });
+    group.finish();
+}
+
+criterion_group!(benches, bench_bundle_100, bench_bind, bench_similarity, bench_binary, bench_search, bench_item_memory);
 criterion_main!(benches);
