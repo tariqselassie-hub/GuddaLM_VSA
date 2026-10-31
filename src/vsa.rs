@@ -153,10 +153,7 @@ mod tests {
     #[test]
     fn test_vsa_engine_permute_data_in_place() {
         let engine = VsaEngine::new(128);
-        let mut data = vec![0.0; 128];
-        for i in 0..128 {
-            data[i] = i as f64;
-        }
+        let mut data: Vec<f64> = (0..128).map(|i| i as f64).collect();
         let original_data = data.clone();
         
         engine.permute_data(&mut data, 2);
@@ -167,8 +164,8 @@ mod tests {
         let recovered_vec = engine.unpermute(&vec_version, 2);
         let recovered_data = recovered_vec.data();
         
-        for i in 0..128 {
-            assert!((recovered_data[i] - i as f64).abs() < 1e-9);
+        for (i, &x) in recovered_data.iter().enumerate() {
+            assert!((x - i as f64).abs() < 1e-9);
         }
     }
 
@@ -179,7 +176,7 @@ mod tests {
         assert_eq!(codebook.dim, 512);
         assert_eq!(codebook.weights.len(), 50);
         assert_eq!(codebook.packed.len(), 50);
-        assert_eq!(codebook.packed[0].len(), (512 + 63) / 64);
+        assert_eq!(codebook.packed[0].len(), 512_usize.div_ceil(64));
     }
 }
 

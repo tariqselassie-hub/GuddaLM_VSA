@@ -169,16 +169,9 @@ impl BinaryCleanupMemory {
 
     /// Find the closest binary prototype to `query`.
     pub fn cleanup(&self, query: &BinaryHDVector) -> (usize, f64, BinaryHDVector) {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
-
-        for (i, p) in self.prototypes.iter().enumerate() {
-            let sim = query.hamming_similarity(p);
-            if sim > best_sim {
-                best_sim = sim;
-                best_idx = i;
-            }
-        }
+        let (best_idx, best_sim) =
+            crate::search::best_by(self.prototypes.len(), |i| query.hamming_similarity(&self.prototypes[i]))
+                .unwrap_or((0, f64::NEG_INFINITY));
 
         (
             best_idx,
@@ -212,16 +205,9 @@ impl FhrrCleanupMemory {
 
     /// Find the closest phase prototype to `query`.
     pub fn cleanup(&self, query: &FHRRVector) -> (usize, f64, FHRRVector) {
-        let mut best_idx = 0;
-        let mut best_sim = f64::NEG_INFINITY;
-
-        for (i, p) in self.prototypes.iter().enumerate() {
-            let sim = FHRRVector::cosine_similarity(query, p);
-            if sim > best_sim {
-                best_sim = sim;
-                best_idx = i;
-            }
-        }
+        let (best_idx, best_sim) =
+            crate::search::best_by(self.prototypes.len(), |i| FHRRVector::cosine_similarity(query, &self.prototypes[i]))
+                .unwrap_or((0, f64::NEG_INFINITY));
 
         (
             best_idx,
@@ -301,8 +287,8 @@ mod tests {
         let prototypes: Vec<BinaryHDVector> = (0..n).map(|_| BinaryHDVector::random(dim)).collect();
         let memory = BinaryCleanupMemory::new(prototypes.clone());
 
-        for i in 0..n {
-            let (idx, sim, _) = memory.cleanup(&prototypes[i]);
+        for (i, p) in prototypes.iter().enumerate().take(n) {
+            let (idx, sim, _) = memory.cleanup(p);
             assert_eq!(idx, i);
             assert!((sim - 1.0).abs() < 0.001);
         }

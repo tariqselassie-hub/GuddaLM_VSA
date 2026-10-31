@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn test_ngram_encode_single() {
         let v = HDVector::random(256);
-        let result = ngram_encode(&[v.clone()]);
+        let result = ngram_encode(std::slice::from_ref(&v));
         assert_eq!(result, v, "single token -> equals itself");
     }
 

@@ -337,7 +337,7 @@ mod tests {
     #[test]
     fn test_fhrr_bundle_all_single() {
         let v = FHRRVector::random(64);
-        let result = FHRRVector::bundle_all(&[v.clone()]);
+        let result = FHRRVector::bundle_all(std::slice::from_ref(&v));
         let sim = result.cosine_similarity(&v);
         assert!(sim > 0.99, "bundle of one should approx equal itself (sim={sim})");
     }

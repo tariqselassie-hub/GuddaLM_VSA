@@ -276,10 +276,7 @@ use crate::hdc::vector::HDVector;
     #[test]
     fn test_fwht_inverse() {
         let dim = 1024;
-        let mut original = vec![0.0; dim];
-        for i in 0..dim {
-            original[i] = if i % 2 == 0 { 1.0 } else { -1.0 };
-        }
+        let original: Vec<f64> = (0..dim).map(|i| if i % 2 == 0 { 1.0 } else { -1.0 }).collect();
         let mut data = original.clone();
         fwht(&mut data);
         ifwht(&mut data);

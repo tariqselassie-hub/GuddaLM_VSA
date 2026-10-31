@@ -12,14 +12,14 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-/// Pushing the VSA crate to its limits — 3 experiments
-///
-/// Run with:
-///   cargo test --package guddalm_vsa --test experiments -- --nocapture
-///
-/// These experiments test capabilities NOT covered by the existing
-/// stress_tests: FHRR capacity at scale, GHRR non-commutative graph
-/// encoding, and autograd throughput/fidelity.
+//! Pushing the VSA crate to its limits — 3 experiments
+//!
+//! Run with:
+//!   cargo test --package guddalm_vsa --test experiments -- --nocapture
+//!
+//! These experiments test capabilities NOT covered by the existing
+//! stress_tests: FHRR capacity at scale, GHRR non-commutative graph
+//! encoding, and autograd throughput/fidelity.
 
 use std::time::Instant;
 use rand::Rng;

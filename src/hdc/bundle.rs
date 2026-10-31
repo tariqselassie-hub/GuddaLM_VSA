@@ -156,6 +156,49 @@ pub fn par_weighted_bundle(vectors: &[(HDVector, f64)]) -> HDVector {
     HDVector::from_slice(&data).binarize()
 }
 
+/// Parallel selective bundle using rayon.
+///
+/// Similarity computation and weighted accumulation for each key-value
+/// pair runs in parallel.
+pub fn par_selective_bundle(
+    query: &HDVector,
+    keys: &[HDVector],
+    values: &[HDVector],
+    threshold: f64,
+) -> HDVector {
+    assert_eq!(keys.len(), values.len());
+    let dim = query.dim();
+
+    let partials: Vec<Vec<f64>> = keys.par_iter()
+        .zip(values.par_iter())
+        .filter_map(|(k, v)| {
+            let sim = query.cosine_similarity(k);
+            if sim > threshold {
+                let mut local = vec![0.0; dim];
+                for (d, val) in local.iter_mut().zip(v.data().iter()) {
+                    *d += sim * val;
+                }
+                Some(local)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if partials.is_empty() {
+        return HDVector::zeros(dim);
+    }
+
+    let data = partials.into_iter().reduce(|mut a, b| {
+        for (d, val) in a.iter_mut().zip(b.iter()) {
+            *d += val;
+        }
+        a
+    }).expect("partials cannot be empty since empty case is handled above");
+
+    HDVector::from_slice(&data).binarize()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,7 +213,7 @@ mod tests {
     #[test]
     fn test_bundle_vectors_single() {
         let v = HDVector::random(256);
-        let result = bundle_vectors(&[v.clone()]);
+        let result = bundle_vectors(std::slice::from_ref(&v));
         assert_eq!(result.dim(), 256);
     }
 
@@ -206,7 +249,7 @@ mod tests {
     #[test]
     fn test_bsc_bundle_single() {
         let v = BinaryHDVector::random(256);
-        let result = bsc_bundle(&[v.clone()]);
+        let result = bsc_bundle(std::slice::from_ref(&v));
         assert_eq!(result, v);
     }
 
@@ -256,47 +299,4 @@ mod tests {
         let result = fhrr_weighted_bundle(&[]);
         assert_eq!(result.dim(), 0);
     }
-}
-
-/// Parallel selective bundle using rayon.
-///
-/// Similarity computation and weighted accumulation for each key-value
-/// pair runs in parallel.
-pub fn par_selective_bundle(
-    query: &HDVector,
-    keys: &[HDVector],
-    values: &[HDVector],
-    threshold: f64,
-) -> HDVector {
-    assert_eq!(keys.len(), values.len());
-    let dim = query.dim();
-
-    let partials: Vec<Vec<f64>> = keys.par_iter()
-        .zip(values.par_iter())
-        .filter_map(|(k, v)| {
-            let sim = query.cosine_similarity(k);
-            if sim > threshold {
-                let mut local = vec![0.0; dim];
-                for (d, val) in local.iter_mut().zip(v.data().iter()) {
-                    *d += sim * val;
-                }
-                Some(local)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if partials.is_empty() {
-        return HDVector::zeros(dim);
-    }
-
-    let data = partials.into_iter().reduce(|mut a, b| {
-        for (d, val) in a.iter_mut().zip(b.iter()) {
-            *d += val;
-        }
-        a
-    }).expect("partials cannot be empty since empty case is handled above");
-
-    HDVector::from_slice(&data).binarize()
 }

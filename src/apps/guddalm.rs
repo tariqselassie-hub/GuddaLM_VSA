@@ -266,6 +266,6 @@ mod tests {
     let adapter = QuditVsaAdapter::fhrr();
     let vec = adapter.encode(&view);
     let back = HeptalFhrrMapper.phase_to_stratum(*vec.phases().first().unwrap_or(&0.0));
-    assert!(back <= 3 && back >= -3, "phase decoded to {}", back);
+    assert!((-3..=3).contains(&back), "phase decoded to {}", back);
   }
 }

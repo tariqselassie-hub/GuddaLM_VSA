@@ -203,7 +203,8 @@ fn test_baseline_loss_window() -> Result<(), String> {
     let v = HDVector::random(256);
     let loss = 1.0 - v.cosine_similarity(&v);
     let ppl = loss.exp();
-    if !((ppl - 1.0).abs() < 1e-9) {
+    // Written to fail on NaN as well as on a real deviation.
+    if ppl.is_nan() || (ppl - 1.0).abs() >= 1e-9 {
         return Err(format!("perplexity baseline violated: ppl={}", ppl));
     }
     Ok(())

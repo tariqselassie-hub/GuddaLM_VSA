@@ -365,6 +365,6 @@ mod tests {
 
         assert_eq!(buf.len(), 3);
         // Oldest should no longer be in buffer
-        assert!(buf.get(0).map_or(true, |v| v != &oldest));
+        assert!(buf.get(0).is_none_or(|v| v != &oldest));
     }
 }
