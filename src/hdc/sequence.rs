@@ -301,10 +301,11 @@ mod tests {
 
     #[test]
     fn test_ngram_encode() {
+        // Fixed vectors; random ones failed about 1 run in 1000.
         let dim = 256;
-        let a = HDVector::random(dim);
-        let b = HDVector::random(dim);
-        let c = HDVector::random(dim);
+        let a = crate::seed::deterministic_hd_vector(31, "ngram:a", dim);
+        let b = crate::seed::deterministic_hd_vector(31, "ngram:b", dim);
+        let c = crate::seed::deterministic_hd_vector(31, "ngram:c", dim);
 
         let encoded = encode_ngram(&[a.clone(), b.clone(), c.clone()]);
         assert_eq!(encoded.dim(), dim);

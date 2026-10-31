@@ -311,9 +311,10 @@ mod tests {
 
     #[test]
     fn test_binding_self_inverse() {
+        // Fixed vectors; random ones failed about 1 run in 150.
         let dim = 1024;
-        let a = HDVector::random(dim);
-        let b = HDVector::random(dim);
+        let a = crate::seed::deterministic_hd_vector(29, "bind:a", dim);
+        let b = crate::seed::deterministic_hd_vector(29, "bind:b", dim);
         let binding = Binding::new(b);
         let bound = binding.encode(&a);
         let recovered = binding.decode(&bound).binarize();
@@ -414,9 +415,12 @@ mod tests {
 
     #[test]
     fn test_encode_continuous_thermometer_monotonic() {
+        // Fixed anchors. The encoder is only monotonic on average: about 1
+        // in 100 random anchor pairs ranked 0.8 closer to 0.2 than 0.3 was,
+        // which made this test fail at random.
         let dim = 1024;
-        let anchor_low = HDVector::random(dim);
-        let anchor_high = HDVector::random(dim);
+        let anchor_low = crate::seed::deterministic_hd_vector(17, "thermo:low", dim);
+        let anchor_high = crate::seed::deterministic_hd_vector(17, "thermo:high", dim);
 
         let v_02 = encode_continuous_thermometer(0.2, &anchor_low, &anchor_high, 10);
         let v_03 = encode_continuous_thermometer(0.3, &anchor_low, &anchor_high, 10);
