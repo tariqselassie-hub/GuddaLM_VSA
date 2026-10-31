@@ -27,11 +27,11 @@ Run VSA hyperdimensional operations on 7-strata qudit registers.
    - Capacity: number of superpositioned pairs before cleanup fails
 6. **Validation gate**
    - `cargo run -p guddalm_vsa --example guddalm_vsa_demo` exits 0
-   - Benchmarks saved to `guddalm_research_divizion/GuddaLM_VSA/bench_results/guddalm_qudit_report.json`
+   - Benchmarks saved to `research_divizion/GuddaLM_VSA/bench_results/guddalm_qudit_report.json`
 
 ## Repo paths
-- Plan copy 1: `guddalm_research_divizion/guddalm_research_workspace/plans/PHASE1_VSA_HEPTAL_BRIDGE.md`
-- Plan copy 2: `guddalm_research_divizion/GuddaLM_VSA/plans/PHASE1_VSA_HEPTAL_BRIDGE.md`
+- Plan copy 1: `research_divizion/research_workspace/plans/PHASE1_VSA_HEPTAL_BRIDGE.md`
+- Plan copy 2: `research_divizion/GuddaLM_VSA/plans/PHASE1_VSA_HEPTAL_BRIDGE.md`
 
 ## Status
 Draft only. No edits made yet.
