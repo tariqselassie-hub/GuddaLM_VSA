@@ -26,6 +26,7 @@ Format based on Keep a Changelog.
 - **Renamed (breaking):** the qudit adapter module is now `guddalm_vsa::guddalm` (`apps::guddalm`), and its old path was removed. The benchmark binaries are now `guddalm_bench` and `guddalm_qudit_bench`, the demo example is `guddalm_vsa_demo`, and the bench report files are renamed to match.
 - Library code is free of clippy warnings: index loops became iterators, orphaned doc blocks became module docs, and `SearchResult`'s `PartialOrd` is now canonical.
 - `bsc_selective_bundle` and `sdm_read_binary` use `BinaryBundleAccumulator`, with identical output.
+- `SuperSearch::query_weighted` is now documented as weighted score fusion: each set is a view of the same items, and item `i` scores `Σ weight × similarity`. Results are unchanged. It now panics if the views have different lengths (it used to sum whichever views were long enough), scores in parallel with top-k selection, and requires `V: Sync` like `SuperSearch::query`.
 - `BinaryCleanupMemory::cleanup` and `FhrrCleanupMemory::cleanup` score in parallel through the shared `best_by` helper, with identical results.
 - Zero clippy warnings across all targets, including tests and the `guddalm_bench` binary.
 - `guddalm_bench` is reproducible: the MAP, FHRR and relational suites ignored the recorded seed and drew from an unseeded RNG. All suites now derive their inputs from `SEED`, so two runs give identical values (only `*_ms` timings vary). It also builds each cleanup memory once per `n` instead of once per item. The full run went from ~151 s to ~43 s.
