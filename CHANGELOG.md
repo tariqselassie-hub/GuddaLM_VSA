@@ -29,6 +29,11 @@ Format based on Keep a Changelog.
 - Zero clippy warnings across all targets, including tests and the `guddalm_bench` binary.
 - `guddalm_bench` is reproducible: the MAP, FHRR and relational suites ignored the recorded seed and drew from an unseeded RNG. All suites now derive their inputs from `SEED`, so two runs give identical values (only `*_ms` timings vary). It also builds each cleanup memory once per `n` instead of once per item. The full run went from ~151 s to ~43 s.
 
+### Fixed
+- The crate failed to compile on non-x86 targets, including Apple Silicon and ARM Linux. `SenojianCross::bind` guarded its AVX2 path with `cfg!()`, which still compiles both branches. It now uses a compile-time `#[cfg]` with a scalar fallback.
+- The same AVX2 path read past the end of the buffer when `dim` was not a multiple of 4. The partial last group now uses scalar code.
+- The AVX2 helpers in `vector` and `quantize` were enabled on 32-bit x86, where `std::arch::x86_64` does not exist; they are now gated on `x86_64` only.
+
 ### Removed
 - `bench_results/last_run.txt` (a captured compiler log).
 

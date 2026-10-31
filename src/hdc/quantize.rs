@@ -210,7 +210,7 @@ pub fn packed_similarity_array64(vector: &HDVector, packed: &PackedArray64) -> f
     (DIM_F - 2.0 * diff_bits as f64) / DIM_F
 }
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
 unsafe fn wordwise_xnor_similarity_avx2(a_words: &[u64], b_words: &[u64], dim: usize) -> f64 {
     use std::arch::x86_64::*;
@@ -259,7 +259,7 @@ unsafe fn wordwise_xnor_similarity_avx2(a_words: &[u64], b_words: &[u64], dim: u
     (dim as f64 - 2.0 * diff_bits as f64) / dim as f64
 }
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
 unsafe fn wordwise_xnor_similarity_array64_avx2(a: &PackedArray64, b: &PackedArray64) -> f64 {
     use std::arch::x86_64::*;
@@ -308,7 +308,7 @@ unsafe fn wordwise_xnor_similarity_array64_avx2(a: &PackedArray64, b: &PackedArr
 /// inference engines and benefits from SIMD auto-vectorization.
 #[inline(always)]
 pub fn wordwise_xnor_similarity(a_words: &[u64], b_words: &[u64], dim: usize) -> f64 {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(target_arch = "x86_64")]
     {
         if is_x86_feature_detected!("avx2") {
             return unsafe { wordwise_xnor_similarity_avx2(a_words, b_words, dim) };
@@ -330,7 +330,7 @@ pub fn wordwise_xnor_similarity(a_words: &[u64], b_words: &[u64], dim: usize) ->
 /// Typical speedup over the slice version: ~4.5×.
 #[inline(always)]
 pub fn wordwise_xnor_similarity_array64(a: &PackedArray64, b: &PackedArray64) -> f64 {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(target_arch = "x86_64")]
     {
         if is_x86_feature_detected!("avx2") {
             return unsafe { wordwise_xnor_similarity_array64_avx2(a, b) };

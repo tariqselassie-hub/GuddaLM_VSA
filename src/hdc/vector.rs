@@ -440,7 +440,7 @@ impl PartialEq for HDVector {
 
 impl Eq for HDVector {}
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2", enable = "fma")]
 unsafe fn dot_product_slice_avx2(a: &[f64], b: &[f64]) -> f64 {
     use std::arch::x86_64::*;
@@ -470,7 +470,7 @@ unsafe fn dot_product_slice_avx2(a: &[f64], b: &[f64]) -> f64 {
 
 #[inline(always)]
 pub fn dot_product_slice(a: &[f64], b: &[f64]) -> f64 {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(target_arch = "x86_64")]
     {
         if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
             return unsafe { dot_product_slice_avx2(a, b) };
