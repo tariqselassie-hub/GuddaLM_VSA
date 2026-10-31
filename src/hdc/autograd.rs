@@ -255,7 +255,7 @@ pub fn diff_bundle_many(vectors: &[&GradHDVector]) -> GradHDVector {
         }
     }
 
-    let refs: Vec<&GradHDVector> = vectors.iter().copied().collect();
+    let refs: Vec<&GradHDVector> = vectors.to_vec();
     let parent_count = vectors.len();
     GradHDVector::add_node_with_parents(
         HDVector::from_slice(&output),
@@ -452,12 +452,12 @@ pub fn soft_cleanup(
             // and only propagate through the weighted sum (not through the
             // softmax that depends on query).  This is a straight-through
             // estimator, sufficient for proof-of-concept.
-            for j in 0..dim {
+            for (j, gq) in grad_q.iter_mut().enumerate() {
                 let mut g = 0.0;
                 for (cv, w) in cv_refs.iter().zip(stored_weights.iter()) {
                     g += w * cv.data()[j];
                 }
-                grad_q[j] = go.data()[j] * g * 0.01;
+                *gq = go.data()[j] * g * 0.01;
             }
 
             vec![grad_q]

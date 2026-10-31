@@ -12,24 +12,23 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//! Walsh-Hadamard Transform utilities.
+//!
+//! The Fast Walsh-Hadamard Transform (FWHT) is provided as a general-purpose
+//! linear transform for HD vectors. Unlike the element-wise MAP operations
+//! (bind/bundle/permute) which are the primary VSA primitives, the FWHT
+//! serves specialized roles:
+//!
+//!   - Mixing/demixing dimensions for role-filler binding analysis
+//!   - Random projection (Johnson-Lindenstrauss) for dimensionality reduction
+//!   - Noise whitening: the FWHT spreads localized noise across all
+//!     coefficients, making it amenable to threshold-based denoising
+//!
+//! For bipolar VSA, the standard MAP binding (element-wise multiply) is
+//! optimal: self-inverse, exact, O(n). The FWHT-based operations do NOT
+//! outperform MAP for binding/bundling bipolar vectors, and are provided
+//! only for use cases where a linear transform domain is needed.
 use crate::hdc::vector::{HDVector, majority_from_sums};
-
-/// Walsh-Hadamard Transform utilities.
-///
-/// The Fast Walsh-Hadamard Transform (FWHT) is provided as a general-purpose
-/// linear transform for HD vectors. Unlike the element-wise MAP operations
-/// (bind/bundle/permute) which are the primary VSA primitives, the FWHT
-/// serves specialized roles:
-///
-///   - Mixing/demixing dimensions for role-filler binding analysis
-///   - Random projection (Johnson-Lindenstrauss) for dimensionality reduction
-///   - Noise whitening: the FWHT spreads localized noise across all
-///     coefficients, making it amenable to threshold-based denoising
-///
-/// For bipolar VSA, the standard MAP binding (element-wise multiply) is
-/// optimal: self-inverse, exact, O(n). The FWHT-based operations do NOT
-/// outperform MAP for binding/bundling bipolar vectors, and are provided
-/// only for use cases where a linear transform domain is needed.
 
 /// Fast Walsh-Hadamard Transform (in-place, unnormalized).
 ///
@@ -258,8 +257,8 @@ pub fn encode_continuous_thermometer(
             let permuted = anchor_low.permute(shift % dim);
             let level_vec = permuted.bind(anchor_high);
             let vote = level_vec.binarize();
-            for i in 0..dim {
-                sums[i] += if vote.data()[i] > 0.0 { 1 } else { -1 };
+            for (s, &x) in sums.iter_mut().zip(vote.data().iter()) {
+                *s += if x > 0.0 { 1 } else { -1 };
             }
         }
     }

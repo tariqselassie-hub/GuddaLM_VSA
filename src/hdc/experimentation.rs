@@ -206,7 +206,7 @@ impl SenojianCross {
                     let chunk_b = d / 64;
                     let offset_b = d % 64;
                     let bit_b = (*bsc_b.get_unchecked(chunk_b) >> offset_b) & 1;
-                    let flip_mask = ((bit_b ^ 1)) << 63;
+                    let flip_mask = (bit_b ^ 1) << 63;
                     *new_map.get_unchecked_mut(d) = f64::from_bits(m_val.to_bits() ^ flip_mask);
                 }
             }
@@ -217,7 +217,7 @@ impl SenojianCross {
                 let bit_b = (bsc_b[d / 64] >> (d % 64)) & 1;
                 let sign_bit = (map_b[d].to_bits() >> 63) & 1;
                 xor_val ^= sign_bit << (d % 64);
-                let flip_mask = ((bit_b ^ 1)) << 63;
+                let flip_mask = (bit_b ^ 1) << 63;
                 new_map[d] = f64::from_bits(m_val.to_bits() ^ flip_mask);
                 if d % 64 == 63 {
                     new_bsc[d / 64] = xor_val;

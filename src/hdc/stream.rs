@@ -156,10 +156,10 @@ impl HDStreamBuffer {
     pub fn weighted_bundle(&self, weights: &[f64]) -> HDVector {
         assert_eq!(weights.len(), self.count);
         let mut acc = BundleAccumulator::new(self.dim);
-        for i in 0..self.count {
+        for (i, &w) in weights.iter().enumerate() {
             let idx = (self.cursor + self.capacity - self.count + i) % self.capacity;
             if let Some(ref v) = self.buffer[idx] {
-                acc.add_weighted(v, weights[i]);
+                acc.add_weighted(v, w);
             }
         }
         acc.binarize()

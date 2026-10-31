@@ -638,15 +638,8 @@ impl BinaryHDVector {
 
     pub fn to_bits(&self) -> Vec<u8> {
         let mut bits = vec![0u8; self.dim];
-        let mut word_idx = 0;
-        let mut bit_idx = 0;
-        for i in 0..self.dim {
-            bits[i] = ((self.words[word_idx] >> bit_idx) & 1) as u8;
-            bit_idx += 1;
-            if bit_idx == 64 {
-                bit_idx = 0;
-                word_idx += 1;
-            }
+        for (i, b) in bits.iter_mut().enumerate() {
+            *b = ((self.words[i / 64] >> (i % 64)) & 1) as u8;
         }
         bits
     }
@@ -739,24 +732,22 @@ impl BinaryHDVector {
         let tie_breaker = &vectors[0];
         let mut words = vec![0u64; n_words];
 
-        for w_idx in 0..n_words {
-            let start_bit = w_idx * 64;
-            let end_bit = (start_bit + 64).min(dim);
-            
+        for (w_idx, out) in words.iter_mut().enumerate() {
+            let width = (dim - w_idx * 64).min(64);
+
             let mut counts = [0i32; 64];
             for v in vectors {
                 assert_eq!(v.dim, dim);
                 let word = v.words[w_idx];
-                for bit_idx in 0..(end_bit - start_bit) {
+                for (bit_idx, c) in counts.iter_mut().take(width).enumerate() {
                     let bit = (word >> bit_idx) & 1;
-                    counts[bit_idx] += if bit == 1 { 1 } else { -1 };
+                    *c += if bit == 1 { 1 } else { -1 };
                 }
             }
-            
+
             let tie_word = tie_breaker.words[w_idx];
             let mut final_word = 0u64;
-            for bit_idx in 0..(end_bit - start_bit) {
-                let c = counts[bit_idx];
+            for (bit_idx, &c) in counts.iter().take(width).enumerate() {
                 let bit = if c > 0 {
                     1
                 } else if c < 0 {
@@ -766,7 +757,7 @@ impl BinaryHDVector {
                 };
                 final_word |= bit << bit_idx;
             }
-            words[w_idx] = final_word;
+            *out = final_word;
         }
 
         let mut result = BinaryHDVector { dim, words };
@@ -909,24 +900,17 @@ impl BinaryHDVector {
 pub fn majority_from_sums(sums: &[i64], dim: usize) -> BinaryHDVector {
     let n_words = dim.div_ceil(64);
     let mut words = vec![0u64; n_words];
-    let mut word_idx = 0;
-    let mut bit_idx = 0;
-    for i in 0..dim {
-        let bit = if sums[i] > 0 {
+    for (i, &s) in sums.iter().enumerate().take(dim) {
+        let bit = if s > 0 {
             1u64
-        } else if sums[i] < 0 {
+        } else if s < 0 {
             0u64
         } else {
             // Deterministic tie-breaking using a hash of the bit position
             let h = (i as u64).wrapping_mul(0x9E3779B97F4A7C15);
             (h >> 63) & 1
         };
-        words[word_idx] |= bit << bit_idx;
-        bit_idx += 1;
-        if bit_idx == 64 {
-            bit_idx = 0;
-            word_idx += 1;
-        }
+        words[i / 64] |= bit << (i % 64);
     }
     BinaryHDVector { dim, words }
 }

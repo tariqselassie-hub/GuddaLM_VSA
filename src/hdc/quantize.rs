@@ -163,7 +163,7 @@ pub fn packed_similarity(vector: &HDVector, packed: &[u64]) -> f64 {
     let mut diff_bits = 0u64;
     let n_words = packed.len().min(dim.div_ceil(64));
     let data = vector.data();
-    for word_idx in 0..n_words {
+    for (word_idx, &packed_word) in packed.iter().enumerate().take(n_words) {
         let mut word_bits = 0u64;
         let start = word_idx * 64;
         let end = (start + 64).min(data.len());
@@ -172,7 +172,7 @@ pub fn packed_similarity(vector: &HDVector, packed: &[u64]) -> f64 {
                 word_bits |= 1u64 << i;
             }
         }
-        diff_bits += (word_bits ^ packed[word_idx]).count_ones() as u64;
+        diff_bits += (word_bits ^ packed_word).count_ones() as u64;
     }
     let dim_f = dim as f64;
     (dim_f - 2.0 * diff_bits as f64) / dim_f

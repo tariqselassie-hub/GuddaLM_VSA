@@ -22,6 +22,9 @@ Format based on Keep a Changelog.
 - **Behaviour change:** `bundle_sequence` now calls `bundle_many`. For BSC and `IndexVector` it returns a true majority vote where it used to fold pairwise, so outputs differ. Pairwise folding left the earliest inputs unrecoverable with as few as 5 vectors. MAP results are unchanged, and FHRR/GHRR keep the pairwise fold.
 - Modules were regrouped into `modes/`, `persist/` and `apps/`, and the streaming bundlers moved to `hdc::accumulator`. All old paths are still re-exported.
 - `plans/` moved to `docs/plans/`.
+- **Renamed "guddalm" to "guddalm" (breaking):** the `guddalm` module is now `guddalm_vsa::guddalm` (`apps::guddalm`), with no alias for the old path. The `guddalm_bench`/`guddalm_qudit_bench` binaries are now `guddalm_bench`/`guddalm_qudit_bench`, the `guddalm_vsa_demo` example is now `guddalm_vsa_demo`, and the bench report files are renamed to match.
+- Library code is free of clippy warnings: index loops became iterators, orphaned doc blocks became module docs, and `SearchResult`'s `PartialOrd` is now canonical.
+- `bsc_selective_bundle` and `sdm_read_binary` use `BinaryBundleAccumulator`, with identical output.
 
 ### Removed
 - `bench_results/last_run.txt` (a captured compiler log).

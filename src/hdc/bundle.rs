@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use crate::hdc::fhrr::FHRRVector;
-use crate::hdc::vector::{majority_from_sums, BinaryHDVector, HDVector};
+use crate::hdc::vector::{BinaryHDVector, HDVector};
 use rayon::prelude::*;
 
 /// MAP bundling: sum all vectors then apply majority-rule threshold to bipolar.
@@ -108,19 +108,16 @@ pub fn bsc_selective_bundle(
 ) -> BinaryHDVector {
     assert_eq!(keys.len(), values.len());
     let dim = query.dim();
-    let mut sums = vec![0i64; dim];
+    let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(dim);
 
     for (k, v) in keys.iter().zip(values.iter()) {
         let sim = query.hamming_similarity(k);
         if sim > threshold {
-            for i in 0..dim {
-                let bit = (v.words()[i / 64] >> (i % 64)) & 1;
-                sums[i] += if bit == 1 { 1 } else { -1 };
-            }
+            acc.add(v);
         }
     }
 
-    majority_from_sums(&sums, dim)
+    acc.binarize()
 }
 
 /// Parallel weighted MAP bundling using rayon.

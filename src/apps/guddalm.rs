@@ -98,11 +98,7 @@ impl HeptalBipolarMapper {
   #[inline(always)]
   pub fn unit_to_stratum(&self, x: f64) -> i8 {
     let x = x.clamp(-1.0, 1.0);
-    match (x * 3.0).round() as i8 {
-      v if v > 3 => 3,
-      v if v < -3 => -3,
-      v => v,
-    }
+    ((x * 3.0).round() as i8).clamp(-3, 3)
   }
 
   pub fn view_to_vec(&self, view: &ZeroCopyQuditView<'_>, dim: usize) -> Vec<f64> {

@@ -208,9 +208,9 @@ fn resonator_search_inner(
         for i in 0..num_factors {
             // Unbind all other factors from the composition
             let mut residue = composition.clone();
-            for j in 0..num_factors {
+            for (j, estimate) in estimates.iter().enumerate() {
                 if j != i {
-                    residue = residue.unbind(&estimates[j]);
+                    residue = residue.unbind(estimate);
                 }
             }
 

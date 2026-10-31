@@ -25,7 +25,7 @@ pub struct SearchResult {
 
 impl PartialOrd for SearchResult {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.score.partial_cmp(&other.score)
+        Some(self.cmp(other))
     }
 }
 
@@ -33,7 +33,7 @@ impl Eq for SearchResult {}
 
 impl Ord for SearchResult {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap_or(std::cmp::Ordering::Equal)
+        self.score.partial_cmp(&other.score).unwrap_or(std::cmp::Ordering::Equal)
     }
 }
 

@@ -12,11 +12,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//! Generic algebraic primitives for Vector Symbolic Architectures (VSA).
+//! These primitives operate on any type implementing the `VsaVector` trait.
 
 use crate::hdc::vsa_trait::VsaVector;
-
-/// Generic algebraic primitives for Vector Symbolic Architectures (VSA).
-/// These primitives operate on any type implementing the `VsaVector` trait.
 
 /// Bind a series of vectors sequentially: v0 ⊗ v1 ⊗ v2 ⊗ ...
 pub fn bind_sequence<V: VsaVector>(vectors: &[V]) -> V {
@@ -88,8 +87,8 @@ pub fn encode_ngram_sequence<V: VsaVector>(vectors: &[V], n: usize) -> V {
     
     // First window
     let mut first_window = vectors[0].clone();
-    for j in 1..n {
-        let permuted = vectors[j].permute(j);
+    for (j, v) in vectors.iter().enumerate().take(n).skip(1) {
+        let permuted = v.permute(j);
         first_window = first_window.bind(&permuted);
     }
     

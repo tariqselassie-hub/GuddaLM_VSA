@@ -97,9 +97,9 @@ impl DnvsRetrainer {
                 let margin = self.compute_margin(diff).min(0.25);
 
                 let hd = encoded.data();
-                for d in 0..self.config.dim {
-                    self.prototype_sums[best][d] -= hd[d] * margin;
-                    self.prototype_sums[true_label][d] += hd[d] * margin;
+                for (d, &x) in hd.iter().enumerate().take(self.config.dim) {
+                    self.prototype_sums[best][d] -= x * margin;
+                    self.prototype_sums[true_label][d] += x * margin;
                 }
                 errors += 1;
             }

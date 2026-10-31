@@ -107,4 +107,4 @@ cargo doc --no-deps --open
 - **License**: AGPL-3.0-only (`LICENSE`)
 - **Attribution**: Terrence A. Jones Sr.
 - **Contact**: Zoddjr@gmail.com
-- **Project**: Research Divizion Detroit Project
+- **Project**: GuddaLM Research Division Detroit Project

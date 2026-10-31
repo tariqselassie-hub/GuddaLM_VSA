@@ -189,10 +189,8 @@ impl FHRRVector {
     /// Used for discrete positional encoding.
     pub fn permute(&self, shift: usize) -> FHRRVector {
         let shift = shift % self.dim;
-        let mut phases = vec![0.0; self.dim];
-        for i in 0..self.dim {
-            phases[i] = self.phases[(i + shift) % self.dim];
-        }
+        // phases[i] = self.phases[(i + shift) % dim], i.e. a left rotation.
+        let phases = [&self.phases[shift..], &self.phases[..shift]].concat();
         FHRRVector { dim: self.dim, phases }
     }
 
