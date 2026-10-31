@@ -87,10 +87,7 @@ pub fn from_tensor_batch(t: &Tensor) -> candle_core::Result<Vec<HDVector>> {
     }
     let dim = dims[1];
     let data: Vec<f64> = t.flatten_all()?.to_vec1()?;
-    let vectors: Vec<HDVector> = data
-        .chunks(dim)
-        .map(|chunk| HDVector::from_slice(chunk))
-        .collect();
+    let vectors: Vec<HDVector> = data.chunks(dim).map(HDVector::from_slice).collect();
     Ok(vectors)
 }
 

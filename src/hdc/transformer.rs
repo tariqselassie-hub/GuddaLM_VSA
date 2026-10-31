@@ -50,7 +50,7 @@ impl DiffVSAEncoderLayer {
     /// selective (fewer KV pairs contribute).
     pub fn new(dim: usize, n_heads: usize, threshold: f64) -> Self {
         assert!(
-            dim % n_heads == 0,
+            dim.is_multiple_of(n_heads),
             "dim ({}) must be divisible by n_heads ({})",
             dim,
             n_heads
@@ -122,7 +122,7 @@ fn multihead_attention(
     n_heads: usize,
     threshold: f64,
 ) -> Result<Tensor> {
-    let dim = query.dim(0)? as usize;
+    let dim = query.dim(0)?;
     let head_dim = dim / n_heads;
 
     // Reshape query: [dim] -> [n_heads, head_dim]
