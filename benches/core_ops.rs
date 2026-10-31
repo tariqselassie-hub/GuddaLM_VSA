@@ -99,6 +99,9 @@ fn bench_bundle_100(c: &mut Criterion) {
         })
     });
     group.bench_function("bsc_pairwise", |b| b.iter(|| black_box(bundle_sequence(&bsc))));
+    group.bench_function("bsc_majority_bundle_all", |b| {
+        b.iter(|| black_box(BinaryHDVector::majority_bundle_all(&bsc)))
+    });
     group.bench_function("bsc_accumulator", |b| {
         b.iter(|| {
             let mut acc = BinaryBundleAccumulator::new(dim);

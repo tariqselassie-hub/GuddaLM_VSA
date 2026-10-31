@@ -161,15 +161,25 @@ impl BinaryBundleAccumulator {
         self.add_votes(v, weight as i64);
     }
 
-    /// Walk the packed words directly: one load per 64 bits rather than a
-    /// divide and shift per bit.
+    /// Add ±`w` per bit, one packed byte at a time: a lookup table turns each
+    /// byte into eight ±1 votes, so the inner loop is a fixed-width add the
+    /// compiler can vectorize.
     #[inline(always)]
     fn add_votes(&mut self, v: &BinaryHDVector, w: i64) {
         assert_eq!(self.dim, v.dim());
-        for (chunk, &word) in self.sums.chunks_mut(64).zip(v.words().iter()) {
-            for (bit, s) in chunk.iter_mut().enumerate() {
-                // (2·bit − 1)·w: +w for a set bit, −w for a clear bit.
-                *s += (((word >> bit) & 1) as i64 * 2 - 1) * w;
+        let lut = vote_lut();
+        let bytes = v.words().iter().flat_map(|word| word.to_le_bytes());
+        for (chunk, byte) in self.sums.chunks_mut(8).zip(bytes) {
+            let votes = &lut[byte as usize];
+            if let Ok(lanes) = <&mut [i64; 8]>::try_from(&mut *chunk) {
+                for i in 0..8 {
+                    lanes[i] += votes[i] as i64 * w;
+                }
+            } else {
+                // Trailing partial byte when `dim` is not a multiple of 8.
+                for (s, &vote) in chunk.iter_mut().zip(votes.iter()) {
+                    *s += vote as i64 * w;
+                }
             }
         }
         self.count += 1;
@@ -216,6 +226,20 @@ impl<'a> Extend<&'a BinaryHDVector> for BinaryBundleAccumulator {
             self.add(v);
         }
     }
+}
+
+/// `VOTE_LUT[b][i]` is +1 if bit `i` of byte `b` is set, else −1.
+fn vote_lut() -> &'static [[i8; 8]; 256] {
+    static LUT: std::sync::OnceLock<[[i8; 8]; 256]> = std::sync::OnceLock::new();
+    LUT.get_or_init(|| {
+        let mut lut = [[0i8; 8]; 256];
+        for (b, row) in lut.iter_mut().enumerate() {
+            for (i, vote) in row.iter_mut().enumerate() {
+                *vote = if (b >> i) & 1 == 1 { 1 } else { -1 };
+            }
+        }
+        lut
+    })
 }
 
 #[cfg(test)]
