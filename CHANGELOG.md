@@ -10,6 +10,7 @@ Format based on Keep a Changelog.
 - `MAP_HIGH_CAPACITY_DIM` (8192) alongside `MAP_DEFAULT_DIM` (4096), with measured recall in the docs; default dims are exported from the prelude.
 - `BundleAccumulator` / `BinaryBundleAccumulator`: `merge`, `dim`, `is_empty`, `into_vector` and `Extend` impls.
 - `HDVector::from_vec` for zero-copy construction.
+- `VsaVector::bundle_many`: bundles a slice in one step. The default folds pairwise; MAP, BSC and `IndexVector` use the accumulators.
 - Criterion benchmark suite (`benches/core_ops.rs`) and `docs/benchmarks.md`.
 
 ### Changed
@@ -18,6 +19,7 @@ Format based on Keep a Changelog.
 - Cosine similarity is a single fused pass (~57% faster).
 - `search`, `ItemMemory::cleanup`/`cleanup_top_k` and `CleanupMemory::cleanup` score in parallel and select top-k without a full sort (66–89% faster). Ties now always go to the lowest index.
 - `BinaryBundleAccumulator::add` is ~2× faster.
+- **Behaviour change:** `bundle_sequence` now calls `bundle_many`. For BSC and `IndexVector` it returns a true majority vote where it used to fold pairwise, so outputs differ. Pairwise folding left the earliest inputs unrecoverable with as few as 5 vectors. MAP results are unchanged, and FHRR/GHRR keep the pairwise fold.
 - Modules were regrouped into `modes/`, `persist/` and `apps/`, and the streaming bundlers moved to `hdc::accumulator`. All old paths are still re-exported.
 - `plans/` moved to `docs/plans/`.
 

@@ -90,7 +90,9 @@ fn bench_bundle_100(c: &mut Criterion) {
     let dim = 4096;
     let map: Vec<HDVector> = (0..100).map(|_| HDVector::random(dim)).collect();
     let bsc: Vec<BinaryHDVector> = (0..100).map(|_| BinaryHDVector::random(dim)).collect();
-    group.bench_function("map_pairwise", |b| b.iter(|| black_box(bundle_sequence(&map))));
+    group.bench_function("map_pairwise", |b| {
+        b.iter(|| black_box(map[1..].iter().fold(map[0].clone(), |acc, v| acc.bundle(v))))
+    });
     group.bench_function("map_accumulator", |b| {
         b.iter(|| {
             let mut acc = BundleAccumulator::new(dim);
@@ -98,7 +100,9 @@ fn bench_bundle_100(c: &mut Criterion) {
             black_box(acc.into_vector())
         })
     });
-    group.bench_function("bsc_pairwise", |b| b.iter(|| black_box(bundle_sequence(&bsc))));
+    group.bench_function("bsc_pairwise", |b| {
+        b.iter(|| black_box(bsc[1..].iter().fold(bsc[0].clone(), |acc, v| acc.majority_bundle(v))))
+    });
     group.bench_function("bsc_majority_bundle_all", |b| {
         b.iter(|| black_box(BinaryHDVector::majority_bundle_all(&bsc)))
     });

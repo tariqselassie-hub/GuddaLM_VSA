@@ -45,14 +45,15 @@ What changed:
 
 | Method | Time | Exact majority? |
 |---|---|---|
-| MAP `bundle_sequence` (pairwise fold) | 189 µs | n/a (sum) |
-| MAP `BundleAccumulator` | 164 µs | n/a (sum, identical result) |
-| BSC `bundle_sequence` (pairwise majority) | 12 µs | no |
+| MAP pairwise `bundle` fold | 189 µs | n/a (sum) |
+| MAP `BundleAccumulator` / `bundle_sequence` | 164 µs | n/a (sum, identical result) |
+| BSC pairwise `majority_bundle` fold | 12 µs | no |
 | BSC `majority_bundle_all` | 271 µs | yes |
-| BSC `BinaryBundleAccumulator` | 172 µs | yes |
+| BSC `BinaryBundleAccumulator` / `bundle_sequence` | 172 µs | yes |
 
-The pairwise BSC fold is fast but lossy: each step halves the weight of
-everything bundled so far. Weakest-member similarity, averaged over 10
+`bundle_sequence` uses the accumulators (via `VsaVector::bundle_many`).
+Until this change it folded pairwise, which for BSC is fast but lossy: each
+step halves the weight of everything bundled so far. Weakest-member similarity, averaged over 10
 trials (0 means unrecoverable):
 
 | Vectors bundled | Pairwise | Accumulator |

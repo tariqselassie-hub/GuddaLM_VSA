@@ -70,6 +70,19 @@ pub trait VsaVector: Clone + Sized {
     /// - FHRR: complex sum → normalize to unit circle
     fn bundle(&self, other: &Self) -> Self;
 
+    /// Bundle a whole slice in one superposition, so every input carries
+    /// equal weight. Panics on an empty slice.
+    ///
+    /// The default folds [`bundle`](Self::bundle) pairwise. MAP and BSC
+    /// override it with the streaming accumulators: for MAP the result is the
+    /// same sum without the per-step allocations, and for BSC it is a true
+    /// majority vote instead of a pairwise fold that halves the weight of
+    /// earlier inputs at every step.
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let (first, rest) = vectors.split_first().expect("bundle_many: empty vector slice");
+        rest.iter().fold(first.clone(), |acc, v| acc.bundle(v))
+    }
+
     /// Permute (rotate/shuffle) the vector by `shift` positions.
     ///
     /// - MAP / FHRR: cyclic shift of elements
@@ -127,6 +140,13 @@ impl VsaVector for HDVector {
     #[inline(always)]
     fn bundle(&self, other: &Self) -> Self { HDVector::bundle(self, other) }
 
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BundleAccumulator::new(first.dim());
+        acc.extend(vectors);
+        acc.into_vector()
+    }
+
     #[inline(always)]
     fn permute(&self, shift: usize) -> Self { HDVector::permute(self, shift) }
 
@@ -171,6 +191,13 @@ impl VsaVector for BinaryHDVector {
 
     #[inline(always)]
     fn bundle(&self, other: &Self) -> Self { self.majority_bundle(other) }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(first.dim());
+        acc.extend(vectors);
+        acc.binarize()
+    }
 
     #[inline(always)]
     fn permute(&self, shift: usize) -> Self { self.rotate(shift) }
@@ -419,6 +446,13 @@ impl VsaVector for IndexVector {
 
     #[inline(always)]
     fn bundle(&self, other: &Self) -> Self { self.bundle(other) }
+
+    fn bundle_many(vectors: &[Self]) -> Self {
+        let first = vectors.first().expect("bundle_many: empty vector slice");
+        let mut acc = crate::hdc::accumulator::BinaryBundleAccumulator::new(first.0.dim());
+        acc.extend(vectors.iter().map(|v| &v.0));
+        IndexVector(acc.binarize())
+    }
 
     #[inline(always)]
     fn permute(&self, shift: usize) -> Self { self.permute(shift) }
