@@ -332,11 +332,21 @@ mod tests {
     use super::*;
     use crate::hdc::vector::HDVector;
 
+    /// Encoder with reproducible node roles, for tests whose assertions sit
+    /// close enough to the noise floor that fresh random vectors fail at random.
+    fn seeded_encoder(seed: u64, num_nodes: usize, dim: usize) -> GraphEncoder {
+        let roles = (0..num_nodes)
+            .map(|i| crate::seed::deterministic_hd_vector(seed, &format!("graph:node:{i}"), dim))
+            .collect();
+        GraphEncoder::from_roles(roles)
+    }
+
     #[test]
     fn test_single_edge_roundtrip() {
+        // Fixed vectors; random ones failed about 1 run in 50.
         let dim = 512;
-        let encoder = GraphEncoder::new(5, dim);
-        let relation = HDVector::random(dim);
+        let encoder = seeded_encoder(11, 5, dim);
+        let relation = crate::seed::deterministic_hd_vector(11, "graph:rel", dim);
 
         // Encode edge: 0 --rel--> 2
         let edge = encoder.encode_edge(0, &relation, 2);
@@ -355,9 +365,10 @@ mod tests {
 
     #[test]
     fn test_graph_encode_unary() {
+        // Fixed vectors; random ones failed about 1 run in 750.
         let dim = 256;
-        let encoder = GraphEncoder::new(4, dim);
-        let rel = HDVector::random(dim);
+        let encoder = seeded_encoder(41, 4, dim);
+        let rel = crate::seed::deterministic_hd_vector(41, "graph:rel", dim);
 
         // Triangle: 0→1, 1→2, 2→0
         let adjacency = vec![(0, 1), (1, 2), (2, 0)];
@@ -378,9 +389,12 @@ mod tests {
 
     #[test]
     fn test_query_successors() {
+        // Fixed vectors: with fresh random ones, approximate circular-
+        // correlation unbinding left about 1 in 100 draws below the
+        // threshold, so the test failed at random.
         let dim = 512;
-        let encoder = GraphEncoder::new(3, dim);
-        let rel = HDVector::random(dim);
+        let encoder = seeded_encoder(7, 3, dim);
+        let rel = crate::seed::deterministic_hd_vector(7, "graph:rel", dim);
 
         let graph = encoder.encode_edge(0, &rel, 1);
 
@@ -410,9 +424,10 @@ mod tests {
 
     #[test]
     fn test_path_encoding() {
+        // Fixed vectors; random ones failed about 1 run in 300.
         let dim = 256;
-        let encoder = GraphEncoder::new(4, dim);
-        let rel = HDVector::random(dim);
+        let encoder = seeded_encoder(19, 4, dim);
+        let rel = crate::seed::deterministic_hd_vector(19, "graph:rel", dim);
 
         // Path: 0 → 1 → 2 → 3
         let nodes = vec![0, 1, 2, 3];
@@ -433,10 +448,11 @@ mod tests {
 
     #[test]
     fn test_different_relations_distinguish_edges() {
+        // Fixed vectors; random ones failed about 1 run in 200.
         let dim = 256;
-        let encoder = GraphEncoder::new(3, dim);
-        let rel_a = HDVector::random(dim);
-        let rel_b = HDVector::random(dim);
+        let encoder = seeded_encoder(13, 3, dim);
+        let rel_a = crate::seed::deterministic_hd_vector(13, "graph:rel_a", dim);
+        let rel_b = crate::seed::deterministic_hd_vector(13, "graph:rel_b", dim);
 
         let edge_a = encoder.encode_edge(0, &rel_a, 1);
         let edge_b = encoder.encode_edge(0, &rel_b, 1);

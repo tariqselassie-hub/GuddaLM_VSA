@@ -32,6 +32,7 @@ Format based on Keep a Changelog.
 ### Fixed
 - The crate failed to compile on non-x86 targets, including Apple Silicon and ARM Linux. `SenojianCross::bind` guarded its AVX2 path with `cfg!()`, which still compiles both branches. It now uses a compile-time `#[cfg]` with a scalar fallback.
 - The same AVX2 path read past the end of the buffer when `dim` was not a multiple of 4. The partial last group now uses scalar code.
+- Nine unit tests failed at random, roughly 3–4% of suite runs combined. They used fresh random vectors with thresholds an unlucky draw could miss, so they now use fixed seeds. Thresholds and assertions are unchanged.
 - The AVX2 helpers in `vector` and `quantize` were enabled on 32-bit x86, where `std::arch::x86_64` does not exist; they are now gated on `x86_64` only.
 
 ### Removed

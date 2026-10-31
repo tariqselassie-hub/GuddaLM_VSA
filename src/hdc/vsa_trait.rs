@@ -701,9 +701,10 @@ mod tests {
 
     #[test]
     fn test_vsa_trait_bind_roundtrip_all() {
-        fn test_roundtrip<V: VsaVector>(dim: usize) {
-            let a = V::random(dim);
-            let b = V::random(dim);
+        // Fixed vectors; random ones failed about 1 run in 1000 at small dims.
+        fn test_roundtrip<V: crate::hdc::item_memory::DeterministicSymbol>(dim: usize) {
+            let a = V::generate_symbol(37, "trait:a", dim);
+            let b = V::generate_symbol(37, "trait:b", dim);
             let bound = a.bind(&b);
             let rebound = bound.unbind(&b);
             let sim = rebound.cosine_similarity(&a);
