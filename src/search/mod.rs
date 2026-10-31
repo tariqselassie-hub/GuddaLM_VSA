@@ -78,41 +78,54 @@ impl SuperSearch {
         ranked_scores(query, candidates, top_k)
     }
 
-    pub fn query_weighted<V: VsaVector>(
+    /// Weighted score fusion across several views of the same items.
+    ///
+    /// Each entry in `sets` is one view (for example text and image
+    /// embeddings) with a weight, and index `i` must be the same item in
+    /// every view. Item `i` scores `Σ weight × similarity(query, view[i])`,
+    /// and the `top_k` best items come back best first, with ties going to
+    /// the lowest index.
+    ///
+    /// Panics if the views have different lengths. Returns nothing when
+    /// `sets` is empty or `top_k` is 0.
+    ///
+    /// ```
+    /// use guddalm_vsa::prelude::*;
+    /// use guddalm_vsa::search::SuperSearch;
+    ///
+    /// let text: Vec<HDVector> = (0..4).map(|_| HDVector::random(1024)).collect();
+    /// let image: Vec<HDVector> = (0..4).map(|_| HDVector::random(1024)).collect();
+    /// // A query that matches item 2's text view.
+    /// let hits = SuperSearch::query_weighted(&text[2], &[(&text[..], 0.7), (&image[..], 0.3)], 1);
+    /// assert_eq!(hits[0].index, 2);
+    /// ```
+    pub fn query_weighted<V: VsaVector + Sync>(
         query: &V,
         sets: &[(&[V], f64)],
         top_k: usize,
     ) -> Vec<SearchResult> {
-        let fused: Vec<Option<f64>> = sets.iter().fold(
-            vec![None; sets.iter().map(|s| s.0.len()).sum()],
-            |mut acc, (candidates, weight)| {
-                let local: Vec<(usize, f64)> = candidates
-                    .iter()
-                    .enumerate()
-                    .map(|(i, c)| (i, query.cosine_similarity(c) * weight))
-                    .collect();
-                let mut sorted = local;
-                sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-
-                for (idx, score) in sorted {
-                    acc[idx] = Some(acc[idx].unwrap_or(0.0) + score);
-                }
-                acc
-            },
-        );
-
-        let mut out: Vec<SearchResult> = fused
-            .into_iter()
-            .enumerate()
-            .filter_map(|(i, s)| s.map(|score| SearchResult::new(i, score)))
-            .collect();
-        out.sort_by(|a, b| {
-            b.score
-                .partial_cmp(&a.score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        out.truncate(top_k);
-        out
+        let Some(((first, _), rest)) = sets.split_first() else {
+            return Vec::new();
+        };
+        let n = first.len();
+        for (i, (view, _)) in rest.iter().enumerate() {
+            assert_eq!(
+                view.len(),
+                n,
+                "query_weighted: view {} has {} items but view 0 has {}",
+                i + 1,
+                view.len(),
+                n
+            );
+        }
+        top_k_by(n, top_k, |i| {
+            sets.iter()
+                .map(|(view, weight)| weight * query.cosine_similarity(&view[i]))
+                .sum()
+        })
+        .into_iter()
+        .map(|(i, score)| SearchResult::new(i, score))
+        .collect()
     }
 }
 
@@ -248,5 +261,67 @@ mod tests {
         assert_eq!(top, vec![0, 1, 2]);
         assert!(top_k_by(0, 3, |_| 0.0).is_empty());
         assert_eq!(best_by(0, |_| 0.0), None);
+    }
+
+    #[test]
+    fn query_weighted_fuses_views_by_weight() {
+        let dim = 1024;
+        let text: Vec<HDVector> = (0..300).map(|_| HDVector::random(dim)).collect();
+        let image: Vec<HDVector> = (0..300).map(|_| HDVector::random(dim)).collect();
+        let query = text[7].clone();
+        let sets: [(&[HDVector], f64); 2] = [(&text, 0.7), (&image, 0.3)];
+
+        let got = SuperSearch::query_weighted(&query, &sets, 5);
+        assert_eq!(got.len(), 5);
+        assert_eq!(got[0].index, 7);
+
+        // Every returned score is exactly the weighted sum for that item.
+        for r in &got {
+            let expected = 0.7 * query.cosine_similarity(&text[r.index])
+                + 0.3 * query.cosine_similarity(&image[r.index]);
+            assert!((r.score - expected).abs() < 1e-12);
+        }
+        // And they come back best first.
+        assert!(got.windows(2).all(|w| w[0].score >= w[1].score));
+    }
+
+    #[test]
+    fn query_weighted_weights_change_the_winner() {
+        let dim = 1024;
+        let a: Vec<HDVector> = (0..4).map(|_| HDVector::random(dim)).collect();
+        let b: Vec<HDVector> = (0..4).map(|_| HDVector::random(dim)).collect();
+        // The query matches item 1 in view a and item 3 in view b.
+        let query = a[1].bundle(&b[3]);
+        let favour_a = SuperSearch::query_weighted(&query, &[(&a[..], 1.0), (&b[..], 0.0)], 1);
+        let favour_b = SuperSearch::query_weighted(&query, &[(&a[..], 0.0), (&b[..], 1.0)], 1);
+        assert_eq!(favour_a[0].index, 1);
+        assert_eq!(favour_b[0].index, 3);
+    }
+
+    #[test]
+    fn query_weighted_single_view_matches_query() {
+        let cands: Vec<HDVector> = (0..50).map(|_| HDVector::random(512)).collect();
+        let q = HDVector::random(512);
+        let fused = SuperSearch::query_weighted(&q, &[(&cands[..], 1.0)], 10);
+        assert_eq!(fused, SuperSearch::query(&q, &cands, 10));
+    }
+
+    #[test]
+    fn query_weighted_empty_inputs() {
+        let q = HDVector::random(64);
+        let cands: Vec<HDVector> = (0..3).map(|_| HDVector::random(64)).collect();
+        assert!(SuperSearch::query_weighted::<HDVector>(&q, &[], 5).is_empty());
+        assert!(SuperSearch::query_weighted(&q, &[(&cands[..], 1.0)], 0).is_empty());
+        let none: Vec<HDVector> = Vec::new();
+        assert!(SuperSearch::query_weighted(&q, &[(&none[..], 1.0)], 5).is_empty());
+    }
+
+    #[test]
+    #[should_panic(expected = "view 1 has 2 items but view 0 has 3")]
+    fn query_weighted_rejects_mismatched_views() {
+        let q = HDVector::random(64);
+        let a: Vec<HDVector> = (0..3).map(|_| HDVector::random(64)).collect();
+        let b: Vec<HDVector> = (0..2).map(|_| HDVector::random(64)).collect();
+        SuperSearch::query_weighted(&q, &[(&a[..], 1.0), (&b[..], 1.0)], 5);
     }
 }
